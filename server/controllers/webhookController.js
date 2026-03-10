@@ -1,5 +1,9 @@
 const supabase = require('../services/supabase');
 const { calculateLeadScore, getScoreLabel } = require('../services/leadScoring');
+const { getAvailableSlots, createAppointmentEvent } = require('../services/googleCalendar');
+
+// Default firm ID for MVP (Mitchell Family Law)
+const DEFAULT_FIRM_ID = 'a0000000-0000-0000-0000-000000000001';
 
 // In-memory storage for when Supabase isn't configured yet
 const localStore = {
@@ -48,7 +52,7 @@ async function handleWebhook(req, res) {
  * Handle tool calls from VAPI (mid-call)
  * VAPI expects a response within 7.5 seconds
  */
-function handleToolCalls(message, res) {
+async function handleToolCalls(message, res) {
   const toolCallList = message.toolCallList || [];
   const results = [];
 
@@ -58,10 +62,10 @@ function handleToolCalls(message, res) {
     let result;
     switch (toolCall.function.name) {
       case 'check_availability':
-        result = handleCheckAvailability(toolCall.function.arguments);
+        result = await handleCheckAvailability(toolCall.function.arguments);
         break;
       case 'book_appointment':
-        result = handleBookAppointment(toolCall.function.arguments);
+        result = await handleBookAppointment(toolCall.function.arguments);
         break;
       default:
         result = { error: 'Unknown tool' };
@@ -77,22 +81,23 @@ function handleToolCalls(message, res) {
 }
 
 /**
- * Check available appointment slots
+ * Check available appointment slots (uses Google Calendar)
  */
-function handleCheckAvailability(args) {
+async function handleCheckAvailability(args) {
   const { date } = args;
 
-  // For MVP: return mock available slots
-  // Later: integrate with Google Calendar API
-  const slots = [
-    '9:00 AM',
-    '10:30 AM',
-    '1:00 PM',
-    '2:30 PM',
-    '4:00 PM',
-  ];
+  const slots = await getAvailableSlots(date);
 
   console.log(`[Availability] Checking ${date} - returning ${slots.length} slots`);
+
+  if (slots.length === 0) {
+    return {
+      available: false,
+      date: date,
+      slots: [],
+      message: `Unfortunately, we don't have any available times on ${date}. Would you like to try another day?`,
+    };
+  }
 
   return {
     available: true,
@@ -105,7 +110,7 @@ function handleCheckAvailability(args) {
 /**
  * Book an appointment
  */
-function handleBookAppointment(args) {
+async function handleBookAppointment(args) {
   const {
     caller_name,
     caller_phone,
@@ -119,6 +124,7 @@ function handleBookAppointment(args) {
 
   const appointment = {
     id: `apt_${Date.now()}`,
+    firm_id: DEFAULT_FIRM_ID,
     caller_name,
     caller_phone,
     caller_email: caller_email || null,
@@ -128,14 +134,25 @@ function handleBookAppointment(args) {
     urgency,
     notes,
     status: 'confirmed',
-    created_at: new Date().toISOString(),
   };
 
-  // Store locally for now
-  localStore.appointments.push(appointment);
-  console.log(`[Booked] ${caller_name} - ${appointment_date} ${appointment_time} - ${case_type}`);
+  // Save to Supabase if available
+  if (supabase) {
+    try {
+      await supabase.from('appointments').insert(appointment);
+      console.log(`[Booked → Supabase] ${caller_name} - ${appointment_date} ${appointment_time}`);
+    } catch (err) {
+      console.error('[Supabase Error]', err.message);
+      localStore.appointments.push(appointment);
+    }
+  } else {
+    localStore.appointments.push(appointment);
+  }
 
-  // Later: save to Supabase + create Google Calendar event
+  // Create Google Calendar event
+  await createAppointmentEvent(appointment);
+
+  console.log(`[Booked] ${caller_name} - ${appointment_date} ${appointment_time} - ${case_type}`);
 
   return {
     success: true,
@@ -155,9 +172,20 @@ async function handleEndOfCallReport(message) {
   const callerPhone = call?.customer?.number || 'unknown';
 
   // Find if this caller booked an appointment during the call
-  const recentAppointment = localStore.appointments.find(
-    (apt) => apt.caller_phone === callerPhone || apt.created_at > new Date(Date.now() - 15 * 60 * 1000).toISOString()
-  );
+  let recentAppointment = null;
+  if (supabase) {
+    const { data } = await supabase
+      .from('appointments')
+      .select('*')
+      .eq('caller_phone', callerPhone)
+      .order('created_at', { ascending: false })
+      .limit(1);
+    recentAppointment = data?.[0] || null;
+  } else {
+    recentAppointment = localStore.appointments.find(
+      (apt) => apt.caller_phone === callerPhone
+    );
+  }
 
   // Build lead data
   const leadData = {
@@ -176,24 +204,32 @@ async function handleEndOfCallReport(message) {
 
   const lead = {
     id: `lead_${Date.now()}`,
+    firm_id: DEFAULT_FIRM_ID,
     ...leadData,
     score,
     score_label: scoreLabel,
     status: recentAppointment ? 'booked' : 'new',
-    created_at: new Date().toISOString(),
   };
 
   const callRecord = {
     id: `call_${Date.now()}`,
     lead_id: lead.id,
+    firm_id: DEFAULT_FIRM_ID,
     vapi_call_id: call?.id || null,
     transcript: transcript || '',
     summary: summary || '',
     recording_url: recordingUrl || null,
     duration: call?.duration || 0,
     ended_reason: endedReason || 'unknown',
-    created_at: new Date().toISOString(),
   };
+
+  // Update the appointment with the lead_id
+  if (recentAppointment && supabase) {
+    await supabase
+      .from('appointments')
+      .update({ lead_id: lead.id })
+      .eq('id', recentAppointment.id);
+  }
 
   // Save to Supabase if configured, otherwise local store
   if (supabase) {
