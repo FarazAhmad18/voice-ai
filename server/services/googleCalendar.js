@@ -5,14 +5,31 @@ let calendar = null;
 const CALENDAR_ID = process.env.GOOGLE_CALENDAR_ID;
 
 // Initialize Google Calendar client
+// Supports both: JSON key file (local dev) and env variable (production/Render)
 try {
-  const keyFile = path.resolve(__dirname, '..', process.env.GOOGLE_SERVICE_ACCOUNT_KEY_FILE || '');
-  const auth = new google.auth.GoogleAuth({
-    keyFile,
-    scopes: ['https://www.googleapis.com/auth/calendar'],
-  });
-  calendar = google.calendar({ version: 'v3', auth });
-  console.log('[Google Calendar] Connected successfully');
+  let auth;
+  if (process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
+    // Production: credentials passed as JSON string in env variable
+    const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
+    auth = new google.auth.GoogleAuth({
+      credentials,
+      scopes: ['https://www.googleapis.com/auth/calendar'],
+    });
+  } else if (process.env.GOOGLE_SERVICE_ACCOUNT_KEY_FILE) {
+    // Local dev: credentials in a JSON file
+    const keyFile = path.resolve(__dirname, '..', process.env.GOOGLE_SERVICE_ACCOUNT_KEY_FILE);
+    auth = new google.auth.GoogleAuth({
+      keyFile,
+      scopes: ['https://www.googleapis.com/auth/calendar'],
+    });
+  }
+
+  if (auth) {
+    calendar = google.calendar({ version: 'v3', auth });
+    console.log('[Google Calendar] Connected successfully');
+  } else {
+    console.warn('[Google Calendar] No credentials found, using mock data');
+  }
 } catch (err) {
   console.warn('[Google Calendar] Not configured, using mock data:', err.message);
 }
