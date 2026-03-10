@@ -73,7 +73,7 @@ async function handleToolCalls(message, res) {
 
     results.push({
       toolCallId: toolCall.id,
-      result: JSON.stringify(result),
+      result: result.message || JSON.stringify(result),
     });
   }
 
