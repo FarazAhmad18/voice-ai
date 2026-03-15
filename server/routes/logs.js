@@ -1,8 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const supabase = require('../services/supabase');
+const authenticate = require('../middleware/auth');
+const requireRole = require('../middleware/requireRole');
 
-// GET /api/logs — fetch system logs (super_admin only for now)
+// All log routes require super_admin
+router.use(authenticate, requireRole('super_admin'));
+
+// GET /api/logs
 router.get('/', async (req, res) => {
   if (!supabase) {
     return res.status(500).json({ error: 'Database not configured' });

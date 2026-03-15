@@ -1,49 +1,88 @@
 const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
-export async function fetchLeads() {
-  const res = await fetch(`${API_BASE}/leads`);
-  if (!res.ok) throw new Error('Failed to fetch leads');
+/**
+ * Get the current auth token from Supabase session storage.
+ */
+function getToken() {
+  try {
+    const hostname = new URL(import.meta.env.VITE_SUPABASE_URL).hostname.split('.')[0];
+    const raw = localStorage.getItem(`sb-${hostname}-auth-token`);
+    if (!raw) return null;
+    const session = JSON.parse(raw);
+    return session?.access_token || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Authenticated fetch wrapper.
+ */
+async function apiFetch(path, options = {}) {
+  const token = getToken();
+  const headers = {
+    'Content-Type': 'application/json',
+    ...options.headers,
+  };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+
+  if (res.status === 401) {
+    window.location.href = '/login';
+    throw new Error('Session expired');
+  }
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || `API error: ${res.status}`);
+  }
+
   return res.json();
+}
+
+// ── Leads ──────────────────────────────────────────────
+
+export async function fetchLeads() {
+  return apiFetch('/leads');
 }
 
 export async function fetchLead(id) {
-  const res = await fetch(`${API_BASE}/leads/${id}`);
-  if (!res.ok) throw new Error('Failed to fetch lead');
-  return res.json();
+  return apiFetch(`/leads/${id}`);
 }
 
 export async function updateLead(id, updates) {
-  const res = await fetch(`${API_BASE}/leads/${id}`, {
+  return apiFetch(`/leads/${id}`, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(updates),
   });
-  if (!res.ok) throw new Error('Failed to update lead');
-  return res.json();
 }
 
 export async function addCallNote(leadId, text) {
-  const res = await fetch(`${API_BASE}/leads/${leadId}/notes`, {
+  return apiFetch(`/leads/${leadId}/notes`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ text }),
   });
-  if (!res.ok) throw new Error('Failed to add note');
-  return res.json();
 }
 
+// ── Appointments ───────────────────────────────────────
+
 export async function fetchAppointments() {
-  const res = await fetch(`${API_BASE}/appointments`);
-  if (!res.ok) throw new Error('Failed to fetch appointments');
-  return res.json();
+  return apiFetch('/appointments');
 }
 
 export async function updateAppointment(id, updates) {
-  const res = await fetch(`${API_BASE}/appointments/${id}`, {
+  return apiFetch(`/appointments/${id}`, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(updates),
   });
-  if (!res.ok) throw new Error('Failed to update appointment');
-  return res.json();
+}
+
+// ── Logs ───────────────────────────────────────────────
+
+export async function fetchLogs(params = {}) {
+  const query = new URLSearchParams(params).toString();
+  return apiFetch(`/logs?${query}`);
 }
