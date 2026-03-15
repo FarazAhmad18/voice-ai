@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { fetchAppointments, updateAppointment } from '../services/api';
 import DateFilter from '../components/DateFilter';
-import { CalendarCheck } from 'lucide-react';
+import StatusBadge from '../components/StatusBadge';
+import { CalendarCheck, Clock, Phone, User, ChevronRight, CheckCircle, XCircle } from 'lucide-react';
 
 const STATUS_TABS = [
   { key: 'all', label: 'All' },
@@ -62,93 +64,150 @@ export default function Appointments() {
     });
   }
 
+  const confirmed = appointments.filter(a => a.status === 'confirmed').length;
+  const completed = appointments.filter(a => a.status === 'completed').length;
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="w-6 h-6 border-2 border-slate-900 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-[3px] border-slate-200 border-t-slate-900 rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-5">
-      {/* Controls */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1 bg-slate-50 rounded-xl p-1">
-          {STATUS_TABS.map((t) => {
-            const count = t.key === 'all' ? appointments.length : appointments.filter((a) => a.status === t.key).length;
-            return (
-              <button
-                key={t.key}
-                onClick={() => setTab(t.key)}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${
-                  tab === t.key
-                    ? 'bg-white text-slate-900 shadow-sm'
-                    : 'text-slate-400 hover:text-slate-600'
-                }`}
-              >
-                {t.label}
-                <span className={`text-[10px] ${tab === t.key ? 'text-slate-500' : 'text-slate-300'}`}>{count}</span>
-              </button>
-            );
-          })}
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-end justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Appointments</h1>
+          <div className="flex items-center gap-4 mt-2">
+            <span className="text-sm text-slate-400">{appointments.length} total</span>
+            {confirmed > 0 && (
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-violet-600 bg-violet-50 px-2.5 py-1 rounded-full">
+                <CalendarCheck size={11} />
+                {confirmed} upcoming
+              </span>
+            )}
+          </div>
         </div>
-        <DateFilter value={dateRange} onChange={setDateRange} />
+      </div>
+
+      {/* Filters */}
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm shadow-slate-100/50 p-4">
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-1 bg-slate-50 rounded-xl p-1">
+            {STATUS_TABS.map((t) => {
+              const count = t.key === 'all' ? appointments.length : appointments.filter((a) => a.status === t.key).length;
+              return (
+                <button
+                  key={t.key}
+                  onClick={() => setTab(t.key)}
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${
+                    tab === t.key
+                      ? 'bg-white text-slate-900 shadow-sm'
+                      : 'text-slate-400 hover:text-slate-600'
+                  }`}
+                >
+                  {t.label}
+                  <span className={`text-[10px] ${tab === t.key ? 'text-slate-500' : 'text-slate-300'}`}>{count}</span>
+                </button>
+              );
+            })}
+          </div>
+          <DateFilter value={dateRange} onChange={setDateRange} />
+        </div>
       </div>
 
       {/* List */}
       {filtered.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-100 py-16 text-center">
-          <CalendarCheck size={24} className="text-slate-300 mx-auto mb-3" />
-          <p className="text-sm text-slate-400">No appointments</p>
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm py-16 text-center">
+          <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <CalendarCheck size={22} className="text-slate-300" />
+          </div>
+          <p className="text-sm font-medium text-slate-600">No appointments</p>
+          <p className="text-xs text-slate-400 mt-1">Booked consultations will appear here</p>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-slate-100 divide-y divide-slate-50">
+        <div className="space-y-3">
           {filtered.map((apt) => {
             const initials = apt.caller_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
-            const statusDot = apt.status === 'confirmed' ? 'bg-slate-900' : apt.status === 'completed' ? 'bg-emerald-500' : 'bg-red-400';
             return (
-              <div key={apt.id} className="flex items-center justify-between px-5 py-4">
-                {/* Left: avatar + info */}
-                <div className="flex items-center gap-4 min-w-0">
-                  <div className="w-9 h-9 bg-slate-100 rounded-full flex items-center justify-center text-xs font-semibold text-slate-600 flex-shrink-0">
+              <div
+                key={apt.id}
+                className="bg-white rounded-xl border border-slate-100 shadow-sm hover:shadow-md hover:border-slate-200 transition-all overflow-hidden"
+              >
+                <div className="flex items-center gap-4 px-5 py-4">
+                  {/* Time badge */}
+                  <div className="hidden sm:flex flex-col items-center justify-center bg-violet-50 rounded-xl px-3 py-2 min-w-[72px] flex-shrink-0">
+                    <span className="text-sm font-bold text-violet-700">{apt.appointment_time}</span>
+                    <span className="text-[10px] text-violet-400 font-medium">{apt.appointment_date}</span>
+                  </div>
+
+                  {/* Avatar */}
+                  <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-xs font-semibold text-slate-600 flex-shrink-0 sm:hidden">
                     {initials}
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-slate-900">{apt.caller_name}</p>
-                    <p className="text-xs text-slate-400 capitalize">{apt.case_type} · {apt.caller_phone}</p>
-                  </div>
-                </div>
 
-                {/* Center: date + time */}
-                <div className="hidden sm:flex items-center gap-6 text-sm">
-                  <span className="text-slate-700 font-medium">{apt.appointment_date}</span>
-                  <span className="text-slate-400">{apt.appointment_time}</span>
-                  <span className="text-xs text-slate-400 capitalize">{apt.urgency}</span>
-                </div>
-
-                {/* Right: status + actions */}
-                <div className="flex items-center gap-3">
-                  <span className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 capitalize">
-                    <span className={`w-1.5 h-1.5 rounded-full ${statusDot}`} />
-                    {apt.status}
-                  </span>
-                  {apt.status === 'confirmed' && (
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => handleStatusChange(apt.id, 'completed')}
-                        className="px-3 py-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-colors"
-                      >
-                        Complete
-                      </button>
-                      <button
-                        onClick={() => handleStatusChange(apt.id, 'cancelled')}
-                        className="px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
-                      >
-                        Cancel
-                      </button>
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-semibold text-slate-900">{apt.caller_name}</p>
+                      <StatusBadge status={apt.status} />
                     </div>
-                  )}
+                    <div className="flex items-center gap-3 mt-1 text-xs text-slate-400 flex-wrap">
+                      <span className="capitalize">{apt.case_type}</span>
+                      {apt.caller_phone && (
+                        <>
+                          <span className="text-slate-200">|</span>
+                          <span className="inline-flex items-center gap-1">
+                            <Phone size={10} />
+                            {apt.caller_phone}
+                          </span>
+                        </>
+                      )}
+                      {apt.urgency && apt.urgency !== 'low' && (
+                        <>
+                          <span className="text-slate-200">|</span>
+                          <span className={`capitalize font-medium ${apt.urgency === 'high' ? 'text-red-500' : 'text-amber-500'}`}>
+                            {apt.urgency} priority
+                          </span>
+                        </>
+                      )}
+                      <span className="sm:hidden text-slate-200">|</span>
+                      <span className="sm:hidden">{apt.appointment_date} at {apt.appointment_time}</span>
+                    </div>
+                    {apt.notes && (
+                      <p className="text-xs text-slate-400 mt-1.5 line-clamp-1">{apt.notes}</p>
+                    )}
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    {apt.status === 'confirmed' && (
+                      <>
+                        <button
+                          onClick={() => handleStatusChange(apt.id, 'completed')}
+                          className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-emerald-700 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-colors ring-1 ring-emerald-100"
+                        >
+                          <CheckCircle size={13} />
+                          Complete
+                        </button>
+                        <button
+                          onClick={() => handleStatusChange(apt.id, 'cancelled')}
+                          className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors ring-1 ring-red-100"
+                        >
+                          <XCircle size={13} />
+                          Cancel
+                        </button>
+                      </>
+                    )}
+                    {apt.lead_id && (
+                      <Link to={`/leads/${apt.lead_id}`} className="p-2 hover:bg-slate-50 rounded-lg transition-colors">
+                        <ChevronRight size={16} className="text-slate-300 hover:text-slate-500" />
+                      </Link>
+                    )}
+                  </div>
                 </div>
               </div>
             );

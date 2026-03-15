@@ -4,22 +4,21 @@ import { fetchLeads } from '../services/api';
 import ScoreBadge from '../components/ScoreBadge';
 import StatusBadge from '../components/StatusBadge';
 import DateFilter from '../components/DateFilter';
-import { Search, Download, PhoneIncoming, ChevronRight } from 'lucide-react';
+import { Search, Download, PhoneIncoming, ChevronRight, ArrowRight, Users, Flame, Filter } from 'lucide-react';
 
 const PIPELINE = [
   { key: 'all', label: 'All' },
   { key: 'new', label: 'New' },
-  { key: 'contacted', label: 'Contacted' },
   { key: 'booked', label: 'Booked' },
   { key: 'converted', label: 'Converted' },
   { key: 'closed', label: 'Closed' },
 ];
 
 const SCORE_FILTERS = [
-  { key: 'all_scores', label: 'All Scores' },
-  { key: 'hot', label: 'Hot' },
-  { key: 'warm', label: 'Warm' },
-  { key: 'cold', label: 'Cold' },
+  { key: 'all_scores', label: 'All', icon: null },
+  { key: 'hot', label: 'Hot', color: 'text-red-600 bg-red-50' },
+  { key: 'warm', label: 'Warm', color: 'text-amber-600 bg-amber-50' },
+  { key: 'cold', label: 'Cold', color: 'text-slate-500 bg-slate-50' },
 ];
 
 function filterByDate(leads, dateRange) {
@@ -60,6 +59,22 @@ function exportToCSV(leads) {
   URL.revokeObjectURL(url);
 }
 
+function formatRelativeTime(dateStr) {
+  if (!dateStr) return '';
+  const now = new Date();
+  const date = new Date(dateStr);
+  const diffMs = now - date;
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1) return 'Just now';
+  if (diffMin < 60) return `${diffMin}m ago`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `${diffHr}h ago`;
+  const diffDay = Math.floor(diffHr / 24);
+  if (diffDay === 1) return 'Yesterday';
+  if (diffDay < 7) return `${diffDay}d ago`;
+  return new Date(dateStr).toLocaleDateString();
+}
+
 export default function Leads() {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -72,6 +87,10 @@ export default function Leads() {
   useEffect(() => {
     const q = searchParams.get('search');
     if (q) setSearch(q);
+    const s = searchParams.get('status');
+    if (s && PIPELINE.find(p => p.key === s)) setPipeline(s);
+    const sc = searchParams.get('score');
+    if (sc && SCORE_FILTERS.find(f => f.key === sc)) setScoreFilter(sc);
   }, [searchParams]);
 
   useEffect(() => {
@@ -88,131 +107,180 @@ export default function Leads() {
     loadLeads();
   }, []);
 
-  let filtered = leads
+  const visibleLeads = leads.filter(l => l.status !== 'contacted');
+
+  let filtered = visibleLeads
     .filter((l) => pipeline === 'all' || l.status === pipeline)
     .filter((l) => scoreFilter === 'all_scores' || l.score_label === scoreFilter)
     .filter((l) => !search || l.caller_name?.toLowerCase().includes(search.toLowerCase()) || l.caller_phone?.includes(search));
   filtered = filterByDate(filtered, dateRange);
 
+  const followUpCount = leads.filter(l => l.status === 'contacted').length;
+  const hotCount = visibleLeads.filter(l => l.score_label === 'hot').length;
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="w-6 h-6 border-2 border-slate-900 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-[3px] border-slate-200 border-t-slate-900 rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-5">
-      {/* Controls row */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" />
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Leads</h1>
+          <div className="flex items-center gap-4 mt-2">
+            <span className="text-sm text-slate-400">{visibleLeads.length} total</span>
+            {hotCount > 0 && (
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-red-600 bg-red-50 px-2.5 py-1 rounded-full">
+                <Flame size={11} />
+                {hotCount} hot
+              </span>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {followUpCount > 0 && (
+            <Link
+              to="/follow-ups"
+              className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-amber-700 bg-amber-50 border border-amber-100 rounded-xl hover:bg-amber-100 transition-colors shadow-sm"
+            >
+              {followUpCount} Follow Up{followUpCount !== 1 ? 's' : ''}
+              <ArrowRight size={14} />
+            </Link>
+          )}
+          <button
+            onClick={() => exportToCSV(filtered)}
+            className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-sm"
+          >
+            <Download size={15} />
+            Export
+          </button>
+        </div>
+      </div>
+
+      {/* Filters Bar */}
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm shadow-slate-100/50 p-4 space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="relative flex-1 max-w-sm">
+            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300" />
             <input
               type="text"
-              placeholder="Search leads..."
+              placeholder="Search by name or phone..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-64 pl-9 pr-3 py-2 text-sm bg-white border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-200 placeholder:text-slate-300"
+              className="w-full pl-10 pr-3 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200 focus:border-slate-200 placeholder:text-slate-300 transition-all"
             />
           </div>
           <DateFilter value={dateRange} onChange={setDateRange} />
         </div>
-        <button
-          onClick={() => exportToCSV(filtered)}
-          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-100 rounded-xl hover:bg-slate-50 transition-colors"
-        >
-          <Download size={15} />
-          Export CSV
-        </button>
-      </div>
 
-      {/* Pipeline tabs */}
-      <div className="flex items-center gap-1 bg-slate-50 rounded-xl p-1">
-        {PIPELINE.map((p) => {
-          const count = p.key === 'all' ? leads.length : leads.filter((l) => l.status === p.key).length;
-          return (
-            <button
-              key={p.key}
-              onClick={() => setPipeline(p.key)}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${
-                pipeline === p.key
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'text-slate-400 hover:text-slate-600'
-              }`}
-            >
-              {p.label}
-              <span className={`text-[10px] ${pipeline === p.key ? 'text-slate-500' : 'text-slate-300'}`}>
-                {count}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          {/* Pipeline tabs */}
+          <div className="flex items-center gap-1 bg-slate-50 rounded-xl p-1">
+            {PIPELINE.map((p) => {
+              const count = p.key === 'all' ? visibleLeads.length : visibleLeads.filter((l) => l.status === p.key).length;
+              return (
+                <button
+                  key={p.key}
+                  onClick={() => setPipeline(p.key)}
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${
+                    pipeline === p.key
+                      ? 'bg-white text-slate-900 shadow-sm'
+                      : 'text-slate-400 hover:text-slate-600'
+                  }`}
+                >
+                  {p.label}
+                  <span className={`text-[10px] ${pipeline === p.key ? 'text-slate-500' : 'text-slate-300'}`}>
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
 
-      {/* Score filter */}
-      <div className="flex items-center gap-1.5">
-        {SCORE_FILTERS.map((f) => (
-          <button
-            key={f.key}
-            onClick={() => setScoreFilter(f.key)}
-            className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
-              scoreFilter === f.key
-                ? 'bg-slate-900 text-white'
-                : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
-            }`}
-          >
-            {f.label}
-          </button>
-        ))}
-        <span className="ml-auto text-xs text-slate-400">{filtered.length} lead{filtered.length !== 1 ? 's' : ''}</span>
+          {/* Score filter */}
+          <div className="flex items-center gap-1.5">
+            {SCORE_FILTERS.map((f) => (
+              <button
+                key={f.key}
+                onClick={() => setScoreFilter(f.key)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  scoreFilter === f.key
+                    ? 'bg-slate-900 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+            <span className="ml-2 text-xs text-slate-300">{filtered.length} result{filtered.length !== 1 ? 's' : ''}</span>
+          </div>
+        </div>
       </div>
 
       {/* Table */}
       {filtered.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-100 py-16 text-center">
-          <PhoneIncoming size={28} className="text-slate-300 mx-auto mb-3" />
-          <p className="text-sm font-medium text-slate-500">No leads found</p>
-          <p className="text-xs text-slate-400 mt-1">Try adjusting your filters</p>
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm py-16 text-center">
+          <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <PhoneIncoming size={22} className="text-slate-300" />
+          </div>
+          <p className="text-sm font-medium text-slate-600">No leads found</p>
+          <p className="text-xs text-slate-400 mt-1">Try adjusting your filters or wait for new calls</p>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm shadow-slate-100/50 overflow-hidden">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-slate-50">
-                <th className="text-left px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Client</th>
-                <th className="text-left px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Phone</th>
-                <th className="text-left px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Case</th>
-                <th className="text-left px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Score</th>
-                <th className="text-left px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Status</th>
-                <th className="text-left px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Date</th>
-                <th className="w-8"></th>
+              <tr className="bg-slate-50/50 border-b border-slate-100">
+                <th className="text-left px-5 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Client</th>
+                <th className="text-left px-5 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400 hidden sm:table-cell">Phone</th>
+                <th className="text-left px-5 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400 hidden md:table-cell">Case</th>
+                <th className="text-left px-5 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Score</th>
+                <th className="text-left px-5 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400 hidden sm:table-cell">Status</th>
+                <th className="text-left px-5 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400 hidden lg:table-cell">When</th>
+                <th className="w-10"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-              {filtered.map((lead) => (
-                <tr key={lead.id} className="hover:bg-slate-50/50 transition-colors group">
-                  <td className="px-5 py-3">
-                    <Link to={`/leads/${lead.id}`} className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-[10px] font-semibold text-slate-600">
-                        {lead.caller_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
-                      </div>
-                      <span className="text-sm font-medium text-slate-800 group-hover:text-blue-600 transition-colors">{lead.caller_name}</span>
-                    </Link>
-                  </td>
-                  <td className="px-5 py-3 text-sm text-slate-500">{lead.caller_phone}</td>
-                  <td className="px-5 py-3 text-sm text-slate-500 capitalize">{lead.case_type}</td>
-                  <td className="px-5 py-3"><ScoreBadge score={lead.score} label={lead.score_label} /></td>
-                  <td className="px-5 py-3"><StatusBadge status={lead.status} /></td>
-                  <td className="px-5 py-3 text-sm text-slate-400">{new Date(lead.created_at).toLocaleDateString()}</td>
-                  <td className="px-3 py-3">
-                    <Link to={`/leads/${lead.id}`}>
-                      <ChevronRight size={14} className="text-slate-300 group-hover:text-blue-500 transition-colors" />
-                    </Link>
-                  </td>
-                </tr>
-              ))}
+              {filtered.map((lead) => {
+                const initials = lead.caller_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+                return (
+                  <tr key={lead.id} className="hover:bg-slate-50/70 transition-colors group">
+                    <td className="px-5 py-3.5">
+                      <Link to={`/leads/${lead.id}`} className="flex items-center gap-3">
+                        <div className="relative">
+                          <div className="w-9 h-9 bg-slate-100 rounded-full flex items-center justify-center text-[10px] font-semibold text-slate-600 group-hover:bg-slate-200 transition-colors">
+                            {initials}
+                          </div>
+                          {lead.score_label === 'hot' && (
+                            <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white" />
+                          )}
+                        </div>
+                        <div>
+                          <span className="text-sm font-medium text-slate-800 group-hover:text-blue-600 transition-colors">{lead.caller_name}</span>
+                          {lead.urgency === 'high' && (
+                            <span className="ml-2 text-[10px] font-medium text-red-500 bg-red-50 px-1.5 py-0.5 rounded">Urgent</span>
+                          )}
+                        </div>
+                      </Link>
+                    </td>
+                    <td className="px-5 py-3.5 text-sm text-slate-500 hidden sm:table-cell">{lead.caller_phone}</td>
+                    <td className="px-5 py-3.5 text-sm text-slate-500 capitalize hidden md:table-cell">{lead.case_type}</td>
+                    <td className="px-5 py-3.5"><ScoreBadge score={lead.score} label={lead.score_label} /></td>
+                    <td className="px-5 py-3.5 hidden sm:table-cell"><StatusBadge status={lead.status} /></td>
+                    <td className="px-5 py-3.5 text-xs text-slate-400 hidden lg:table-cell">{formatRelativeTime(lead.created_at)}</td>
+                    <td className="px-3 py-3.5">
+                      <Link to={`/leads/${lead.id}`}>
+                        <ChevronRight size={16} className="text-slate-200 group-hover:text-blue-500 transition-colors" />
+                      </Link>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

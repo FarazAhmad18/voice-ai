@@ -1,35 +1,75 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { fetchLead, updateLead, addCallNote } from '../services/api';
+import { useParams, Link, useLocation } from 'react-router-dom';
+import { fetchLead, updateLead, addCallNote, fetchStaff } from '../services/api';
+import { useFirm } from '../context/FirmContext';
 import ScoreBadge from '../components/ScoreBadge';
 import StatusBadge from '../components/StatusBadge';
-import { ArrowLeft, Phone, Mail, Briefcase, AlertTriangle, CalendarCheck, Clock, Play, FileText, Send, UserCheck, StickyNote, Bell } from 'lucide-react';
+import {
+  ArrowLeft, Phone, Mail, Briefcase, AlertTriangle, CalendarCheck,
+  Clock, FileText, Send, UserCheck, Bell, User, PhoneIncoming,
+  MessageSquare, Mic, ChevronDown, ChevronUp, ExternalLink, Copy,
+} from 'lucide-react';
 
-const STATUS_OPTIONS = ['new', 'contacted', 'booked', 'converted', 'closed'];
+const STATUS_FLOW = [
+  { key: 'new', label: 'New', color: 'emerald' },
+  { key: 'contacted', label: 'Following Up', color: 'amber' },
+  { key: 'booked', label: 'Booked', color: 'violet' },
+  { key: 'converted', label: 'Converted', color: 'teal' },
+  { key: 'closed', label: 'Closed', color: 'slate' },
+];
+
+function formatDuration(seconds) {
+  if (!seconds) return '0s';
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  if (m === 0) return `${s}s`;
+  return `${m}m ${s}s`;
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+}
+
+function daysSince(dateStr) {
+  if (!dateStr) return null;
+  const diff = new Date() - new Date(dateStr);
+  return Math.floor(diff / (1000 * 60 * 60 * 24));
+}
 
 export default function LeadDetail() {
   const { id } = useParams();
+  const location = useLocation();
+  const { labels } = useFirm();
   const [lead, setLead] = useState(null);
+  const [staff, setStaff] = useState([]);
   const [loading, setLoading] = useState(true);
   const [noteText, setNoteText] = useState('');
   const [savingNote, setSavingNote] = useState(false);
-  const [assignedAttorney, setAssignedAttorney] = useState('');
   const [followUpDate, setFollowUpDate] = useState('');
+  const [expandedCalls, setExpandedCalls] = useState({});
+  const [copied, setCopied] = useState('');
+
+  const cameFromFollowUps = location.state?.from === 'follow-ups';
 
   useEffect(() => {
-    async function loadLead() {
+    async function loadData() {
       try {
-        const data = await fetchLead(id);
-        setLead(data);
-        setAssignedAttorney(data.assigned_attorney || '');
-        setFollowUpDate(data.follow_up_date || '');
+        const [leadData, staffData] = await Promise.all([
+          fetchLead(id),
+          fetchStaff().catch(() => []),
+        ]);
+        setLead(leadData);
+        setStaff(staffData);
+        setFollowUpDate(leadData.follow_up_date || '');
       } catch (err) {
         console.error('Failed to fetch lead:', err);
       } finally {
         setLoading(false);
       }
     }
-    loadLead();
+    loadData();
   }, [id]);
 
   async function handleStatusChange(newStatus) {
@@ -41,13 +81,12 @@ export default function LeadDetail() {
     }
   }
 
-  async function handleAssignAttorney() {
-    if (!assignedAttorney.trim()) return;
+  async function handleAssignStaff(staffId) {
     try {
-      await updateLead(id, { assigned_attorney: assignedAttorney });
-      setLead((prev) => ({ ...prev, assigned_attorney: assignedAttorney }));
+      await updateLead(id, { assigned_staff_id: staffId || null });
+      setLead((prev) => ({ ...prev, assigned_staff_id: staffId || null }));
     } catch (err) {
-      console.error('Failed to assign attorney:', err);
+      console.error('Failed to assign staff:', err);
     }
   }
 
@@ -78,10 +117,16 @@ export default function LeadDetail() {
     }
   }
 
+  function copyToClipboard(text, label) {
+    navigator.clipboard.writeText(text);
+    setCopied(label);
+    setTimeout(() => setCopied(''), 2000);
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="w-6 h-6 border-2 border-slate-900 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-[3px] border-slate-200 border-t-slate-900 rounded-full animate-spin" />
       </div>
     );
   }
@@ -96,233 +141,417 @@ export default function LeadDetail() {
   }
 
   const initials = lead.caller_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+  const activeStaff = staff.filter(s => s.is_active);
+  const assignedStaffMember = staff.find(s => s.id === lead.assigned_staff_id);
+  const currentStatusIdx = STATUS_FLOW.findIndex(s => s.key === lead.status);
+  const days = daysSince(lead.created_at);
 
   return (
-    <div className="max-w-6xl mx-auto space-y-5">
+    <div className="space-y-6">
       {/* Back */}
-      <Link to="/leads" className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-600 transition-colors">
+      <Link
+        to={cameFromFollowUps ? '/follow-ups' : '/leads'}
+        className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-600 transition-colors"
+      >
         <ArrowLeft size={15} />
-        Leads
+        {cameFromFollowUps ? 'Follow Ups' : 'Leads'}
       </Link>
 
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center text-base font-semibold text-white">
-            {initials}
-          </div>
-          <div>
-            <h1 className="text-xl font-semibold text-slate-900 tracking-tight">{lead.caller_name}</h1>
-            <p className="text-sm text-slate-400 capitalize">{lead.case_type}</p>
+      {/* Header Card */}
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm shadow-slate-100/50 overflow-hidden">
+        <div className="p-6">
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 bg-gradient-to-br from-slate-700 to-slate-900 rounded-2xl flex items-center justify-center text-lg font-bold text-white shadow-lg shadow-slate-900/20">
+                {initials}
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-slate-900 tracking-tight">{lead.caller_name}</h1>
+                <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+                  {lead.caller_phone && (
+                    <button
+                      onClick={() => copyToClipboard(lead.caller_phone, 'phone')}
+                      className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-blue-600 transition-colors"
+                    >
+                      <Phone size={13} />
+                      {lead.caller_phone}
+                      {copied === 'phone' && <span className="text-[10px] text-emerald-500">Copied!</span>}
+                    </button>
+                  )}
+                  {lead.caller_email && lead.caller_email !== 'Not provided' && (
+                    <button
+                      onClick={() => copyToClipboard(lead.caller_email, 'email')}
+                      className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-blue-600 transition-colors"
+                    >
+                      <Mail size={13} />
+                      {lead.caller_email}
+                      {copied === 'email' && <span className="text-[10px] text-emerald-500">Copied!</span>}
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <ScoreBadge score={lead.score} label={lead.score_label} />
+              <StatusBadge status={lead.status} />
+            </div>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <ScoreBadge score={lead.score} label={lead.score_label} />
-          <StatusBadge status={lead.status} />
+
+        {/* Status Pipeline Progress */}
+        <div className="px-6 py-4 bg-slate-50/50 border-t border-slate-100">
+          <div className="flex items-center gap-1">
+            {STATUS_FLOW.map((stage, idx) => {
+              const isActive = lead.status === stage.key;
+              const isPast = idx < currentStatusIdx;
+              const colorMap = {
+                emerald: { active: 'bg-emerald-500', past: 'bg-emerald-200', dot: 'ring-emerald-500' },
+                amber: { active: 'bg-amber-500', past: 'bg-amber-200', dot: 'ring-amber-500' },
+                violet: { active: 'bg-violet-500', past: 'bg-violet-200', dot: 'ring-violet-500' },
+                teal: { active: 'bg-teal-500', past: 'bg-teal-200', dot: 'ring-teal-500' },
+                slate: { active: 'bg-slate-500', past: 'bg-slate-200', dot: 'ring-slate-500' },
+              };
+              const colors = colorMap[stage.color];
+              return (
+                <button
+                  key={stage.key}
+                  onClick={() => handleStatusChange(stage.key)}
+                  className="flex-1 group"
+                >
+                  <div className={`h-2 rounded-full transition-all ${
+                    isActive ? colors.active :
+                    isPast ? colors.past :
+                    'bg-slate-100 group-hover:bg-slate-200'
+                  }`} />
+                  <p className={`text-[11px] mt-2 text-center font-medium transition-colors ${
+                    isActive ? 'text-slate-900' : 'text-slate-400 group-hover:text-slate-600'
+                  }`}>
+                    {stage.label}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        {/* Left sidebar */}
-        <div className="space-y-4">
-          {/* Contact */}
-          <div className="bg-white rounded-2xl border border-slate-100 p-5 space-y-4">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Contact</h3>
-            <div className="space-y-3">
-              {[
-                { icon: Phone, label: 'Phone', value: lead.caller_phone, color: 'text-blue-600 bg-blue-50' },
-                { icon: Mail, label: 'Email', value: lead.caller_email || 'Not provided', color: 'text-violet-600 bg-violet-50' },
-                { icon: Briefcase, label: 'Case Type', value: lead.case_type, color: 'text-amber-600 bg-amber-50' },
-                { icon: AlertTriangle, label: 'Urgency', value: lead.urgency, color: 'text-red-600 bg-red-50' },
-                { icon: CalendarCheck, label: 'Booked', value: lead.appointment_booked ? 'Yes' : 'No', color: 'text-emerald-600 bg-emerald-50' },
-                { icon: Clock, label: 'First Contact', value: new Date(lead.created_at).toLocaleDateString(), color: 'text-slate-500 bg-slate-50' },
-              ].map(({ icon: Icon, label, value, color }) => (
-                <div key={label} className="flex items-center gap-3">
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${color}`}>
-                    <Icon size={14} />
-                  </div>
-                  <div>
-                    <p className="text-[11px] text-slate-400">{label}</p>
-                    <p className="text-sm font-medium text-slate-800 capitalize">{value}</p>
-                  </div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left Sidebar */}
+        <div className="lg:col-span-4 space-y-5">
+          {/* Lead Info Card */}
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm shadow-slate-100/50 overflow-hidden">
+            <div className="px-5 py-4 border-b border-slate-100">
+              <h3 className="text-sm font-semibold text-slate-900">Lead Details</h3>
+            </div>
+            <div className="p-5 space-y-4">
+              <InfoRow icon={Briefcase} label={labels.case} value={lead.case_type} iconColor="text-amber-500 bg-amber-50" />
+              <InfoRow icon={AlertTriangle} label="Urgency" value={lead.urgency} iconColor="text-red-500 bg-red-50"
+                valueClass={lead.urgency === 'high' ? 'text-red-600 font-semibold' : ''} />
+              <InfoRow icon={CalendarCheck} label="Appointment" value={lead.appointment_booked ? 'Booked' : 'Not booked'} iconColor="text-violet-500 bg-violet-50"
+                valueClass={lead.appointment_booked ? 'text-emerald-600' : 'text-slate-400'} />
+              <InfoRow icon={PhoneIncoming} label="Source" value={lead.source || 'Phone'} iconColor="text-blue-500 bg-blue-50" />
+              <InfoRow icon={Clock} label="First Contact" value={`${new Date(lead.created_at).toLocaleDateString()}${days !== null ? ` (${days}d ago)` : ''}`} iconColor="text-slate-400 bg-slate-50" />
+              {lead.sentiment && (
+                <InfoRow icon={MessageSquare} label="Sentiment" value={lead.sentiment} iconColor="text-indigo-500 bg-indigo-50" />
+              )}
+            </div>
+          </div>
+
+          {/* Assign Staff */}
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm shadow-slate-100/50 overflow-hidden">
+            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-slate-900">Assigned {labels.staff}</h3>
+              {assignedStaffMember && (
+                <span className="text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Assigned</span>
+              )}
+            </div>
+            <div className="p-3">
+              {activeStaff.length > 0 ? (
+                <div className="space-y-1">
+                  {activeStaff.map(s => {
+                    const isAssigned = lead.assigned_staff_id === s.id;
+                    return (
+                      <button
+                        key={s.id}
+                        onClick={() => handleAssignStaff(isAssigned ? null : s.id)}
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all text-left ${
+                          isAssigned
+                            ? 'bg-slate-900 text-white shadow-md shadow-slate-900/20'
+                            : 'hover:bg-slate-50 text-slate-600'
+                        }`}
+                      >
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold ${
+                          isAssigned ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
+                        }`}>
+                          {s.name?.charAt(0)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium truncate">{s.name}</p>
+                          {s.specialization && (
+                            <p className={`text-[11px] ${isAssigned ? 'text-white/60' : 'text-slate-400'}`}>{s.specialization}</p>
+                          )}
+                        </div>
+                        {isAssigned && <UserCheck size={15} />}
+                      </button>
+                    );
+                  })}
                 </div>
-              ))}
+              ) : (
+                <div className="px-3 py-4 text-center">
+                  <p className="text-sm text-slate-400">No {labels.staff.toLowerCase()} available</p>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Pipeline status */}
-          <div className="bg-white rounded-2xl border border-slate-100 p-5">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Pipeline</h3>
-            <div className="flex flex-wrap gap-1.5">
-              {STATUS_OPTIONS.map((status) => (
+          {/* Follow-up Date */}
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm shadow-slate-100/50 overflow-hidden">
+            <div className="px-5 py-4 border-b border-slate-100">
+              <h3 className="text-sm font-semibold text-slate-900">Follow-up Reminder</h3>
+            </div>
+            <div className="p-5">
+              <div className="flex gap-2">
+                <input
+                  type="date"
+                  value={followUpDate}
+                  onChange={(e) => setFollowUpDate(e.target.value)}
+                  className="flex-1 px-3 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200 transition-all"
+                />
                 <button
-                  key={status}
-                  onClick={() => handleStatusChange(status)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-all ${
-                    lead.status === status
-                      ? 'bg-slate-900 text-white'
-                      : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
-                  }`}
+                  onClick={handleSetFollowUp}
+                  disabled={!followUpDate}
+                  className="px-4 py-2.5 bg-slate-900 text-white text-xs font-medium rounded-xl hover:bg-slate-800 transition-colors disabled:opacity-30"
                 >
-                  {status}
+                  <Bell size={14} />
                 </button>
-              ))}
+              </div>
+              {lead.follow_up_date && (
+                <div className="mt-3 flex items-center gap-2 px-3 py-2 bg-emerald-50 rounded-lg">
+                  <CalendarCheck size={13} className="text-emerald-500" />
+                  <p className="text-xs font-medium text-emerald-700">Reminder set for {lead.follow_up_date}</p>
+                </div>
+              )}
             </div>
-          </div>
-
-          {/* Assign Attorney */}
-          <div className="bg-white rounded-2xl border border-slate-100 p-5">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
-              <UserCheck size={12} className="inline mr-1" />
-              Assign Attorney
-            </h3>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                placeholder="Attorney name..."
-                value={assignedAttorney}
-                onChange={(e) => setAssignedAttorney(e.target.value)}
-                className="flex-1 px-3 py-2 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 placeholder:text-slate-300"
-              />
-              <button
-                onClick={handleAssignAttorney}
-                className="px-3 py-2 bg-slate-900 text-white text-xs font-medium rounded-xl hover:bg-slate-800 transition-colors"
-              >
-                Assign
-              </button>
-            </div>
-          </div>
-
-          {/* Follow-up */}
-          <div className="bg-white rounded-2xl border border-slate-100 p-5">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
-              <Bell size={12} className="inline mr-1" />
-              Follow-up Reminder
-            </h3>
-            <div className="flex gap-2">
-              <input
-                type="date"
-                value={followUpDate}
-                onChange={(e) => setFollowUpDate(e.target.value)}
-                className="flex-1 px-3 py-2 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100"
-              />
-              <button
-                onClick={handleSetFollowUp}
-                className="px-3 py-2 bg-slate-900 text-white text-xs font-medium rounded-xl hover:bg-slate-800 transition-colors"
-              >
-                Set
-              </button>
-            </div>
-            {lead.follow_up_date && (
-              <p className="text-xs text-emerald-600 mt-2">Follow-up set for {lead.follow_up_date}</p>
-            )}
           </div>
         </div>
 
-        {/* Right: Calls + Notes */}
-        <div className="lg:col-span-2 space-y-4">
-          {/* Call Notes */}
-          <div className="bg-white rounded-2xl border border-slate-100">
-            <div className="px-5 py-4 border-b border-slate-50 flex items-center gap-2">
-              <StickyNote size={15} className="text-slate-400" />
-              <h3 className="text-sm font-semibold text-slate-800">Call Notes</h3>
+        {/* Main Content */}
+        <div className="lg:col-span-8 space-y-5">
+          {/* AI Summary */}
+          {lead.notes && (
+            <div className="relative overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-100/50 p-5">
+              <div className="absolute top-3 right-3 w-20 h-20 bg-blue-100/30 rounded-full blur-2xl" />
+              <div className="relative">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-6 h-6 bg-blue-500 rounded-md flex items-center justify-center">
+                    <MessageSquare size={12} className="text-white" />
+                  </div>
+                  <h3 className="text-xs font-bold text-blue-700 uppercase tracking-wider">AI Call Summary</h3>
+                </div>
+                <p className="text-sm text-blue-900 leading-relaxed">{lead.notes}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Notes Section */}
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm shadow-slate-100/50 overflow-hidden">
+            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <MessageSquare size={15} className="text-slate-400" />
+                <h3 className="text-sm font-semibold text-slate-900">Notes</h3>
+                {lead.call_notes?.length > 0 && (
+                  <span className="text-[11px] text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full">{lead.call_notes.length}</span>
+                )}
+              </div>
             </div>
             <div className="p-5">
               {/* Add note */}
-              <div className="flex gap-2 mb-4">
+              <div className="flex gap-2 mb-5">
                 <input
                   type="text"
                   placeholder="Add a note about this lead..."
                   value={noteText}
                   onChange={(e) => setNoteText(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleAddNote()}
-                  className="flex-1 px-4 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 placeholder:text-slate-300"
+                  className="flex-1 px-4 py-3 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200 placeholder:text-slate-300 transition-all"
                 />
                 <button
                   onClick={handleAddNote}
                   disabled={savingNote || !noteText.trim()}
-                  className="px-4 py-2.5 bg-slate-900 text-white text-sm font-medium rounded-xl hover:bg-slate-800 transition-colors disabled:opacity-40"
+                  className="px-4 py-3 bg-slate-900 text-white text-sm font-medium rounded-xl hover:bg-slate-800 transition-all disabled:opacity-30 shadow-sm shadow-slate-900/20"
                 >
                   <Send size={15} />
                 </button>
               </div>
 
-              {/* Notes list */}
+              {/* Notes timeline */}
               {lead.call_notes && lead.call_notes.length > 0 ? (
-                <div className="space-y-2">
-                  {lead.call_notes.map((note, i) => (
-                    <div key={i} className="px-4 py-3 bg-slate-50 rounded-xl">
-                      <p className="text-sm text-slate-700">{note.text}</p>
-                      <p className="text-xs text-slate-400 mt-1">{new Date(note.created_at).toLocaleString()}</p>
-                    </div>
-                  ))}
+                <div className="relative">
+                  <div className="absolute left-[15px] top-2 bottom-2 w-px bg-slate-100" />
+                  <div className="space-y-3">
+                    {[...lead.call_notes].reverse().map((note, i) => (
+                      <div key={i} className="flex gap-3 relative">
+                        <div className="w-[30px] h-[30px] bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0 z-10">
+                          <MessageSquare size={12} className="text-slate-400" />
+                        </div>
+                        <div className="flex-1 bg-slate-50 rounded-xl px-4 py-3">
+                          <p className="text-sm text-slate-700 leading-relaxed">{note.text}</p>
+                          <p className="text-[11px] text-slate-400 mt-1.5">
+                            {note.author && <span className="font-medium text-slate-500">{note.author}</span>}
+                            {note.author && ' · '}
+                            {formatDate(note.created_at)}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ) : (
-                <p className="text-sm text-slate-400">No notes yet</p>
-              )}
-
-              {/* AI Notes */}
-              {lead.notes && (
-                <div className="mt-4 px-4 py-3 bg-blue-50 rounded-xl">
-                  <p className="text-xs font-semibold text-blue-600 mb-1">AI Summary</p>
-                  <p className="text-sm text-blue-800">{lead.notes}</p>
-                </div>
+                !lead.notes && (
+                  <div className="text-center py-6">
+                    <MessageSquare size={20} className="text-slate-200 mx-auto mb-2" />
+                    <p className="text-sm text-slate-400">No notes yet</p>
+                  </div>
+                )
               )}
             </div>
           </div>
 
           {/* Call History */}
-          <div className="bg-white rounded-2xl border border-slate-100">
-            <div className="px-5 py-4 border-b border-slate-50">
-              <h3 className="text-sm font-semibold text-slate-800">Call History</h3>
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm shadow-slate-100/50 overflow-hidden">
+            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Phone size={15} className="text-slate-400" />
+                <h3 className="text-sm font-semibold text-slate-900">Call History</h3>
+                {lead.calls?.length > 0 && (
+                  <span className="text-[11px] text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full">{lead.calls.length}</span>
+                )}
+              </div>
             </div>
             {!lead.calls || lead.calls.length === 0 ? (
-              <div className="py-10 text-center">
-                <Phone size={20} className="text-slate-300 mx-auto mb-2" />
-                <p className="text-sm text-slate-400">No call records</p>
+              <div className="py-14 text-center">
+                <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                  <Phone size={20} className="text-slate-300" />
+                </div>
+                <p className="text-sm font-medium text-slate-500">No call records</p>
+                <p className="text-xs text-slate-400 mt-1">Calls will appear here after the AI handles them</p>
               </div>
             ) : (
-              <div className="divide-y divide-slate-50">
-                {lead.calls.map((call) => (
-                  <div key={call.id} className="p-5 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-slate-800">
-                          {new Date(call.created_at).toLocaleString()}
-                        </p>
-                        <p className="text-xs text-slate-400">
-                          {Math.round((call.duration || 0) / 60)} min · {call.ended_reason}
-                        </p>
+              <div className="divide-y divide-slate-100">
+                {lead.calls.map((call) => {
+                  const isExpanded = expandedCalls[call.id];
+                  return (
+                    <div key={call.id} className="group">
+                      {/* Call header */}
+                      <div
+                        className="flex items-center gap-4 px-5 py-4 cursor-pointer hover:bg-slate-50/50 transition-colors"
+                        onClick={() => setExpandedCalls(prev => ({ ...prev, [call.id]: !prev[call.id] }))}
+                      >
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                          call.ended_reason === 'user_hangup' || call.ended_reason === 'agent_hangup'
+                            ? 'bg-blue-50' : 'bg-amber-50'
+                        }`}>
+                          <Mic size={16} className={
+                            call.ended_reason === 'user_hangup' || call.ended_reason === 'agent_hangup'
+                              ? 'text-blue-500' : 'text-amber-500'
+                          } />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-medium text-slate-900">{formatDate(call.created_at)}</p>
+                            {call.sentiment && (
+                              <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-md capitalize ${
+                                call.sentiment === 'positive' ? 'bg-emerald-50 text-emerald-600' :
+                                call.sentiment === 'negative' || call.sentiment === 'distressed' ? 'bg-red-50 text-red-600' :
+                                'bg-slate-50 text-slate-500'
+                              }`}>
+                                {call.sentiment}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-3 mt-0.5">
+                            <span className="text-xs text-slate-400">{formatDuration(call.duration)}</span>
+                            <span className="text-xs text-slate-300">·</span>
+                            <span className="text-xs text-slate-400 capitalize">{call.ended_reason?.replace(/_/g, ' ')}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {call.recording_url && (
+                            <span className="text-[10px] font-medium text-blue-500 bg-blue-50 px-2 py-1 rounded-md">Recording</span>
+                          )}
+                          {isExpanded ? <ChevronUp size={16} className="text-slate-300" /> : <ChevronDown size={16} className="text-slate-300" />}
+                        </div>
                       </div>
-                      {call.recording_url && (
-                        <audio controls className="h-8 w-48" src={call.recording_url} />
+
+                      {/* Expanded content */}
+                      {isExpanded && (
+                        <div className="px-5 pb-5 space-y-4">
+                          {call.summary && (
+                            <div className="bg-blue-50 rounded-xl px-4 py-3">
+                              <p className="text-[11px] font-bold text-blue-600 uppercase tracking-wider mb-1">AI Summary</p>
+                              <p className="text-sm text-blue-900 leading-relaxed">{call.summary}</p>
+                            </div>
+                          )}
+
+                          {call.recording_url && (
+                            <div className="bg-slate-50 rounded-xl px-4 py-3">
+                              <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Recording</p>
+                              <audio controls className="w-full h-10" src={call.recording_url} />
+                            </div>
+                          )}
+
+                          {call.transcript && (
+                            <div className="bg-slate-50 rounded-xl overflow-hidden">
+                              <div className="px-4 py-3 border-b border-slate-100">
+                                <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Transcript</p>
+                              </div>
+                              <div className="px-4 py-3 max-h-72 overflow-y-auto">
+                                <pre className="text-sm text-slate-700 whitespace-pre-wrap font-sans leading-relaxed">{call.transcript}</pre>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       )}
                     </div>
-
-                    {call.summary && (
-                      <div className="px-4 py-3 bg-blue-50 rounded-xl">
-                        <p className="text-xs font-semibold text-blue-600 mb-1">AI Summary</p>
-                        <p className="text-sm text-blue-800 leading-relaxed">{call.summary}</p>
-                      </div>
-                    )}
-
-                    {call.transcript && (
-                      <details className="group">
-                        <summary className="flex items-center gap-1.5 cursor-pointer text-xs font-medium text-slate-400 hover:text-slate-600">
-                          <FileText size={12} />
-                          View Transcript
-                        </summary>
-                        <div className="mt-2 p-4 bg-slate-50 rounded-xl max-h-64 overflow-y-auto">
-                          <pre className="text-sm text-slate-700 whitespace-pre-wrap font-sans leading-relaxed">{call.transcript}</pre>
-                        </div>
-                      </details>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
+
+          {/* Intake Answers */}
+          {lead.intake_answers && lead.intake_answers.length > 0 && (
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm shadow-slate-100/50 overflow-hidden">
+              <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-2">
+                <FileText size={15} className="text-slate-400" />
+                <h3 className="text-sm font-semibold text-slate-900">Intake Answers</h3>
+                <span className="text-[11px] text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full">{lead.intake_answers.length}</span>
+              </div>
+              <div className="divide-y divide-slate-50">
+                {lead.intake_answers.map((qa, i) => (
+                  <div key={i} className="px-5 py-4">
+                    <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">{qa.question}</p>
+                    <p className="text-sm text-slate-800 mt-1 font-medium">{qa.answer}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+function InfoRow({ icon: Icon, label, value, iconColor, valueClass = '' }) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${iconColor}`}>
+        <Icon size={15} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[11px] text-slate-400 uppercase tracking-wider">{label}</p>
+        <p className={`text-sm font-medium text-slate-800 capitalize ${valueClass}`}>{value}</p>
       </div>
     </div>
   );

@@ -9,7 +9,7 @@ const logger = require('../services/logger');
 // Client-facing settings — admin can update their own firm
 const CLIENT_UPDATABLE = ['name', 'email', 'phone', 'address', 'website', 'business_hours'];
 
-router.use(authenticate, requireRole('admin'));
+router.use(authenticate, requireRole('admin', 'super_admin'));
 
 // PATCH /api/settings — update own firm's settings
 router.patch('/', validateBody(CLIENT_UPDATABLE), async (req, res) => {
