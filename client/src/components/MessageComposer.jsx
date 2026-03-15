@@ -80,7 +80,8 @@ export default function MessageComposer({ leadId, onMessageSent }) {
           <button
             key={key}
             onClick={() => setChannel(key)}
-            className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-all ${
+            disabled={sending}
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-all disabled:opacity-50 ${
               channel === key
                 ? 'text-slate-900 border-b-2 border-slate-900 bg-slate-50/50'
                 : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50/30'
@@ -101,7 +102,8 @@ export default function MessageComposer({ leadId, onMessageSent }) {
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
             onKeyDown={handleKeyDown}
-            className="w-full px-4 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200 placeholder:text-slate-300 transition-all"
+            disabled={sending}
+            className="w-full px-4 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200 placeholder:text-slate-300 transition-all disabled:opacity-50"
           />
         )}
 
@@ -115,7 +117,8 @@ export default function MessageComposer({ leadId, onMessageSent }) {
             value={body}
             onChange={(e) => setBody(e.target.value)}
             onKeyDown={handleKeyDown}
-            className="flex-1 px-4 py-3 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200 placeholder:text-slate-300 transition-all resize-none min-h-[44px]"
+            disabled={sending}
+            className="flex-1 px-4 py-3 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200 placeholder:text-slate-300 transition-all resize-none min-h-[44px] disabled:opacity-50"
           />
           <button
             onClick={handleSend}

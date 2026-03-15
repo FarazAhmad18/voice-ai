@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link, useLocation } from 'react-router-dom';
+import { useParams, Link, useLocation, useSearchParams } from 'react-router-dom';
 import { fetchLead, updateLead, addCallNote, fetchStaff, fetchMessages } from '../services/api';
 import { useFirm } from '../context/FirmContext';
 import { toast } from 'sonner';
@@ -45,6 +45,7 @@ function daysSince(dateStr) {
 export default function LeadDetail() {
   const { id } = useParams();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const { labels } = useFirm();
   const [lead, setLead] = useState(null);
   const [staff, setStaff] = useState([]);
@@ -56,7 +57,7 @@ export default function LeadDetail() {
   const [expandedCalls, setExpandedCalls] = useState({});
   const [copied, setCopied] = useState('');
 
-  const cameFromFollowUps = location.state?.from === 'follow-ups';
+  const cameFromFollowUps = location.state?.from === 'follow-ups' || searchParams.get('from') === 'follow-ups';
 
   useEffect(() => {
     async function loadData() {
@@ -161,7 +162,7 @@ export default function LeadDetail() {
     );
   }
 
-  const initials = lead.caller_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+  const initials = ((lead.caller_name || 'U').split(' ').map(n => n?.[0] || '').join('').slice(0, 2).toUpperCase()) || '?';
   const activeStaff = staff.filter(s => s.is_active);
   const assignedStaffMember = staff.find(s => s.id === lead.assigned_staff_id);
   const currentStatusIdx = STATUS_FLOW.findIndex(s => s.key === lead.status);

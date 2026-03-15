@@ -31,7 +31,9 @@ async function apiFetch(path, options = {}) {
   const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
 
   if (res.status === 401) {
-    window.location.href = '/login';
+    const { toast } = await import('sonner');
+    toast.error('Session expired. Redirecting to login...');
+    setTimeout(() => { window.location.href = '/login'; }, 2000);
     throw new Error('Session expired');
   }
 

@@ -136,7 +136,7 @@ export default function Navbar() {
     }
   }
 
-  const initials = user?.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || '?';
+  const initials = ((user?.name || 'U').split(' ').map(n => n?.[0] || '').join('').slice(0, 2).toUpperCase()) || '?';
 
   return (
     <nav className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-slate-200/80">
@@ -234,7 +234,7 @@ export default function Navbar() {
                       </div>
                     ) : (
                       notifications.slice(0, 10).map((lead) => {
-                        const initials = lead.caller_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || '??';
+                        const initials = ((lead.caller_name || 'U').split(' ').map(n => n?.[0] || '').join('').slice(0, 2).toUpperCase()) || '?';
                         return (
                           <Link
                             key={lead.id}

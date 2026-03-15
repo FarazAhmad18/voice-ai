@@ -46,22 +46,26 @@ export default function Dashboard() {
   const [leads, setLeads] = useState([]);
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  async function loadData() {
+    setError(null);
+    try {
+      const [leadsData, aptsData] = await Promise.all([
+        fetchLeads(),
+        fetchAppointments(),
+      ]);
+      setLeads(leadsData);
+      setAppointments(aptsData);
+    } catch (err) {
+      console.error('Failed to load dashboard data:', err);
+      setError(err.message || 'Failed to load dashboard data');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
-    async function loadData() {
-      try {
-        const [leadsData, aptsData] = await Promise.all([
-          fetchLeads(),
-          fetchAppointments(),
-        ]);
-        setLeads(leadsData);
-        setAppointments(aptsData);
-      } catch (err) {
-        console.error('Failed to load dashboard data:', err);
-      } finally {
-        setLoading(false);
-      }
-    }
     loadData();
   }, []);
 
@@ -136,6 +140,17 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-8">
+      {error && (
+        <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <AlertCircle size={16} className="text-red-500" />
+            <p className="text-sm text-red-700">{error}</p>
+          </div>
+          <button onClick={loadData} className="text-xs font-medium text-red-600 hover:text-red-700">
+            Retry
+          </button>
+        </div>
+      )}
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-6 sm:p-8">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMSIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSIvPjwvc3ZnPg==')] opacity-50" />
@@ -205,7 +220,7 @@ export default function Dashboard() {
             ) : (
               <div className="divide-y divide-slate-50">
                 {needsAttention.slice(0, 6).map((lead, idx) => {
-                  const initials = lead.caller_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+                  const initials = ((lead.caller_name || 'U').split(' ').map(n => n?.[0] || '').join('').slice(0, 2).toUpperCase()) || '?';
                   const reasonColors = {
                     'Hot lead': 'bg-red-500',
                     'Overdue follow-up': 'bg-amber-500',
@@ -279,7 +294,7 @@ export default function Dashboard() {
             ) : (
               <div className="divide-y divide-slate-50">
                 {todayApts.map((apt) => {
-                  const initials = apt.caller_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+                  const initials = ((apt.caller_name || 'U').split(' ').map(n => n?.[0] || '').join('').slice(0, 2).toUpperCase()) || '?';
                   return (
                     <div key={apt.id} className="flex items-center gap-4 px-6 py-4">
                       <div className="flex items-center gap-2 w-20 flex-shrink-0">

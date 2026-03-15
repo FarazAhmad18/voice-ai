@@ -13,16 +13,36 @@ router.use(authenticate);
 // GET /api/appointments
 router.get('/', async (req, res) => {
   if (!supabase) return res.status(503).json({ error: 'Database unavailable' });
-  if (!req.firm) return res.status(400).json({ error: 'No firm associated with user' });
 
-  const { data, error } = await supabase
+  const limit = Math.min(Math.max(parseInt(req.query.limit) || 100, 1), 500);
+  const offset = Math.max(parseInt(req.query.offset) || 0, 0);
+
+  // Super admins with no firm can query all appointments or filter by firm_id query param
+  let firmId;
+  if (req.user.role === 'super_admin' && !req.firm) {
+    firmId = req.query.firm_id || null;
+  } else if (req.firm) {
+    firmId = req.firm.id;
+  } else {
+    return res.status(400).json({ error: 'No firm associated with user' });
+  }
+
+  let query = supabase
     .from('appointments')
-    .select('*')
-    .eq('firm_id', req.firm.id)
-    .order('appointment_date', { ascending: true });
+    .select('*', { count: 'exact' });
+
+  if (firmId) {
+    query = query.eq('firm_id', firmId);
+  }
+
+  query = query
+    .order('appointment_date', { ascending: true })
+    .range(offset, offset + limit - 1);
+
+  const { data, error, count } = await query;
 
   if (error) return res.status(500).json({ error: error.message });
-  return res.json(data);
+  return res.json({ data, total: count });
 });
 
 // PATCH /api/appointments/:id

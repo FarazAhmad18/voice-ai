@@ -6,7 +6,7 @@ import ScoreBadge from '../components/ScoreBadge';
 import DateFilter from '../components/DateFilter';
 import {
   Search, UserCheck, ChevronRight, CalendarCheck, Clock,
-  AlertTriangle, ArrowUpRight, Phone, MessageSquare,
+  AlertTriangle, ArrowUpRight, Phone, MessageSquare, AlertCircle,
 } from 'lucide-react';
 
 function filterByDate(leads, dateRange) {
@@ -45,21 +45,31 @@ function daysUntil(dateStr) {
 export default function FollowUps() {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [search, setSearch] = useState('');
+  const [searchInput, setSearchInput] = useState('');
   const [dateRange, setDateRange] = useState('all');
   const [scoreFilter, setScoreFilter] = useState('all');
 
   useEffect(() => {
-    async function loadLeads() {
-      try {
-        const data = await fetchLeads();
-        setLeads(data.filter(l => l.status === 'contacted'));
-      } catch (err) {
-        console.error('Failed to fetch leads:', err);
-      } finally {
-        setLoading(false);
-      }
+    const timer = setTimeout(() => setSearch(searchInput), 300);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
+  async function loadLeads() {
+    setError(null);
+    try {
+      const data = await fetchLeads();
+      setLeads(data.filter(l => l.status === 'contacted'));
+    } catch (err) {
+      console.error('Failed to fetch leads:', err);
+      setError(err.message || 'Failed to fetch leads');
+    } finally {
+      setLoading(false);
     }
+  }
+
+  useEffect(() => {
     loadLeads();
   }, []);
 
@@ -107,6 +117,17 @@ export default function FollowUps() {
 
   return (
     <div className="space-y-6">
+      {error && (
+        <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <AlertCircle size={16} className="text-red-500" />
+            <p className="text-sm text-red-700">{error}</p>
+          </div>
+          <button onClick={loadLeads} className="text-xs font-medium text-red-600 hover:text-red-700">
+            Retry
+          </button>
+        </div>
+      )}
       {/* Header */}
       <div>
         <div className="flex items-center gap-3">
@@ -146,8 +167,8 @@ export default function FollowUps() {
             <input
               type="text"
               placeholder="Search follow-ups..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
               className="w-full pl-10 pr-3 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200 focus:border-slate-200 placeholder:text-slate-300 transition-all"
             />
           </div>
@@ -187,7 +208,7 @@ export default function FollowUps() {
       ) : (
         <div className="space-y-3">
           {filtered.map((lead) => {
-            const initials = lead.caller_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+            const initials = ((lead.caller_name || 'U').split(' ').map(n => n?.[0] || '').join('').slice(0, 2).toUpperCase()) || '?';
             const days = daysSince(lead.created_at);
             const isOverdue = lead.follow_up_date && lead.follow_up_date <= today;
             const daysLeft = lead.follow_up_date ? daysUntil(lead.follow_up_date) : null;
@@ -196,8 +217,7 @@ export default function FollowUps() {
             return (
               <Link
                 key={lead.id}
-                to={`/leads/${lead.id}`}
-                state={{ from: 'follow-ups' }}
+                to={`/leads/${lead.id}?from=follow-ups`}
                 className={`block bg-white rounded-xl border shadow-sm transition-all hover:shadow-md group ${
                   isOverdue ? 'border-red-200 hover:border-red-300' : 'border-slate-100 hover:border-slate-200'
                 }`}

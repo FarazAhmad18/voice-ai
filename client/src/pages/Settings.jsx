@@ -91,7 +91,7 @@ export default function Settings() {
       )}
 
       {/* Firm Info */}
-      <div className="bg-white rounded-2xl border border-slate-100 p-6">
+      <div className={`bg-white rounded-2xl border border-slate-100 p-6 ${saving ? 'opacity-50 pointer-events-none' : ''}`}>
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-sm font-semibold text-slate-800">Company Information</h3>
           <button
@@ -110,7 +110,8 @@ export default function Settings() {
               type="text"
               value={form.name}
               onChange={(e) => setForm(p => ({ ...p, name: e.target.value }))}
-              className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200"
+              disabled={saving}
+              className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200 disabled:opacity-50"
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -120,7 +121,8 @@ export default function Settings() {
                 type="email"
                 value={form.email}
                 onChange={(e) => setForm(p => ({ ...p, email: e.target.value }))}
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200"
+                disabled={saving}
+                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200 disabled:opacity-50"
               />
             </div>
             <div>
@@ -129,7 +131,8 @@ export default function Settings() {
                 type="tel"
                 value={form.phone}
                 onChange={(e) => setForm(p => ({ ...p, phone: e.target.value }))}
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200"
+                disabled={saving}
+                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200 disabled:opacity-50"
               />
             </div>
           </div>
@@ -140,7 +143,8 @@ export default function Settings() {
               value={form.address}
               onChange={(e) => setForm(p => ({ ...p, address: e.target.value }))}
               placeholder="123 Main St, Suite 100, City, State"
-              className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200 placeholder:text-slate-300"
+              disabled={saving}
+              className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200 placeholder:text-slate-300 disabled:opacity-50"
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -150,7 +154,8 @@ export default function Settings() {
                 type="text"
                 value={form.website}
                 onChange={(e) => setForm(p => ({ ...p, website: e.target.value }))}
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200"
+                disabled={saving}
+                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200 disabled:opacity-50"
               />
             </div>
             <div>
@@ -159,7 +164,8 @@ export default function Settings() {
                 type="text"
                 value={form.business_hours}
                 onChange={(e) => setForm(p => ({ ...p, business_hours: e.target.value }))}
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200"
+                disabled={saving}
+                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200 disabled:opacity-50"
               />
             </div>
           </div>
@@ -232,7 +238,8 @@ export default function Settings() {
                     crm_type: mode === 'builtin' ? '' : p.crm_type || 'webhook',
                   }));
                 }}
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200"
+                disabled={saving}
+                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200 disabled:opacity-50"
               >
                 <option value="builtin">Built-in Only</option>
                 <option value="external">External Webhook</option>
@@ -256,7 +263,8 @@ export default function Settings() {
                     value={form.crm_webhook_url}
                     onChange={(e) => setForm(p => ({ ...p, crm_webhook_url: e.target.value }))}
                     placeholder="https://your-crm.com/api/webhook"
-                    className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200 placeholder:text-slate-300"
+                    disabled={saving}
+                    className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200 placeholder:text-slate-300 disabled:opacity-50"
                   />
                 </div>
 
@@ -268,7 +276,8 @@ export default function Settings() {
                       value={form.crm_api_key}
                       onChange={(e) => setForm(p => ({ ...p, crm_api_key: e.target.value }))}
                       placeholder="Bearer token for webhook authentication"
-                      className="w-full px-3.5 py-2.5 pr-10 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200 placeholder:text-slate-300"
+                      disabled={saving}
+                      className="w-full px-3.5 py-2.5 pr-10 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200 placeholder:text-slate-300 disabled:opacity-50"
                     />
                     <button
                       type="button"

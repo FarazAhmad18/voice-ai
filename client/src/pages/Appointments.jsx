@@ -4,7 +4,7 @@ import { fetchAppointments, updateAppointment } from '../services/api';
 import { toast } from 'sonner';
 import DateFilter from '../components/DateFilter';
 import StatusBadge from '../components/StatusBadge';
-import { CalendarCheck, Clock, Phone, User, ChevronRight, CheckCircle, XCircle } from 'lucide-react';
+import { CalendarCheck, Clock, Phone, User, ChevronRight, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 
 const STATUS_TABS = [
   { key: 'all', label: 'All' },
@@ -16,20 +16,24 @@ const STATUS_TABS = [
 export default function Appointments() {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [tab, setTab] = useState('all');
   const [dateRange, setDateRange] = useState('all');
 
-  useEffect(() => {
-    async function loadAppointments() {
-      try {
-        const data = await fetchAppointments();
-        setAppointments(data);
-      } catch (err) {
-        console.error('Failed to fetch appointments:', err);
-      } finally {
-        setLoading(false);
-      }
+  async function loadAppointments() {
+    setError(null);
+    try {
+      const data = await fetchAppointments();
+      setAppointments(data);
+    } catch (err) {
+      console.error('Failed to fetch appointments:', err);
+      setError(err.message || 'Failed to fetch appointments');
+    } finally {
+      setLoading(false);
     }
+  }
+
+  useEffect(() => {
     loadAppointments();
   }, []);
 
@@ -79,6 +83,17 @@ export default function Appointments() {
 
   return (
     <div className="space-y-6">
+      {error && (
+        <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <AlertCircle size={16} className="text-red-500" />
+            <p className="text-sm text-red-700">{error}</p>
+          </div>
+          <button onClick={loadAppointments} className="text-xs font-medium text-red-600 hover:text-red-700">
+            Retry
+          </button>
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-end justify-between">
         <div>
@@ -133,7 +148,7 @@ export default function Appointments() {
       ) : (
         <div className="space-y-3">
           {filtered.map((apt) => {
-            const initials = apt.caller_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+            const initials = ((apt.caller_name || 'U').split(' ').map(n => n?.[0] || '').join('').slice(0, 2).toUpperCase()) || '?';
             return (
               <div
                 key={apt.id}

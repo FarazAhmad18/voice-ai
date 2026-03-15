@@ -13,8 +13,11 @@ router.use(authenticate, requireRole('admin', 'super_admin'));
 
 // PATCH /api/settings — update own firm's settings
 router.patch('/', validateBody(CLIENT_UPDATABLE), async (req, res) => {
-  if (!supabase || !req.firm) {
-    return res.status(500).json({ error: 'Not available' });
+  if (!supabase) {
+    return res.status(503).json({ error: 'Database service unavailable' });
+  }
+  if (!req.firm) {
+    return res.status(400).json({ error: 'No firm associated with your account — contact support' });
   }
 
   const { data, error } = await supabase

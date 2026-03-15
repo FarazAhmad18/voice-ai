@@ -2,10 +2,11 @@ const express = require('express');
 const router = express.Router();
 const supabase = require('../services/supabase');
 const authenticate = require('../middleware/auth');
+const requireRole = require('../middleware/requireRole');
 const logger = require('../services/logger');
 
-// POST /api/auth/signup — create a new account (super_admin use only for now)
-router.post('/signup', async (req, res) => {
+// POST /api/auth/signup — create a new account (super_admin only)
+router.post('/signup', authenticate, requireRole('super_admin'), async (req, res) => {
   const { email, password, name, role, firm_id } = req.body;
 
   if (!email || !password || !name) {

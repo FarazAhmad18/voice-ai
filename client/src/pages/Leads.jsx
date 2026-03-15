@@ -5,7 +5,7 @@ import { supabase } from '../services/supabase';
 import ScoreBadge from '../components/ScoreBadge';
 import StatusBadge from '../components/StatusBadge';
 import DateFilter from '../components/DateFilter';
-import { Search, Download, PhoneIncoming, ChevronRight, ArrowRight, Users, Flame, Filter } from 'lucide-react';
+import { Search, Download, PhoneIncoming, ChevronRight, ArrowRight, Users, Flame, Filter, AlertCircle } from 'lucide-react';
 
 const PIPELINE = [
   { key: 'all', label: 'All' },
@@ -79,15 +79,17 @@ function formatRelativeTime(dateStr) {
 export default function Leads() {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [pipeline, setPipeline] = useState('all');
   const [scoreFilter, setScoreFilter] = useState('all_scores');
   const [dateRange, setDateRange] = useState('all');
   const [search, setSearch] = useState('');
+  const [searchInput, setSearchInput] = useState('');
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
     const q = searchParams.get('search');
-    if (q) setSearch(q);
+    if (q) { setSearch(q); setSearchInput(q); }
     const s = searchParams.get('status');
     if (s && PIPELINE.find(p => p.key === s)) setPipeline(s);
     const sc = searchParams.get('score');
@@ -95,16 +97,24 @@ export default function Leads() {
   }, [searchParams]);
 
   useEffect(() => {
-    async function loadLeads() {
-      try {
-        const data = await fetchLeads();
-        setLeads(data);
-      } catch (err) {
-        console.error('Failed to fetch leads:', err);
-      } finally {
-        setLoading(false);
-      }
+    const timer = setTimeout(() => setSearch(searchInput), 300);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
+  async function loadLeads() {
+    setError(null);
+    try {
+      const data = await fetchLeads();
+      setLeads(data);
+    } catch (err) {
+      console.error('Failed to fetch leads:', err);
+      setError(err.message || 'Failed to fetch leads');
+    } finally {
+      setLoading(false);
     }
+  }
+
+  useEffect(() => {
     loadLeads();
   }, []);
 
@@ -158,6 +168,17 @@ export default function Leads() {
 
   return (
     <div className="space-y-6">
+      {error && (
+        <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <AlertCircle size={16} className="text-red-500" />
+            <p className="text-sm text-red-700">{error}</p>
+          </div>
+          <button onClick={loadLeads} className="text-xs font-medium text-red-600 hover:text-red-700">
+            Retry
+          </button>
+        </div>
+      )}
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
@@ -200,8 +221,8 @@ export default function Leads() {
             <input
               type="text"
               placeholder="Search by name or phone..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
               className="w-full pl-10 pr-3 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200 focus:border-slate-200 placeholder:text-slate-300 transition-all"
             />
           </div>
@@ -277,7 +298,7 @@ export default function Leads() {
             </thead>
             <tbody className="divide-y divide-slate-50">
               {filtered.map((lead) => {
-                const initials = lead.caller_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+                const initials = ((lead.caller_name || 'U').split(' ').map(n => n?.[0] || '').join('').slice(0, 2).toUpperCase()) || '?';
                 return (
                   <tr key={lead.id} className="hover:bg-slate-50/70 transition-colors group">
                     <td className="px-5 py-3.5">

@@ -114,6 +114,21 @@ router.delete('/:id', requireRole('admin', 'super_admin'), async (req, res) => {
   if (error) return res.status(500).json({ error: error.message });
   if (!data) return res.status(404).json({ error: 'Staff member not found' });
 
+  // Clear assigned_staff_id on any leads referencing this staff member
+  const { error: clearErr } = await supabase
+    .from('leads')
+    .update({ assigned_staff_id: null })
+    .eq('assigned_staff_id', req.params.id)
+    .eq('firm_id', req.firm.id);
+
+  if (clearErr) {
+    logger.warn('staff', `Failed to clear assigned_staff_id for deactivated staff ${data.name}: ${clearErr.message}`, {
+      firmId: req.firm.id,
+      details: { staffId: req.params.id, error: clearErr.message },
+      source: 'routes.staff.delete',
+    });
+  }
+
   logger.info('staff', `Staff deactivated: ${data.name}`, {
     firmId: req.firm.id,
     userId: req.user.id,

@@ -6,10 +6,14 @@ const TWILIO_PHONE_NUMBER = process.env.TWILIO_PHONE_NUMBER;
 
 let twilioClient = null;
 
-if (TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN) {
-  const twilio = require('twilio');
-  twilioClient = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
-  logger.info('system', 'Twilio client initialized', { source: 'services.twilio' });
+if (TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN && TWILIO_ACCOUNT_SID.startsWith('AC')) {
+  try {
+    const twilio = require('twilio');
+    twilioClient = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
+    logger.info('system', 'Twilio client initialized', { source: 'services.twilio' });
+  } catch (err) {
+    logger.warn('system', `Twilio init failed: ${err.message}`, { source: 'services.twilio' });
+  }
 } else {
   logger.warn('system', 'Twilio not configured — SMS will be mocked in development', {
     source: 'services.twilio',

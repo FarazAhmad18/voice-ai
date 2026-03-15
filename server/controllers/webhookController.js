@@ -40,11 +40,17 @@ async function handleWebhook(req, res) {
       });
       return res.status(401).json({ error: 'Invalid signature' });
     }
-  } else {
-    logger.warn('retell_webhook', 'RETELL_API_KEY not set — skipping webhook signature verification', {
+  } else if (process.env.NODE_ENV === 'development') {
+    logger.warn('retell_webhook', 'RETELL_API_KEY not set — skipping webhook signature verification (dev mode)', {
       ip: req.ip,
       source: 'webhookController.handleWebhook',
     });
+  } else {
+    logger.error('retell_webhook', 'RETELL_API_KEY not set in production — rejecting webhook', {
+      ip: req.ip,
+      source: 'webhookController.handleWebhook',
+    });
+    return res.status(500).json({ error: 'Server misconfiguration: webhook verification unavailable' });
   }
 
   const { event, call } = req.body;
@@ -169,16 +175,63 @@ async function handleCallEnded(call) {
   const score = calculateLeadScore(leadData);
   const scoreLabel = getScoreLabel(score);
 
-  const lead = {
-    id: `lead_${Date.now()}`,
-    firm_id: firmId,
-    ...leadData,
-    score,
-    score_label: scoreLabel,
-    status: recentAppointment ? 'booked' : 'new',
-    source: 'phone',
-    created_at: new Date().toISOString(),
-  };
+  // Check for existing lead with same phone + firm within last 24 hours
+  let lead = null;
+  let isExistingLead = false;
+  const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+  if (callerPhone && callerPhone !== 'unknown') {
+    const { data: existingLead } = await supabase
+      .from('leads')
+      .select('*')
+      .eq('caller_phone', callerPhone)
+      .eq('firm_id', firmId)
+      .gte('created_at', twentyFourHoursAgo)
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (existingLead && existingLead.length > 0) {
+      lead = existingLead[0];
+      isExistingLead = true;
+
+      // Update existing lead with new data
+      const updates = {
+        score,
+        score_label: scoreLabel,
+        appointment_booked: lead.appointment_booked || !!recentAppointment,
+      };
+      if (leadData.notes && !lead.notes) updates.notes = leadData.notes;
+      if (lead.status === 'new' && recentAppointment) updates.status = 'booked';
+      if (leadData.caller_name !== 'Unknown Caller' && lead.caller_name === 'Unknown Caller') {
+        updates.caller_name = leadData.caller_name;
+      }
+      if (leadData.caller_email && !lead.caller_email) updates.caller_email = leadData.caller_email;
+
+      await supabase.from('leads').update(updates).eq('id', lead.id);
+      Object.assign(lead, updates);
+
+      logger.info('lead_scoring', `Existing lead updated: ${lead.caller_name} (score: ${score}, ${scoreLabel})`, {
+        firmId,
+        leadId: lead.id,
+        callId: call.call_id,
+        details: { score, scoreLabel, duplicatePrevented: true },
+        source: 'webhookController.handleCallEnded',
+      });
+    }
+  }
+
+  if (!lead) {
+    lead = {
+      id: `lead_${Date.now()}`,
+      firm_id: firmId,
+      ...leadData,
+      score,
+      score_label: scoreLabel,
+      status: recentAppointment ? 'booked' : 'new',
+      source: 'phone',
+      created_at: new Date().toISOString(),
+    };
+  }
 
   const callRecord = {
     id: `call_${Date.now()}`,
@@ -203,7 +256,9 @@ async function handleCallEnded(call) {
 
   // Save to Supabase
   try {
-    await supabase.from('leads').insert(lead);
+    if (!isExistingLead) {
+      await supabase.from('leads').insert(lead);
+    }
     await supabase.from('calls').insert(callRecord);
 
     logger.info('lead_scoring', `Lead created: ${lead.caller_name} (score: ${score}, ${scoreLabel})`, {
@@ -215,31 +270,32 @@ async function handleCallEnded(call) {
       source: 'webhookController.handleCallEnded',
     });
 
-    // Persist any pending intake answers for this call
+    // Update pending intake answers with lead_id and call_id (already inserted by handleSaveIntakeData)
     if (global._pendingIntakeAnswers && global._pendingIntakeAnswers[call.call_id]) {
-      const pendingAnswers = global._pendingIntakeAnswers[call.call_id].map((a) => ({
-        ...a,
-        call_id: callRecord.id,
-        lead_id: lead.id,
-        firm_id: firmId,
-      }));
+      const { insertedIds } = global._pendingIntakeAnswers[call.call_id];
 
-      const { error: intakeErr } = await supabase.from('intake_answers').insert(pendingAnswers);
-      if (intakeErr) {
-        logger.error('intake', `Failed to persist intake answers: ${intakeErr.message}`, {
-          firmId,
-          callId: call.call_id,
-          leadId: lead.id,
-          details: { error: intakeErr.message, answerCount: pendingAnswers.length },
-          source: 'webhookController.handleCallEnded',
-        });
-      } else {
-        logger.info('intake', `Persisted ${pendingAnswers.length} intake answers for lead ${lead.id}`, {
-          firmId,
-          callId: call.call_id,
-          leadId: lead.id,
-          source: 'webhookController.handleCallEnded',
-        });
+      if (insertedIds && insertedIds.length > 0) {
+        const { error: intakeErr } = await supabase
+          .from('intake_answers')
+          .update({ call_id: callRecord.id, lead_id: lead.id, firm_id: firmId })
+          .in('id', insertedIds);
+
+        if (intakeErr) {
+          logger.error('intake', `Failed to update intake answers: ${intakeErr.message}`, {
+            firmId,
+            callId: call.call_id,
+            leadId: lead.id,
+            details: { error: intakeErr.message, answerCount: insertedIds.length },
+            source: 'webhookController.handleCallEnded',
+          });
+        } else {
+          logger.info('intake', `Updated ${insertedIds.length} intake answers for lead ${lead.id}`, {
+            firmId,
+            callId: call.call_id,
+            leadId: lead.id,
+            source: 'webhookController.handleCallEnded',
+          });
+        }
       }
       delete global._pendingIntakeAnswers[call.call_id];
     }
@@ -506,7 +562,10 @@ async function handleSaveIntakeData(req, res) {
     }));
 
     // Save to intake_answers table immediately (lead_id and call_id will be updated later)
-    const { error: insertErr } = await supabase.from('intake_answers').insert(answers);
+    const { data: insertedRows, error: insertErr } = await supabase
+      .from('intake_answers')
+      .insert(answers)
+      .select('id');
 
     if (insertErr) {
       logger.error('intake', `Failed to insert intake answers: ${insertErr.message}`, {
@@ -523,9 +582,17 @@ async function handleSaveIntakeData(req, res) {
       });
     }
 
-    // Also store in memory so handleCallEnded can update lead_id and call_id
+    // Store inserted IDs in memory so handleCallEnded can UPDATE (not re-INSERT) with lead_id and call_id
     if (!global._pendingIntakeAnswers) global._pendingIntakeAnswers = {};
-    global._pendingIntakeAnswers[call?.call_id] = answers;
+    const insertedIds = insertedRows ? insertedRows.map((r) => r.id) : [];
+    global._pendingIntakeAnswers[call?.call_id] = { answers, insertedIds };
+
+    // TTL cleanup: remove from memory after 1 hour to prevent memory leaks
+    setTimeout(() => {
+      if (global._pendingIntakeAnswers && global._pendingIntakeAnswers[call?.call_id]) {
+        delete global._pendingIntakeAnswers[call?.call_id];
+      }
+    }, 60 * 60 * 1000);
   }
 
   return res.json({

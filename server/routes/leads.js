@@ -13,31 +13,56 @@ router.use(authenticate);
 // GET /api/leads
 router.get('/', async (req, res) => {
   if (!supabase) return res.status(503).json({ error: 'Database unavailable' });
-  if (!req.firm) return res.status(400).json({ error: 'No firm associated with user' });
 
-  const { data, error } = await supabase
+  const limit = Math.min(Math.max(parseInt(req.query.limit) || 100, 1), 500);
+  const offset = Math.max(parseInt(req.query.offset) || 0, 0);
+
+  // Super admins with no firm can query all leads or filter by firm_id query param
+  let firmId;
+  if (req.user.role === 'super_admin' && !req.firm) {
+    firmId = req.query.firm_id || null; // optional filter
+  } else if (req.firm) {
+    firmId = req.firm.id;
+  } else {
+    return res.status(400).json({ error: 'No firm associated with user' });
+  }
+
+  let query = supabase
     .from('leads')
-    .select('*')
-    .eq('firm_id', req.firm.id)
-    .order('created_at', { ascending: false });
+    .select('*', { count: 'exact' });
+
+  if (firmId) {
+    query = query.eq('firm_id', firmId);
+  }
+
+  query = query
+    .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1);
+
+  const { data, error, count } = await query;
 
   if (error) return res.status(500).json({ error: error.message });
-  return res.json(data);
+  return res.json({ data, total: count });
 });
 
 // GET /api/leads/:id
 router.get('/:id', async (req, res) => {
   if (!supabase) return res.status(503).json({ error: 'Database unavailable' });
-  if (!req.firm) return res.status(400).json({ error: 'No firm associated with user' });
 
   const { id } = req.params;
 
-  const { data: lead, error } = await supabase
+  let query = supabase
     .from('leads')
     .select('*')
-    .eq('id', id)
-    .eq('firm_id', req.firm.id)
-    .single();
+    .eq('id', id);
+
+  // Non-super_admin users must have a firm and can only see their own leads
+  if (req.user.role !== 'super_admin') {
+    if (!req.firm) return res.status(400).json({ error: 'No firm associated with user' });
+    query = query.eq('firm_id', req.firm.id);
+  }
+
+  const { data: lead, error } = await query.single();
 
   if (error) return res.status(404).json({ error: 'Lead not found' });
 

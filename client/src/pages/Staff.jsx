@@ -16,12 +16,18 @@ export default function Staff() {
   const [staff, setStaff] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [searchInput, setSearchInput] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
 
   const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
+
+  useEffect(() => {
+    const timer = setTimeout(() => setSearch(searchInput), 300);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
   useEffect(() => {
     loadStaff();
@@ -163,8 +169,8 @@ export default function Staff() {
             <input
               type="text"
               placeholder={`Search ${labels.staff.toLowerCase()}...`}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
               className="w-full pl-10 pr-3 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200 focus:border-slate-200 placeholder:text-slate-300 transition-all"
             />
           </div>
@@ -196,7 +202,7 @@ export default function Staff() {
       ) : (
         <div className="space-y-3">
           {filtered.map((member) => {
-            const initials = member.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+            const initials = ((member.name || 'U').split(' ').map(n => n?.[0] || '').join('').slice(0, 2).toUpperCase()) || '?';
             return (
               <div
                 key={member.id}
