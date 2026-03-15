@@ -49,6 +49,7 @@
     staff.js                       — GET/POST/PATCH/DELETE /api/staff
     firms.js                       — GET/POST/PATCH /api/firms (admin only)
     templates.js                   — GET/POST/PATCH /api/templates (admin only)
+    logs.js                        — GET /api/logs (super_admin only)
     twilioWebhook.js               — POST /api/twilio/sms (inbound SMS from Twilio)
   /controllers
     webhookController.js           — Process Retell call events → create leads
@@ -63,6 +64,7 @@
     leadScoring.js                 — Score 0-100, configurable per industry
     googleCalendar.js              — Existing calendar service (unchanged)
     promptRenderer.js              — Render {{variables}} in prompt templates
+    logger.js                      — Structured logger (console + DB, levels: error/warn/info/debug)
     scheduler.js                   — Cron jobs (reminders, follow-ups)
   /middleware
     auth.js                        — Verify Supabase JWT, attach user + firm to req
@@ -84,6 +86,7 @@
         ClientCreate.jsx           — Onboarding form: create client + deploy agent
         ClientDetail.jsx           — Edit client, prompt, view their data
         TemplateList.jsx           — Prompt templates library
+        Logs.jsx                   — System logs viewer with filters, search, auto-refresh
       /dashboard                   — Client-facing pages (admin + staff roles)
         Dashboard.jsx              — Stats, recent leads, activity, appointments
         Leads.jsx                  — Filterable leads table
@@ -1260,7 +1263,282 @@ function renderPrompt(template, firm, activeStaff) {
 
 ---
 
-## 10. Environment Variables
+## 10. Logging System
+
+A structured logging system that captures every important event, error, and API interaction. Logs are stored in the database and viewable in the super admin panel.
+
+### Log Levels
+
+| Level | When to Use | Color in Admin UI |
+|-------|-------------|-------------------|
+| `error` | Unhandled exceptions, failed API calls, DB errors, payment failures | Red |
+| `warn` | Retries, fallback behavior, deprecated usage, slow queries | Amber |
+| `info` | Successful operations: lead created, call ended, SMS sent, agent deployed | Blue |
+| `debug` | Request/response bodies, full payloads, timing info (dev only) | Gray |
+
+### What Gets Logged
+
+| Category | Events Logged | Level |
+|----------|--------------|-------|
+| **Retell Webhook** | call_started, call_ended, call_analyzed received | info |
+| **Retell Webhook** | Invalid payload, missing fields, signature verification failed | error |
+| **Retell API** | Agent created, agent updated, phone number assigned | info |
+| **Retell API** | API call failed, timeout, rate limit | error |
+| **Tool Calls** | check_availability called, book_appointment called, save_intake_data called | info |
+| **Tool Calls** | Tool execution failed, timeout, invalid args | error |
+| **Lead Scoring** | Lead created with score + label | info |
+| **Google Calendar** | Slots fetched, event created, event updated | info |
+| **Google Calendar** | Calendar API error, auth failure | error |
+| **Twilio SMS** | SMS sent, SMS received, delivery status update | info |
+| **Twilio SMS** | Send failed, invalid number, Twilio API error | error |
+| **Email** | Email sent, delivery confirmed | info |
+| **Email** | Send failed, bounce, invalid address | error |
+| **CRM Push** | Data pushed to webhook/HubSpot/Salesforce | info |
+| **CRM Push** | Push failed, auth error, rate limit | error |
+| **Auth** | Login success, login failure, token expired | info/warn |
+| **Admin** | Client created, client paused, agent deployed, prompt updated | info |
+| **Database** | Query error, constraint violation, connection lost | error |
+| **System** | Server started, server crashed, scheduled job ran | info/error |
+
+### Database Table
+
+```sql
+-- 12. SYSTEM LOGS
+CREATE TABLE system_logs (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  firm_id     UUID REFERENCES firms(id) ON DELETE SET NULL,  -- null for system-level logs
+  level       TEXT NOT NULL,              -- 'error' | 'warn' | 'info' | 'debug'
+  category    TEXT NOT NULL,              -- 'retell_webhook' | 'retell_api' | 'tool_call' | 'sms' | 'email' | 'crm_push' | 'auth' | 'admin' | 'calendar' | 'system'
+  message     TEXT NOT NULL,              -- human-readable: "Lead created: John Smith (score: 85)"
+  details     JSONB DEFAULT '{}',         -- full context: request body, response, error stack, etc.
+  source      TEXT,                       -- file/function: "webhookController.handleCallEnded"
+  call_id     TEXT,                       -- Retell call ID if related to a call
+  lead_id     TEXT,                       -- Lead ID if related to a lead
+  user_id     UUID,                       -- User who triggered (null for system/webhook)
+  ip_address  TEXT,                       -- request IP
+  duration_ms INTEGER,                    -- how long the operation took
+  created_at  TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_logs_firm_id ON system_logs(firm_id);
+CREATE INDEX idx_logs_level ON system_logs(level);
+CREATE INDEX idx_logs_category ON system_logs(category);
+CREATE INDEX idx_logs_created_at ON system_logs(created_at DESC);
+CREATE INDEX idx_logs_call_id ON system_logs(call_id);
+
+-- RLS: super_admin sees all, firm members see own firm's logs
+ALTER TABLE system_logs ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "super_admin_all" ON system_logs FOR ALL USING (
+  EXISTS (SELECT 1 FROM users WHERE users.id = auth.uid() AND users.role = 'super_admin')
+);
+
+CREATE POLICY "firm_isolation" ON system_logs FOR ALL USING (
+  firm_id = (SELECT firm_id FROM users WHERE users.id = auth.uid())
+);
+```
+
+### Logger Service
+
+```js
+// server/services/logger.js
+
+const supabase = require('./supabase');
+
+const LOG_LEVELS = { error: 0, warn: 1, info: 2, debug: 3 };
+const CURRENT_LEVEL = process.env.LOG_LEVEL || 'info';
+
+async function log(level, category, message, opts = {}) {
+  const { firmId, details, source, callId, leadId, userId, ip, durationMs } = opts;
+
+  // Always console.log
+  const prefix = `[${level.toUpperCase()}] [${category}]`;
+  console.log(`${prefix} ${message}`, details ? JSON.stringify(details).slice(0, 500) : '');
+
+  // Skip DB write for debug in production
+  if (LOG_LEVELS[level] > LOG_LEVELS[CURRENT_LEVEL]) return;
+
+  // Write to database (non-blocking — don't await in hot paths)
+  if (supabase) {
+    supabase.from('system_logs').insert({
+      firm_id: firmId || null,
+      level,
+      category,
+      message,
+      details: details || {},
+      source: source || null,
+      call_id: callId || null,
+      lead_id: leadId || null,
+      user_id: userId || null,
+      ip_address: ip || null,
+      duration_ms: durationMs || null,
+    }).then(({ error }) => {
+      if (error) console.error('[Logger DB Error]', error.message);
+    });
+  }
+}
+
+// Convenience methods
+const logger = {
+  error: (category, message, opts) => log('error', category, message, opts),
+  warn:  (category, message, opts) => log('warn', category, message, opts),
+  info:  (category, message, opts) => log('info', category, message, opts),
+  debug: (category, message, opts) => log('debug', category, message, opts),
+};
+
+module.exports = logger;
+```
+
+### Usage Examples
+
+```js
+// In webhookController.js
+const logger = require('../services/logger');
+
+async function handleCallEnded(call) {
+  const start = Date.now();
+
+  logger.info('retell_webhook', `Call ended: ${call.call_id}`, {
+    callId: call.call_id,
+    details: { from: call.from_number, reason: call.disconnection_reason },
+    source: 'webhookController.handleCallEnded',
+  });
+
+  // ... process call ...
+
+  logger.info('lead_scoring', `Lead created: ${lead.caller_name} (score: ${score})`, {
+    firmId: lead.firm_id,
+    leadId: lead.id,
+    callId: call.call_id,
+    details: { score, scoreLabel, caseType: lead.case_type },
+    durationMs: Date.now() - start,
+  });
+}
+
+// In retell.js (API calls)
+async function createAgent(opts) {
+  try {
+    const result = await retellFetch('/v2/create-agent', { ... });
+    logger.info('retell_api', `Agent created: ${result.agent_id}`, {
+      firmId: opts.firmId,
+      details: { agentId: result.agent_id, agentName: opts.agentName },
+    });
+    return result;
+  } catch (err) {
+    logger.error('retell_api', `Failed to create agent: ${err.message}`, {
+      firmId: opts.firmId,
+      details: { error: err.message, stack: err.stack, request: opts },
+    });
+    throw err;
+  }
+}
+
+// In messageController.js
+logger.info('sms', `SMS sent to ${lead.caller_phone}`, {
+  firmId: firm.id,
+  leadId: lead.id,
+  details: { to: lead.caller_phone, twilioSid: result.sid },
+});
+
+// On unhandled error
+logger.error('system', `Unhandled error: ${err.message}`, {
+  details: { error: err.message, stack: err.stack, url: req.url },
+  ip: req.ip,
+});
+```
+
+### Admin Panel — Logs Page
+
+```
+/admin/logs — Super admin only
+
+┌─────────────────────────────────────────────────────────────────┐
+│  System Logs                                    [Auto-refresh ✓]│
+│                                                                  │
+│  Filters:                                                        │
+│  Level: [All ▼]  Category: [All ▼]  Client: [All ▼]            │
+│  Date: [Last 24h ▼]  Search: [________________________]         │
+│                                                                  │
+│  ┌─────────┬──────────┬──────────┬──────────────────────────┐   │
+│  │ Level   │ Category │ Client   │ Message                  │   │
+│  ├─────────┼──────────┼──────────┼──────────────────────────┤   │
+│  │ 🔴 error│ sms      │ Mitchell │ SMS failed: invalid num  │   │
+│  │ 🟢 info │ webhook  │ Bright S │ Call ended: call_abc123  │   │
+│  │ 🟢 info │ lead     │ Bright S │ Lead created: John (85)  │   │
+│  │ 🟡 warn │ calendar │ Mitchell │ Calendar API slow: 3.2s  │   │
+│  │ 🔴 error│ crm_push │ ABC Plmb │ HubSpot push failed: 401│   │
+│  │ 🟢 info │ admin    │ —        │ Client created: Bright S │   │
+│  │ 🟢 info │ retell   │ Bright S │ Agent deployed: agent_x  │   │
+│  └─────────┴──────────┴──────────┴──────────────────────────┘   │
+│                                                                  │
+│  Click any row → expands to show full details JSON               │
+│                                                                  │
+│  ── Error Summary (last 24h) ────────────────────────────────   │
+│  Retell API: 0 errors  │  SMS: 1 error  │  CRM: 2 errors       │
+│  Calendar: 0 errors    │  Auth: 0 errors │  System: 0 errors    │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### API Endpoints
+
+```
+GET /api/logs
+  Headers: Authorization: Bearer <token>
+  Roles: super_admin only
+  Query: ?level=error&category=sms&firm_id=uuid&search=failed&limit=50&offset=0&date_from=2026-03-15
+  Response: {
+    "logs": [ { id, level, category, message, details, source, created_at, firm: { name } }, ... ],
+    "total": 234,
+    "error_counts": {
+      "retell_webhook": 0, "retell_api": 0, "tool_call": 0,
+      "sms": 1, "email": 0, "crm_push": 2,
+      "calendar": 0, "auth": 0, "system": 0
+    }
+  }
+```
+
+### File Structure Addition
+
+```
+/server
+  /services
+    logger.js                    — Structured logger (console + DB)
+  /routes
+    logs.js                      — GET /api/logs (super_admin only)
+
+/client/src/pages/admin
+  Logs.jsx                       — Logs viewer with filters, search, auto-refresh
+```
+
+### Global Error Handler
+
+```js
+// In server/index.js — catch all unhandled errors
+const logger = require('./services/logger');
+
+// Express error handler (last middleware)
+app.use((err, req, res, next) => {
+  logger.error('system', `Unhandled error: ${err.message}`, {
+    details: { error: err.message, stack: err.stack, method: req.method, url: req.url, body: req.body },
+    ip: req.ip,
+    userId: req.user?.id,
+    firmId: req.firm?.id,
+  });
+  res.status(500).json({ error: 'Internal server error' });
+});
+
+// Catch unhandled promise rejections
+process.on('unhandledRejection', (reason) => {
+  logger.error('system', `Unhandled promise rejection: ${reason}`, {
+    details: { error: String(reason), stack: reason?.stack },
+  });
+});
+```
+
+---
+
+## 11. Environment Variables
 
 ```env
 # Supabase (required)
@@ -1290,6 +1568,7 @@ GOOGLE_SERVICE_ACCOUNT_KEY={"type":"service_account",...}  # JSON string
 PORT=3000
 FRONTEND_URL=https://app.leapingai.com      # for CORS
 NODE_ENV=production
+LOG_LEVEL=info                              # 'error' | 'warn' | 'info' | 'debug'
 ```
 
 Frontend `.env`:
@@ -1301,7 +1580,7 @@ VITE_SUPABASE_ANON_KEY=eyJhbGci...
 
 ---
 
-## 11. Development Sequence
+## 12. Development Sequence
 
 Exact order of implementation. Each step builds on the previous.
 
@@ -1337,14 +1616,21 @@ Step 1.5: Multi-tenant route filtering
   - Add field allowlists to PATCH routes
   - Remove local store fallback from all routes (Supabase required now)
 
-Step 1.6: Retell webhook
+Step 1.6: Logging system
+  - Create server/services/logger.js
+  - Create system_logs table in Supabase
+  - Add global error handler in server/index.js
+  - Add logger calls to webhookController.js
+  - Create server/routes/logs.js (GET /api/logs, super_admin only)
+
+Step 1.7: Retell webhook
   - Create server/services/retell.js (API client)
   - Rewrite server/controllers/webhookController.js for Retell event format
   - Rename server/routes/vapiWebhook.js → retellWebhook.js
   - Update server/index.js route paths
   - Test with Retell webhook tester
 
-Step 1.7: Fix existing bugs
+Step 1.8: Fix existing bugs
   - Dashboard.jsx: fix activity feed sort
   - Appointments.jsx: wire dateRange to filter
   - webhookController.js: add created_at to all records
@@ -1364,6 +1650,7 @@ Step 2.2: Admin pages
   - Create client/src/pages/admin/ClientCreate.jsx (the big onboarding form)
   - Create client/src/pages/admin/ClientDetail.jsx
   - Create client/src/pages/admin/TemplateList.jsx
+  - Create client/src/pages/admin/Logs.jsx (filterable log viewer)
   - Update Sidebar.jsx: show admin nav for super_admin role
 
 Step 2.3: Agent deployment
@@ -1429,7 +1716,7 @@ Step 4.4: Prompt improvements
 
 ---
 
-## 12. Git Workflow & Branching
+## 13. Git Workflow & Branching
 
 ### Branch Strategy
 
@@ -1520,7 +1807,7 @@ v1.0.0 — First production release
 
 ---
 
-## 13. Conventions & Rules
+## 14. Conventions & Rules
 
 - **No local store fallback.** Supabase is required. Remove all `localStore` code.
 - **Every query filters by `firm_id`** — except super_admin routes.
