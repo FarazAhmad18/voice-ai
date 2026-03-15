@@ -12,6 +12,7 @@ export default function Settings() {
   async function handleSave() {
     setSaving(true);
     setSaved(false);
+    // TODO: Wire to PATCH /api/firms/:id when admin panel is built
     await new Promise((r) => setTimeout(r, 500));
     setSaving(false);
     setSaved(true);

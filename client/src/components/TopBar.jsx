@@ -7,11 +7,8 @@ export default function TopBar({ title, subtitle }) {
   const [showNotifications, setShowNotifications] = useState(false);
   const navigate = useNavigate();
 
-  const notifications = [
-    { id: 1, type: 'hot', text: 'New hot lead: Sarah Johnson (Divorce)', time: '2m ago' },
-    { id: 2, type: 'call', text: 'Call completed — Ali Raza, Child Custody', time: '15m ago' },
-    { id: 3, type: 'booked', text: 'Appointment booked for tomorrow 3 PM', time: '1h ago' },
-  ];
+  // TODO: Fetch real notifications from API when messaging hub is built
+  const notifications = [];
 
   function handleSearch(e) {
     e.preventDefault();
@@ -48,7 +45,7 @@ export default function TopBar({ title, subtitle }) {
             className="relative p-2 rounded-xl hover:bg-slate-50 transition-colors"
           >
             <Bell size={18} className="text-slate-400" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
+            {notifications.length > 0 && <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />}
           </button>
 
           {showNotifications && (
@@ -59,12 +56,18 @@ export default function TopBar({ title, subtitle }) {
                   <p className="text-sm font-semibold text-slate-800">Notifications</p>
                 </div>
                 <div className="max-h-72 overflow-y-auto">
-                  {notifications.map((n) => (
-                    <div key={n.id} className="px-4 py-3 hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0">
-                      <p className="text-sm text-slate-700">{n.text}</p>
-                      <p className="text-xs text-slate-400 mt-1">{n.time}</p>
+                  {notifications.length === 0 ? (
+                    <div className="px-4 py-6 text-center">
+                      <p className="text-sm text-slate-400">No notifications yet</p>
                     </div>
-                  ))}
+                  ) : (
+                    notifications.map((n) => (
+                      <div key={n.id} className="px-4 py-3 hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0">
+                        <p className="text-sm text-slate-700">{n.text}</p>
+                        <p className="text-xs text-slate-400 mt-1">{n.time}</p>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             </>

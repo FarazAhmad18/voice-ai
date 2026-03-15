@@ -26,6 +26,7 @@ function buildActivityFeed(leads, appointments) {
       type: lead.score_label === 'hot' ? 'alert' : 'lead',
       text: `${lead.caller_name} — ${lead.case_type}${lead.score_label === 'hot' ? ' (Hot lead!)' : ''}`,
       time: formatRelativeTime(lead.created_at),
+      _date: lead.created_at,
     });
   });
   appointments.slice(0, 3).forEach((apt) => {
@@ -33,9 +34,12 @@ function buildActivityFeed(leads, appointments) {
       type: 'appointment',
       text: `Appointment booked: ${apt.caller_name} — ${apt.appointment_date} at ${apt.appointment_time}`,
       time: formatRelativeTime(apt.created_at),
+      _date: apt.created_at,
     });
   });
-  return items.sort((a, b) => 0).slice(0, 8);
+  return items
+    .sort((a, b) => new Date(b._date) - new Date(a._date))
+    .slice(0, 8);
 }
 
 function formatRelativeTime(dateStr) {

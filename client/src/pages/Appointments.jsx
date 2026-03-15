@@ -41,7 +41,26 @@ export default function Appointments() {
     }
   }
 
-  const filtered = appointments.filter((a) => tab === 'all' || a.status === tab);
+  let filtered = appointments.filter((a) => tab === 'all' || a.status === tab);
+  if (dateRange !== 'all') {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    filtered = filtered.filter((a) => {
+      const created = new Date(a.created_at);
+      if (dateRange === 'today') return created >= today;
+      if (dateRange === 'week') {
+        const weekAgo = new Date(today);
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        return created >= weekAgo;
+      }
+      if (dateRange === 'month') {
+        const monthAgo = new Date(today);
+        monthAgo.setMonth(monthAgo.getMonth() - 1);
+        return created >= monthAgo;
+      }
+      return true;
+    });
+  }
 
   if (loading) {
     return (
