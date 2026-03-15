@@ -44,20 +44,25 @@ export function AuthProvider({ children }) {
   async function fetchProfile(token) {
     try {
       const API_BASE = import.meta.env.VITE_API_URL || '/api';
-      const res = await fetch(`${API_BASE}/auth/me`, {
+      const url = `${API_BASE}/auth/me`;
+      console.log('[Auth] Fetching profile from:', url);
+      const res = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      console.log('[Auth] Profile response:', res.status);
       if (res.ok) {
         const data = await res.json();
+        console.log('[Auth] Profile loaded:', data.user?.name, data.user?.role);
         setUser(data.user);
         setFirm(data.firm);
         setIndustryConfig(data.industry_config);
       } else {
-        // Token invalid — sign out
+        const errData = await res.json().catch(() => ({}));
+        console.error('[Auth] Profile failed:', res.status, errData);
         await supabase.auth.signOut();
       }
     } catch (err) {
-      console.error('Failed to fetch profile:', err);
+      console.error('[Auth] Failed to fetch profile:', err);
     } finally {
       setLoading(false);
     }

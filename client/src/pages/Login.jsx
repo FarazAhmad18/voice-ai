@@ -1,12 +1,21 @@
 import { useState } from 'react';
+import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
-  const { login } = useAuth();
+  const { login, isAuthenticated, isSuperAdmin, firm, loading: authLoading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // If already authenticated, redirect away from login
+  if (isAuthenticated) {
+    if (isSuperAdmin && !firm) {
+      return <Navigate to="/admin" replace />;
+    }
+    return <Navigate to="/" replace />;
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -15,6 +24,8 @@ export default function Login() {
 
     try {
       await login(email, password);
+      // AuthContext onAuthStateChange will update isAuthenticated
+      // which triggers the redirect above on re-render
     } catch (err) {
       setError(err.message || 'Invalid email or password');
     } finally {

@@ -80,6 +80,12 @@ export async function updateAppointment(id, updates) {
   });
 }
 
+// ── Settings (client admin) ────────────────────────────
+
+export async function updateSettings(updates) {
+  return apiFetch('/settings', { method: 'PATCH', body: JSON.stringify(updates) });
+}
+
 // ── Staff ──────────────────────────────────────────────
 
 export async function fetchStaff() {
