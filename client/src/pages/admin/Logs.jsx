@@ -25,13 +25,20 @@ export default function Logs() {
   const [level, setLevel] = useState(searchParams.get('level') || 'all');
   const [category, setCategory] = useState(searchParams.get('category') || 'all');
   const [search, setSearch] = useState(searchParams.get('search') || '');
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
+
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 400);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const loadLogs = useCallback(async () => {
     try {
       const params = { limit: 50 };
       if (level !== 'all') params.level = level;
       if (category !== 'all') params.category = category;
-      if (search) params.search = search;
+      if (debouncedSearch) params.search = debouncedSearch;
 
       const data = await fetchLogs(params);
       setLogs(data.logs || []);
@@ -42,7 +49,7 @@ export default function Logs() {
     } finally {
       setLoading(false);
     }
-  }, [level, category, search]);
+  }, [level, category, debouncedSearch]);
 
   useEffect(() => {
     setLoading(true);

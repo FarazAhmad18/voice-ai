@@ -23,7 +23,14 @@ function renderPrompt(template, firm, activeStaff = []) {
     '{{active_staff}}': staffList,
     '{{phone}}': firm.phone || '',
     '{{address}}': firm.address || '',
-    '{{services}}': template.case_types ? JSON.parse(typeof template.case_types === 'string' ? template.case_types : JSON.stringify(template.case_types)).join(', ') : '',
+    '{{services}}': (() => {
+      try {
+        const ct = template.case_types;
+        if (Array.isArray(ct)) return ct.join(', ');
+        if (typeof ct === 'string') return JSON.parse(ct).join(', ');
+        return '';
+      } catch { return ''; }
+    })(),
     '{{email}}': firm.email || '',
     '{{website}}': firm.website || '',
   };
@@ -71,7 +78,7 @@ async function reRenderFirmPrompt(firmId) {
 
     if (!template) {
       logger.warn('prompt', `No template found for firm ${firm.name}`, { firmId, source: 'promptRenderer.reRenderFirmPrompt' });
-      return firm.rendered_prompt; // keep existing
+      return firm.rendered_prompt || null; // keep existing, never overwrite with null
     }
 
     // Fetch active staff

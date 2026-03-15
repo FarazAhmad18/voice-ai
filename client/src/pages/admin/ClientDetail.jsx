@@ -9,8 +9,13 @@ export default function ClientDetail() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState('');
 
-  const [form, setForm] = useState({});
+  const [form, setForm] = useState({
+    name: '', industry: '', email: '', phone: '', address: '',
+    website: '', business_hours: '', agent_name: '', brand_color: '#6d28d9',
+    status: 'active', plan: 'free',
+  });
 
   useEffect(() => {
     async function load() {
@@ -42,13 +47,14 @@ export default function ClientDetail() {
   async function handleSave() {
     setSaving(true);
     setSaved(false);
+    setError('');
     try {
       const updated = await updateFirm(id, form);
       setFirm(prev => ({ ...prev, ...updated }));
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (err) {
-      console.error('Failed to update firm:', err);
+      setError(err.message || 'Failed to save changes');
     } finally {
       setSaving(false);
     }
@@ -94,6 +100,12 @@ export default function ClientDetail() {
           {saving ? 'Saving...' : saved ? 'Saved' : 'Save Changes'}
         </button>
       </div>
+
+      {error && (
+        <div className="px-4 py-3 bg-red-50 border border-red-100 rounded-xl">
+          <p className="text-sm text-red-600">{error}</p>
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">

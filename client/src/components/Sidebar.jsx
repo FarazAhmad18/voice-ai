@@ -45,14 +45,18 @@ export default function Sidebar() {
         <div className="mx-4 mb-4">
           <div className="flex items-center gap-3 px-3.5 py-3 bg-slate-50 rounded-xl">
             <div className="relative">
-              <div className="w-8 h-8 bg-emerald-50 rounded-full flex items-center justify-center">
-                <Phone size={14} className="text-emerald-600" />
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${firm.retell_agent_id ? 'bg-emerald-50' : 'bg-slate-100'}`}>
+                <Phone size={14} className={firm.retell_agent_id ? 'text-emerald-600' : 'text-slate-400'} />
               </div>
-              <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white" />
+              {firm.retell_agent_id && (
+                <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white" />
+              )}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-slate-800">{firm.agent_name}</p>
-              <p className="text-[11px] text-emerald-600 font-medium">Active</p>
+              <p className={`text-[11px] font-medium ${firm.retell_agent_id ? 'text-emerald-600' : 'text-slate-400'}`}>
+                {firm.retell_agent_id ? 'Active' : 'Not deployed'}
+              </p>
             </div>
           </div>
         </div>

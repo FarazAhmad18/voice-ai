@@ -8,6 +8,7 @@ export default function TemplateList() {
   const [editing, setEditing] = useState(null); // template id being edited
   const [creating, setCreating] = useState(false);
   const [expanded, setExpanded] = useState(null);
+  const [error, setError] = useState('');
 
   const [form, setForm] = useState({ name: '', industry: 'legal', body: '', case_types: '' });
 
@@ -49,6 +50,7 @@ export default function TemplateList() {
   }
 
   async function handleSave() {
+    setError('');
     const payload = {
       name: form.name,
       industry: form.industry,
@@ -65,17 +67,18 @@ export default function TemplateList() {
       cancel();
       await loadTemplates();
     } catch (err) {
-      console.error('Failed to save template:', err);
+      setError(err.message || 'Failed to save template');
     }
   }
 
   async function handleDelete(id) {
     if (!confirm('Delete this template?')) return;
+    setError('');
     try {
       await deleteTemplate(id);
       await loadTemplates();
     } catch (err) {
-      console.error('Failed to delete template:', err);
+      setError(err.message || 'Failed to delete template');
     }
   }
 
@@ -99,6 +102,12 @@ export default function TemplateList() {
           <Plus size={15} /> New Template
         </button>
       </div>
+
+      {error && (
+        <div className="px-4 py-3 bg-red-50 border border-red-100 rounded-xl">
+          <p className="text-sm text-red-600">{error}</p>
+        </div>
+      )}
 
       {/* Create/Edit Form */}
       {(creating || editing) && (

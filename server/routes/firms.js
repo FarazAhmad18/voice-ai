@@ -149,13 +149,13 @@ router.post('/', async (req, res) => {
       await supabase.from('staff').insert(staffRecords);
     }
 
-    // 3. Render prompt
-    if (prompt_template_id) {
+    // 3. Render prompt (skip if deploying agent — deployAgent does it)
+    if (prompt_template_id && !deploy_agent) {
       await reRenderFirmPrompt(firm.id);
     }
 
     // 4. Create admin user for this firm
-    if (admin_email && admin_password) {
+    if (admin_email && admin_password && admin_password.length >= 6) {
       try {
         const { data: authData, error: authErr } = await supabase.auth.admin.createUser({
           email: admin_email,

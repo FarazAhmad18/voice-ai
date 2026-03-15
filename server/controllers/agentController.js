@@ -107,14 +107,21 @@ async function updateFirmAgent(firmId) {
   const renderedPrompt = await reRenderFirmPrompt(firmId);
 
   try {
-    await updateAgent(firm.retell_agent_id, {
+    const agentUpdates = {
       agent_name: `${firm.agent_name || 'AI'} - ${firm.name}`,
-      voice_id: firm.agent_voice_id || undefined,
-    });
+    };
+    if (firm.agent_voice_id) agentUpdates.voice_id = firm.agent_voice_id;
+
+    await updateAgent(firm.retell_agent_id, agentUpdates);
+
+    // Note: Retell prompts live on the LLM resource, not the agent.
+    // The rendered prompt is stored in our DB for reference.
+    // To update the actual LLM prompt in Retell, use the Retell dashboard
+    // or implement LLM update API when available.
 
     logger.info('retell_api', `Agent updated: ${firm.retell_agent_id}`, {
       firmId,
-      details: { agentId: firm.retell_agent_id },
+      details: { agentId: firm.retell_agent_id, promptLength: renderedPrompt?.length },
       source: 'agentController.updateFirmAgent',
     });
 

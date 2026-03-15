@@ -29,7 +29,8 @@ const pageMeta = {
 };
 
 function ProtectedRoute({ children }) {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, isSuperAdmin, firm, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -41,6 +42,12 @@ function ProtectedRoute({ children }) {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  // Super admin with no firm visiting client routes → redirect to admin
+  const isClientRoute = !location.pathname.startsWith('/admin');
+  if (isSuperAdmin && !firm && isClientRoute) {
+    return <Navigate to="/admin" replace />;
   }
 
   return children;
