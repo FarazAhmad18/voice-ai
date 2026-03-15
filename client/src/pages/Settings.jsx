@@ -3,7 +3,45 @@ import { useAuth } from '../context/AuthContext';
 import { useFirm } from '../context/FirmContext';
 import { updateSettings, fetchStaff } from '../services/api';
 import { toast } from 'sonner';
-import { Webhook, Eye, EyeOff, Loader2 } from 'lucide-react';
+import {
+  Webhook, Eye, EyeOff, Loader2, Building2, Bot, Users,
+  CreditCard, User, CheckCircle, Shield, Sparkles,
+  Globe, Clock, MapPin, Mail, Phone, ExternalLink,
+} from 'lucide-react';
+
+/* ─── Inject keyframe styles once ─── */
+const STYLE_ID = '__settings-premium-styles';
+if (typeof document !== 'undefined' && !document.getElementById(STYLE_ID)) {
+  const style = document.createElement('style');
+  style.id = STYLE_ID;
+  style.textContent = `
+    @keyframes settingsFadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes settingsShimmer {
+      0%   { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    @keyframes settingsPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(1.2); }
+    }
+    .settings-fade-in-up {
+      animation: settingsFadeInUp 0.4s ease forwards;
+      opacity: 0;
+    }
+    .settings-shimmer {
+      background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+      background-size: 200% 100%;
+      animation: settingsShimmer 1.5s ease-in-out infinite;
+    }
+    .settings-status-pulse {
+      animation: settingsPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+  `;
+  document.head.appendChild(style);
+}
 
 export default function Settings() {
   const { user, firm } = useAuth();
@@ -15,6 +53,7 @@ export default function Settings() {
 
   const [showApiKey, setShowApiKey] = useState(false);
   const [testingWebhook, setTestingWebhook] = useState(false);
+  const [webhookTestResult, setWebhookTestResult] = useState(null);
 
   const [form, setForm] = useState({
     name: '',
@@ -74,98 +113,163 @@ export default function Settings() {
 
   if (!firm) {
     return (
-      <div className="text-center py-16">
-        <p className="text-sm text-slate-400">No firm data available</p>
+      <div className="max-w-2xl mx-auto space-y-6">
+        {/* Loading skeleton */}
+        {[1,2,3,4].map(i => (
+          <div key={i} className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+            <div className="h-14 settings-shimmer" />
+            <div className="p-6 space-y-4">
+              <div className="h-4 w-32 settings-shimmer rounded" />
+              <div className="h-10 settings-shimmer rounded-xl" />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="h-10 settings-shimmer rounded-xl" />
+                <div className="h-10 settings-shimmer rounded-xl" />
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     );
   }
 
   const activeStaff = staff.filter(s => s.is_active);
 
+  const AVATAR_GRADIENTS = [
+    'from-violet-500 to-purple-600',
+    'from-blue-500 to-indigo-600',
+    'from-emerald-500 to-teal-600',
+    'from-amber-500 to-orange-600',
+    'from-rose-500 to-pink-600',
+  ];
+
+  function getStaffGradient(name) {
+    if (!name) return AVATAR_GRADIENTS[0];
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    return AVATAR_GRADIENTS[Math.abs(hash) % AVATAR_GRADIENTS.length];
+  }
+
   return (
-    <div className="max-w-2xl mx-auto space-y-5">
+    <div className="max-w-2xl mx-auto space-y-6">
       {error && (
-        <div className="px-4 py-3 bg-red-50 border border-red-100 rounded-xl">
-          <p className="text-sm text-red-600">{error}</p>
+        <div className="bg-red-50/80 backdrop-blur-sm border border-red-100 rounded-2xl px-5 py-4 flex items-center gap-3">
+          <div className="w-9 h-9 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0">
+            <Shield size={16} className="text-red-500" />
+          </div>
+          <p className="text-sm font-medium text-red-700">{error}</p>
         </div>
       )}
 
       {/* Firm Info */}
-      <div className={`bg-white rounded-2xl border border-slate-100 p-6 ${saving ? 'opacity-50 pointer-events-none' : ''}`}>
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-sm font-semibold text-slate-800">Company Information</h3>
+      <div className={`settings-fade-in-up bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden ${saving ? 'opacity-50 pointer-events-none' : ''}`} style={{ animationDelay: '0ms' }}>
+        <div className="bg-gradient-to-r from-slate-800 to-slate-900 px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
+              <Building2 size={16} className="text-white/80" />
+            </div>
+            <h3 className="text-sm font-bold text-white">Company Information</h3>
+          </div>
           <button
             onClick={handleSave}
             disabled={saving}
-            className="px-4 py-2 text-xs font-medium bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-colors disabled:opacity-50"
+            className={`px-5 py-2 text-xs font-semibold rounded-lg transition-all shadow-sm ${
+              saved
+                ? 'bg-emerald-500 text-white'
+                : 'bg-gradient-to-r from-violet-500 to-purple-500 text-white hover:from-violet-600 hover:to-purple-600 shadow-violet-300/30'
+            } disabled:opacity-50`}
           >
-            {saving ? 'Saving...' : saved ? 'Saved' : 'Save Changes'}
+            {saving ? (
+              <span className="inline-flex items-center gap-1.5">
+                <Loader2 size={12} className="animate-spin" />
+                Saving...
+              </span>
+            ) : saved ? (
+              <span className="inline-flex items-center gap-1.5">
+                <CheckCircle size={12} />
+                Saved
+              </span>
+            ) : 'Save Changes'}
           </button>
         </div>
 
-        <div className="space-y-4">
+        <div className="p-6 space-y-4">
           <div>
-            <label className="block text-xs font-medium text-slate-400 mb-1.5">Company Name</label>
+            <label className="block text-xs font-semibold text-slate-600 mb-1.5">Company Name</label>
             <input
               type="text"
               value={form.name}
               onChange={(e) => setForm(p => ({ ...p, name: e.target.value }))}
               disabled={saving}
-              className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200 disabled:opacity-50"
+              className="w-full px-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white disabled:opacity-50 transition-all"
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">Email</label>
+              <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 mb-1.5">
+                <Mail size={10} className="text-slate-400" />
+                Email
+              </label>
               <input
                 type="email"
                 value={form.email}
                 onChange={(e) => setForm(p => ({ ...p, email: e.target.value }))}
                 disabled={saving}
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200 disabled:opacity-50"
+                className="w-full px-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white disabled:opacity-50 transition-all"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">Phone</label>
+              <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 mb-1.5">
+                <Phone size={10} className="text-slate-400" />
+                Phone
+              </label>
               <input
                 type="tel"
                 value={form.phone}
                 onChange={(e) => setForm(p => ({ ...p, phone: e.target.value }))}
                 disabled={saving}
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200 disabled:opacity-50"
+                className="w-full px-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white disabled:opacity-50 transition-all"
               />
             </div>
           </div>
           <div>
-            <label className="block text-xs font-medium text-slate-400 mb-1.5">Address</label>
+            <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 mb-1.5">
+              <MapPin size={10} className="text-slate-400" />
+              Address
+            </label>
             <input
               type="text"
               value={form.address}
               onChange={(e) => setForm(p => ({ ...p, address: e.target.value }))}
               placeholder="123 Main St, Suite 100, City, State"
               disabled={saving}
-              className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200 placeholder:text-slate-300 disabled:opacity-50"
+              className="w-full px-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white placeholder:text-slate-300 disabled:opacity-50 transition-all"
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">Website</label>
+              <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 mb-1.5">
+                <Globe size={10} className="text-slate-400" />
+                Website
+              </label>
               <input
                 type="text"
                 value={form.website}
                 onChange={(e) => setForm(p => ({ ...p, website: e.target.value }))}
                 disabled={saving}
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200 disabled:opacity-50"
+                className="w-full px-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white disabled:opacity-50 transition-all"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">Business Hours</label>
+              <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 mb-1.5">
+                <Clock size={10} className="text-slate-400" />
+                Business Hours
+              </label>
               <input
                 type="text"
                 value={form.business_hours}
                 onChange={(e) => setForm(p => ({ ...p, business_hours: e.target.value }))}
                 disabled={saving}
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200 disabled:opacity-50"
+                className="w-full px-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white disabled:opacity-50 transition-all"
               />
             </div>
           </div>
@@ -173,61 +277,104 @@ export default function Settings() {
       </div>
 
       {/* AI Assistant */}
-      <div className="bg-white rounded-2xl border border-slate-100 p-6">
-        <h3 className="text-sm font-semibold text-slate-800 mb-4">AI Assistant</h3>
-        <div className="divide-y divide-slate-50">
-          <div className="flex items-center justify-between py-3">
-            <span className="text-sm text-slate-400">Name</span>
-            <span className="text-sm font-medium text-slate-800">{firm.agent_name || 'Not configured'}</span>
+      <div className="settings-fade-in-up bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700 rounded-2xl shadow-lg shadow-violet-200/50 overflow-hidden" style={{ animationDelay: '100ms' }}>
+        <div className="px-6 py-5">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-9 h-9 bg-white/15 rounded-xl flex items-center justify-center backdrop-blur-sm">
+              <Bot size={18} className="text-white" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-white">AI Assistant</h3>
+              <p className="text-xs text-white/50">Voice agent configuration</p>
+            </div>
           </div>
-          <div className="flex items-center justify-between py-3">
-            <span className="text-sm text-slate-400">Phone Number</span>
-            <span className="text-sm font-medium text-slate-800">{firm.retell_phone_number || 'Not assigned'}</span>
-          </div>
-          <div className="flex items-center justify-between py-3">
-            <span className="text-sm text-slate-400">Status</span>
-            <span className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-800">
-              <span className={`w-1.5 h-1.5 rounded-full ${firm.retell_agent_id ? 'bg-emerald-500' : 'bg-slate-300'}`} />
-              {firm.retell_agent_id ? 'Active' : 'Not deployed'}
-            </span>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between py-2.5 border-b border-white/10">
+              <span className="text-sm text-white/60">Name</span>
+              <span className="text-sm font-semibold text-white">{firm.agent_name || 'Not configured'}</span>
+            </div>
+            <div className="flex items-center justify-between py-2.5 border-b border-white/10">
+              <span className="text-sm text-white/60">Phone Number</span>
+              <span className="text-sm font-semibold text-white font-mono">{firm.retell_phone_number || 'Not assigned'}</span>
+            </div>
+            <div className="flex items-center justify-between py-2.5">
+              <span className="text-sm text-white/60">Status</span>
+              <span className="inline-flex items-center gap-2 text-sm font-semibold text-white">
+                {firm.retell_agent_id ? (
+                  <>
+                    <span className="relative flex h-2.5 w-2.5">
+                      <span className="settings-status-pulse absolute inline-flex h-full w-full rounded-full bg-emerald-400" />
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400" />
+                    </span>
+                    Active
+                  </>
+                ) : (
+                  <>
+                    <span className="w-2.5 h-2.5 rounded-full bg-white/30" />
+                    Not deployed
+                  </>
+                )}
+              </span>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Staff */}
-      <div className="bg-white rounded-2xl border border-slate-100 p-6">
-        <h3 className="text-sm font-semibold text-slate-800 mb-4">{labels.staff} ({activeStaff.length})</h3>
-        {activeStaff.length === 0 ? (
-          <p className="text-sm text-slate-400">No {labels.staff.toLowerCase()} added yet</p>
-        ) : (
-          <div className="divide-y divide-slate-50">
-            {activeStaff.map(s => (
-              <div key={s.id} className="flex items-center justify-between py-3">
-                <div>
-                  <p className="text-sm font-medium text-slate-800">{s.name}</p>
-                  <p className="text-xs text-slate-400">{s.specialization || s.role || ''}</p>
-                </div>
-                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700">
-                  <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
-                  Active
-                </span>
-              </div>
-            ))}
+      <div className="settings-fade-in-up bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden" style={{ animationDelay: '200ms' }}>
+        <div className="bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-4 flex items-center gap-3">
+          <div className="w-8 h-8 bg-white/15 rounded-lg flex items-center justify-center">
+            <Users size={16} className="text-white/90" />
           </div>
-        )}
+          <h3 className="text-sm font-bold text-white">{labels.staff} ({activeStaff.length})</h3>
+        </div>
+        <div className="p-6">
+          {activeStaff.length === 0 ? (
+            <div className="text-center py-4">
+              <p className="text-sm text-slate-400">No {labels.staff.toLowerCase()} added yet</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {activeStaff.map(s => {
+                const initials = ((s.name || 'U').split(' ').map(n => n?.[0] || '').join('').slice(0, 2).toUpperCase()) || '?';
+                const gradient = getStaffGradient(s.name);
+                return (
+                  <div key={s.id} className="flex items-center gap-3 py-2.5 px-3 rounded-xl hover:bg-slate-50 transition-colors">
+                    <div className={`w-9 h-9 bg-gradient-to-br ${gradient} rounded-lg flex items-center justify-center text-xs font-bold text-white shadow-sm flex-shrink-0`}>
+                      {initials}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-slate-800">{s.name}</p>
+                      <p className="text-xs text-slate-400">{s.specialization || s.role || ''}</p>
+                    </div>
+                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full ring-1 ring-emerald-100">
+                      <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
+                      Active
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* CRM Integration — admin only */}
+      {/* CRM Integration -- admin only */}
       {user?.role === 'admin' || user?.role === 'super_admin' ? (
-        <div className="bg-white rounded-2xl border border-slate-100 p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Webhook size={16} className="text-slate-400" />
-            <h3 className="text-sm font-semibold text-slate-800">CRM Integration</h3>
+        <div className="settings-fade-in-up bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden" style={{ animationDelay: '300ms' }}>
+          <div className="bg-gradient-to-r from-blue-500 to-indigo-600 px-6 py-4 flex items-center gap-3">
+            <div className="w-8 h-8 bg-white/15 rounded-lg flex items-center justify-center">
+              <Webhook size={16} className="text-white/90" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-white">CRM Integration</h3>
+              <p className="text-xs text-white/50">Connect your external CRM</p>
+            </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="p-6 space-y-4">
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">CRM Mode</label>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">CRM Mode</label>
               <select
                 value={form.crm_mode}
                 onChange={(e) => {
@@ -239,13 +386,13 @@ export default function Settings() {
                   }));
                 }}
                 disabled={saving}
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200 disabled:opacity-50"
+                className="w-full px-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white disabled:opacity-50 transition-all appearance-none cursor-pointer"
               >
                 <option value="builtin">Built-in Only</option>
                 <option value="external">External Webhook</option>
                 <option value="both">Both (Built-in + External)</option>
               </select>
-              <p className="text-[11px] text-slate-400 mt-1">
+              <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">
                 {form.crm_mode === 'builtin'
                   ? 'Lead data stays in the built-in CRM only.'
                   : form.crm_mode === 'external'
@@ -257,19 +404,25 @@ export default function Settings() {
             {(form.crm_mode === 'external' || form.crm_mode === 'both') && (
               <>
                 <div>
-                  <label className="block text-xs font-medium text-slate-400 mb-1.5">Webhook URL</label>
+                  <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 mb-1.5">
+                    <ExternalLink size={10} className="text-slate-400" />
+                    Webhook URL
+                  </label>
                   <input
                     type="url"
                     value={form.crm_webhook_url}
                     onChange={(e) => setForm(p => ({ ...p, crm_webhook_url: e.target.value }))}
                     placeholder="https://your-crm.com/api/webhook"
                     disabled={saving}
-                    className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200 placeholder:text-slate-300 disabled:opacity-50"
+                    className="w-full px-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white placeholder:text-slate-300 disabled:opacity-50 transition-all"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-slate-400 mb-1.5">API Key (optional)</label>
+                  <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 mb-1.5">
+                    <Shield size={10} className="text-slate-400" />
+                    API Key (optional)
+                  </label>
                   <div className="relative">
                     <input
                       type={showApiKey ? 'text' : 'password'}
@@ -277,77 +430,94 @@ export default function Settings() {
                       onChange={(e) => setForm(p => ({ ...p, crm_api_key: e.target.value }))}
                       placeholder="Bearer token for webhook authentication"
                       disabled={saving}
-                      className="w-full px-3.5 py-2.5 pr-10 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200 placeholder:text-slate-300 disabled:opacity-50"
+                      className="w-full px-4 py-3 pr-11 text-sm bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white placeholder:text-slate-300 disabled:opacity-50 transition-all font-mono"
                     />
                     <button
                       type="button"
                       onClick={() => setShowApiKey(!showApiKey)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-violet-500 transition-colors rounded"
                     >
                       {showApiKey ? <EyeOff size={14} /> : <Eye size={14} />}
                     </button>
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-1">
+                  <p className="text-[11px] text-slate-400 mt-1.5">
                     Sent as Authorization: Bearer header with each webhook request.
                   </p>
                 </div>
 
-                <button
-                  type="button"
-                  disabled={testingWebhook || !form.crm_webhook_url}
-                  onClick={async () => {
-                    setTestingWebhook(true);
-                    try {
-                      const testPayload = {
-                        event: 'test',
-                        timestamp: new Date().toISOString(),
-                        firm: { id: firm.id, name: firm.name },
-                        lead: {
-                          id: 'test_lead_001',
-                          name: 'Test Lead',
-                          phone: '+10000000000',
-                          email: 'test@example.com',
-                          service_type: 'other',
-                          urgency: 'low',
-                          score: 50,
-                          score_label: 'warm',
-                          summary: 'This is a test webhook payload from LeapingAI.',
-                          recording_url: null,
-                        },
-                        appointment: null,
-                      };
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    disabled={testingWebhook || !form.crm_webhook_url}
+                    onClick={async () => {
+                      setTestingWebhook(true);
+                      setWebhookTestResult(null);
+                      try {
+                        const testPayload = {
+                          event: 'test',
+                          timestamp: new Date().toISOString(),
+                          firm: { id: firm.id, name: firm.name },
+                          lead: {
+                            id: 'test_lead_001',
+                            name: 'Test Lead',
+                            phone: '+10000000000',
+                            email: 'test@example.com',
+                            service_type: 'other',
+                            urgency: 'low',
+                            score: 50,
+                            score_label: 'warm',
+                            summary: 'This is a test webhook payload from LeapingAI.',
+                            recording_url: null,
+                          },
+                          appointment: null,
+                        };
 
-                      const headers = { 'Content-Type': 'application/json' };
-                      if (form.crm_api_key) {
-                        headers['Authorization'] = `Bearer ${form.crm_api_key}`;
+                        const headers = { 'Content-Type': 'application/json' };
+                        if (form.crm_api_key) {
+                          headers['Authorization'] = `Bearer ${form.crm_api_key}`;
+                        }
+
+                        const res = await fetch(form.crm_webhook_url, {
+                          method: 'POST',
+                          headers,
+                          body: JSON.stringify(testPayload),
+                        });
+
+                        if (res.ok) {
+                          toast.success('Test webhook sent successfully');
+                          setWebhookTestResult('success');
+                        } else {
+                          toast.error(`Webhook returned ${res.status}`);
+                          setWebhookTestResult('error');
+                        }
+                      } catch (err) {
+                        toast.error(`Webhook test failed: ${err.message}`);
+                        setWebhookTestResult('error');
+                      } finally {
+                        setTestingWebhook(false);
+                        setTimeout(() => setWebhookTestResult(null), 5000);
                       }
-
-                      const res = await fetch(form.crm_webhook_url, {
-                        method: 'POST',
-                        headers,
-                        body: JSON.stringify(testPayload),
-                      });
-
-                      if (res.ok) {
-                        toast.success('Test webhook sent successfully');
-                      } else {
-                        toast.error(`Webhook returned ${res.status}`);
-                      }
-                    } catch (err) {
-                      toast.error(`Webhook test failed: ${err.message}`);
-                    } finally {
-                      setTestingWebhook(false);
-                    }
-                  }}
-                  className="inline-flex items-center gap-2 px-4 py-2 text-xs font-medium bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors disabled:opacity-40"
-                >
-                  {testingWebhook ? (
-                    <Loader2 size={13} className="animate-spin" />
-                  ) : (
-                    <Webhook size={13} />
-                  )}
-                  Send Test Webhook
-                </button>
+                    }}
+                    className={`inline-flex items-center gap-2 px-5 py-2.5 text-xs font-semibold rounded-xl transition-all disabled:opacity-40 ${
+                      webhookTestResult === 'success'
+                        ? 'bg-emerald-500 text-white shadow-sm shadow-emerald-200/50'
+                        : webhookTestResult === 'error'
+                        ? 'bg-red-500 text-white shadow-sm shadow-red-200/50'
+                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                    }`}
+                  >
+                    {testingWebhook ? (
+                      <Loader2 size={13} className="animate-spin" />
+                    ) : webhookTestResult === 'success' ? (
+                      <CheckCircle size={13} />
+                    ) : webhookTestResult === 'error' ? (
+                      <Shield size={13} />
+                    ) : (
+                      <Webhook size={13} />
+                    )}
+                    {testingWebhook ? 'Sending...' : webhookTestResult === 'success' ? 'Test Passed' : webhookTestResult === 'error' ? 'Test Failed' : 'Send Test Webhook'}
+                  </button>
+                </div>
               </>
             )}
           </div>
@@ -355,42 +525,69 @@ export default function Settings() {
       ) : null}
 
       {/* Plan */}
-      <div className="bg-white rounded-2xl border border-slate-100 p-6">
-        <h3 className="text-sm font-semibold text-slate-800 mb-4">Plan & Usage</h3>
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-slate-900 capitalize">{firm.plan || 'Free'} Plan</p>
-            <p className="text-xs text-slate-400 mt-0.5">Contact admin for plan changes</p>
+      <div className="settings-fade-in-up bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden" style={{ animationDelay: '400ms' }}>
+        <div className="bg-gradient-to-r from-amber-400 to-orange-500 px-6 py-4 flex items-center gap-3">
+          <div className="w-8 h-8 bg-white/15 rounded-lg flex items-center justify-center">
+            <CreditCard size={16} className="text-white/90" />
           </div>
-          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium ${
-            firm.status === 'active' ? 'bg-emerald-50 text-emerald-700' :
-            firm.status === 'paused' ? 'bg-amber-50 text-amber-700' :
-            'bg-slate-50 text-slate-500'
-          }`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${
-              firm.status === 'active' ? 'bg-emerald-500' :
-              firm.status === 'paused' ? 'bg-amber-500' : 'bg-slate-400'
-            }`} />
-            {firm.status || 'unknown'}
-          </span>
+          <h3 className="text-sm font-bold text-white">Plan & Usage</h3>
+        </div>
+        <div className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2.5">
+                <p className="text-base font-bold text-slate-900 capitalize">{firm.plan || 'Free'} Plan</p>
+                <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider ${
+                  firm.plan === 'enterprise' ? 'bg-gradient-to-r from-violet-500 to-purple-500 text-white' :
+                  firm.plan === 'pro' ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white' :
+                  firm.plan === 'starter' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white' :
+                  'bg-slate-100 text-slate-500'
+                }`}>
+                  {firm.plan || 'free'}
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-1">Contact admin for plan changes</p>
+            </div>
+            <span className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold ${
+              firm.status === 'active' ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100' :
+              firm.status === 'paused' ? 'bg-amber-50 text-amber-700 ring-1 ring-amber-100' :
+              'bg-slate-50 text-slate-500 ring-1 ring-slate-100'
+            }`}>
+              <span className={`w-2 h-2 rounded-full ${
+                firm.status === 'active' ? 'bg-emerald-500' :
+                firm.status === 'paused' ? 'bg-amber-500' : 'bg-slate-400'
+              }`} />
+              {firm.status || 'unknown'}
+            </span>
+          </div>
         </div>
       </div>
 
       {/* Account */}
-      <div className="bg-white rounded-2xl border border-slate-100 p-6">
-        <h3 className="text-sm font-semibold text-slate-800 mb-4">Your Account</h3>
-        <div className="divide-y divide-slate-50">
-          <div className="flex items-center justify-between py-3">
-            <span className="text-sm text-slate-400">Name</span>
-            <span className="text-sm font-medium text-slate-800">{user?.name}</span>
+      <div className="settings-fade-in-up bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden" style={{ animationDelay: '500ms' }}>
+        <div className="bg-gradient-to-r from-slate-600 to-slate-700 px-6 py-4 flex items-center gap-3">
+          <div className="w-8 h-8 bg-white/15 rounded-lg flex items-center justify-center">
+            <User size={16} className="text-white/90" />
           </div>
-          <div className="flex items-center justify-between py-3">
-            <span className="text-sm text-slate-400">Email</span>
-            <span className="text-sm font-medium text-slate-800">{user?.email}</span>
-          </div>
-          <div className="flex items-center justify-between py-3">
-            <span className="text-sm text-slate-400">Role</span>
-            <span className="text-sm font-medium text-slate-800 capitalize">{user?.role?.replace('_', ' ')}</span>
+          <h3 className="text-sm font-bold text-white">Your Account</h3>
+        </div>
+        <div className="p-6">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between py-2.5 px-3 rounded-xl hover:bg-slate-50 transition-colors">
+              <span className="text-sm text-slate-400">Name</span>
+              <span className="text-sm font-semibold text-slate-800">{user?.name}</span>
+            </div>
+            <div className="flex items-center justify-between py-2.5 px-3 rounded-xl hover:bg-slate-50 transition-colors">
+              <span className="text-sm text-slate-400">Email</span>
+              <span className="text-sm font-semibold text-slate-800">{user?.email}</span>
+            </div>
+            <div className="flex items-center justify-between py-2.5 px-3 rounded-xl hover:bg-slate-50 transition-colors">
+              <span className="text-sm text-slate-400">Role</span>
+              <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-800 capitalize">
+                <Shield size={12} className="text-violet-400" />
+                {user?.role?.replace('_', ' ')}
+              </span>
+            </div>
           </div>
         </div>
       </div>
