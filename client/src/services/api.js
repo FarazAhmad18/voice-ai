@@ -80,7 +80,65 @@ export async function updateAppointment(id, updates) {
   });
 }
 
-// ── Logs ───────────────────────────────────────────────
+// ── Staff ──────────────────────────────────────────────
+
+export async function fetchStaff() {
+  return apiFetch('/staff');
+}
+
+export async function createStaff(data) {
+  return apiFetch('/staff', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function updateStaff(id, updates) {
+  return apiFetch(`/staff/${id}`, { method: 'PATCH', body: JSON.stringify(updates) });
+}
+
+export async function deleteStaff(id) {
+  return apiFetch(`/staff/${id}`, { method: 'DELETE' });
+}
+
+// ── Firms (Admin) ──────────────────────────────────────
+
+export async function fetchFirms() {
+  return apiFetch('/firms');
+}
+
+export async function fetchFirm(id) {
+  return apiFetch(`/firms/${id}`);
+}
+
+export async function createFirm(data) {
+  return apiFetch('/firms', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function updateFirm(id, updates) {
+  return apiFetch(`/firms/${id}`, { method: 'PATCH', body: JSON.stringify(updates) });
+}
+
+// ── Templates (Admin) ──────────────────────────────────
+
+export async function fetchTemplates() {
+  return apiFetch('/templates');
+}
+
+export async function fetchTemplate(id) {
+  return apiFetch(`/templates/${id}`);
+}
+
+export async function createTemplate(data) {
+  return apiFetch('/templates', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function updateTemplate(id, updates) {
+  return apiFetch(`/templates/${id}`, { method: 'PATCH', body: JSON.stringify(updates) });
+}
+
+export async function deleteTemplate(id) {
+  return apiFetch(`/templates/${id}`, { method: 'DELETE' });
+}
+
+// ── Logs (Admin) ───────────────────────────────────────
 
 export async function fetchLogs(params = {}) {
   const query = new URLSearchParams(params).toString();

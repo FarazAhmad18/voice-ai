@@ -9,6 +9,9 @@ dotenv.config({ path: path.join(__dirname, '..', '.env') });
 const logger = require('./services/logger');
 const authRouter = require('./routes/auth');
 const retellWebhookRouter = require('./routes/retellWebhook');
+const firmsRouter = require('./routes/firms');
+const templatesRouter = require('./routes/templates');
+const staffRouter = require('./routes/staff');
 const leadsRouter = require('./routes/leads');
 const appointmentsRouter = require('./routes/appointments');
 const logsRouter = require('./routes/logs');
@@ -31,6 +34,9 @@ app.get('/', (req, res) => {
 // Routes
 app.use('/api/auth', authRouter);
 app.use('/api/retell', retellWebhookRouter);
+app.use('/api/firms', firmsRouter);
+app.use('/api/templates', templatesRouter);
+app.use('/api/staff', staffRouter);
 app.use('/api/leads', leadsRouter);
 app.use('/api/appointments', appointmentsRouter);
 app.use('/api/logs', logsRouter);

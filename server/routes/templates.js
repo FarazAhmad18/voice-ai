@@ -1,0 +1,127 @@
+const express = require('express');
+const router = express.Router();
+const supabase = require('../services/supabase');
+const authenticate = require('../middleware/auth');
+const requireRole = require('../middleware/requireRole');
+const logger = require('../services/logger');
+
+// All template routes require super_admin
+router.use(authenticate, requireRole('super_admin'));
+
+// GET /api/templates — list all prompt templates
+router.get('/', async (req, res) => {
+  if (!supabase) return res.status(500).json({ error: 'Database not configured' });
+
+  const { data, error } = await supabase
+    .from('prompt_templates')
+    .select('*')
+    .order('industry', { ascending: true });
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+// GET /api/templates/:id
+router.get('/:id', async (req, res) => {
+  if (!supabase) return res.status(500).json({ error: 'Database not configured' });
+
+  const { data, error } = await supabase
+    .from('prompt_templates')
+    .select('*')
+    .eq('id', req.params.id)
+    .single();
+
+  if (error) return res.status(404).json({ error: 'Template not found' });
+  res.json(data);
+});
+
+// POST /api/templates — create template
+router.post('/', async (req, res) => {
+  if (!supabase) return res.status(500).json({ error: 'Database not configured' });
+
+  const { name, industry, body, case_types, intake_questions } = req.body;
+
+  if (!name || !industry || !body) {
+    return res.status(400).json({ error: 'Name, industry, and body are required' });
+  }
+
+  const { data, error } = await supabase
+    .from('prompt_templates')
+    .insert({
+      name,
+      industry,
+      body,
+      case_types: case_types || [],
+      intake_questions: intake_questions || [],
+      variables: extractVariables(body),
+    })
+    .select()
+    .single();
+
+  if (error) return res.status(500).json({ error: error.message });
+
+  logger.info('admin', `Template created: ${name} (${industry})`, {
+    userId: req.user.id,
+    details: { templateId: data.id },
+    source: 'routes.templates.create',
+  });
+
+  res.status(201).json(data);
+});
+
+// PATCH /api/templates/:id — update template
+router.patch('/:id', async (req, res) => {
+  if (!supabase) return res.status(500).json({ error: 'Database not configured' });
+
+  const allowed = ['name', 'industry', 'body', 'case_types', 'intake_questions'];
+  const updates = {};
+  for (const field of allowed) {
+    if (req.body[field] !== undefined) updates[field] = req.body[field];
+  }
+
+  if (updates.body) {
+    updates.variables = extractVariables(updates.body);
+  }
+  updates.updated_at = new Date().toISOString();
+
+  const { data, error } = await supabase
+    .from('prompt_templates')
+    .update(updates)
+    .eq('id', req.params.id)
+    .select()
+    .single();
+
+  if (error) return res.status(500).json({ error: error.message });
+  if (!data) return res.status(404).json({ error: 'Template not found' });
+
+  logger.info('admin', `Template updated: ${data.name}`, {
+    userId: req.user.id,
+    details: { templateId: data.id },
+    source: 'routes.templates.patch',
+  });
+
+  res.json(data);
+});
+
+// DELETE /api/templates/:id
+router.delete('/:id', async (req, res) => {
+  if (!supabase) return res.status(500).json({ error: 'Database not configured' });
+
+  const { error } = await supabase
+    .from('prompt_templates')
+    .delete()
+    .eq('id', req.params.id);
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ deleted: true });
+});
+
+/**
+ * Extract {{variable}} names from a template body.
+ */
+function extractVariables(body) {
+  const matches = body.match(/\{\{(\w+)\}\}/g) || [];
+  return [...new Set(matches.map(m => m.replace(/[{}]/g, '')))];
+}
+
+module.exports = router;
