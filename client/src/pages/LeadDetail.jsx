@@ -1,14 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
-import { fetchLead, updateLead, addCallNote, fetchStaff } from '../services/api';
+import { fetchLead, updateLead, addCallNote, fetchStaff, fetchMessages } from '../services/api';
 import { useFirm } from '../context/FirmContext';
 import { toast } from 'sonner';
 import ScoreBadge from '../components/ScoreBadge';
 import StatusBadge from '../components/StatusBadge';
+import MessageTimeline from '../components/MessageTimeline';
+import MessageComposer from '../components/MessageComposer';
 import {
   ArrowLeft, Phone, Mail, Briefcase, AlertTriangle, CalendarCheck,
   Clock, FileText, Send, UserCheck, Bell, User, PhoneIncoming,
   MessageSquare, Mic, ChevronDown, ChevronUp, ExternalLink, Copy,
+  Activity,
 } from 'lucide-react';
 
 const STATUS_FLOW = [
@@ -46,6 +49,7 @@ export default function LeadDetail() {
   const [lead, setLead] = useState(null);
   const [staff, setStaff] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [messages, setMessages] = useState([]);
   const [noteText, setNoteText] = useState('');
   const [savingNote, setSavingNote] = useState(false);
   const [followUpDate, setFollowUpDate] = useState('');
@@ -57,12 +61,14 @@ export default function LeadDetail() {
   useEffect(() => {
     async function loadData() {
       try {
-        const [leadData, staffData] = await Promise.all([
+        const [leadData, staffData, messagesData] = await Promise.all([
           fetchLead(id),
           fetchStaff().catch(() => []),
+          fetchMessages(id).catch(() => []),
         ]);
         setLead(leadData);
         setStaff(staffData);
+        setMessages(Array.isArray(messagesData) ? messagesData : []);
         setFollowUpDate(leadData.follow_up_date || '');
       } catch (err) {
         console.error('Failed to fetch lead:', err);
@@ -120,6 +126,15 @@ export default function LeadDetail() {
       toast.error('Failed to add note');
     } finally {
       setSavingNote(false);
+    }
+  }
+
+  async function refreshMessages() {
+    try {
+      const messagesData = await fetchMessages(id);
+      setMessages(Array.isArray(messagesData) ? messagesData : []);
+    } catch (err) {
+      console.error('Failed to refresh messages:', err);
     }
   }
 
@@ -359,171 +374,30 @@ export default function LeadDetail() {
             </div>
           )}
 
-          {/* Notes Section */}
+          {/* Unified Activity Section */}
           <div className="bg-white rounded-2xl border border-slate-100 shadow-sm shadow-slate-100/50 overflow-hidden">
             <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <MessageSquare size={15} className="text-slate-400" />
-                <h3 className="text-sm font-semibold text-slate-900">Notes</h3>
-                {lead.call_notes?.length > 0 && (
-                  <span className="text-[11px] text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full">{lead.call_notes.length}</span>
+                <Activity size={15} className="text-slate-400" />
+                <h3 className="text-sm font-semibold text-slate-900">Activity</h3>
+                {(messages.length + (lead.calls?.length || 0) + (lead.call_notes?.length || 0)) > 0 && (
+                  <span className="text-[11px] text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full">
+                    {messages.length + (lead.calls?.length || 0) + (lead.call_notes?.length || 0)}
+                  </span>
                 )}
               </div>
             </div>
             <div className="p-5">
-              {/* Add note */}
-              <div className="flex gap-2 mb-5">
-                <input
-                  type="text"
-                  placeholder="Add a note about this lead..."
-                  value={noteText}
-                  onChange={(e) => setNoteText(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleAddNote()}
-                  className="flex-1 px-4 py-3 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200 placeholder:text-slate-300 transition-all"
-                />
-                <button
-                  onClick={handleAddNote}
-                  disabled={savingNote || !noteText.trim()}
-                  className="px-4 py-3 bg-slate-900 text-white text-sm font-medium rounded-xl hover:bg-slate-800 transition-all disabled:opacity-30 shadow-sm shadow-slate-900/20"
-                >
-                  <Send size={15} />
-                </button>
-              </div>
-
-              {/* Notes timeline */}
-              {lead.call_notes && lead.call_notes.length > 0 ? (
-                <div className="relative">
-                  <div className="absolute left-[15px] top-2 bottom-2 w-px bg-slate-100" />
-                  <div className="space-y-3">
-                    {[...lead.call_notes].reverse().map((note, i) => (
-                      <div key={i} className="flex gap-3 relative">
-                        <div className="w-[30px] h-[30px] bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0 z-10">
-                          <MessageSquare size={12} className="text-slate-400" />
-                        </div>
-                        <div className="flex-1 bg-slate-50 rounded-xl px-4 py-3">
-                          <p className="text-sm text-slate-700 leading-relaxed">{note.text}</p>
-                          <p className="text-[11px] text-slate-400 mt-1.5">
-                            {note.author && <span className="font-medium text-slate-500">{note.author}</span>}
-                            {note.author && ' · '}
-                            {formatDate(note.created_at)}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                !lead.notes && (
-                  <div className="text-center py-6">
-                    <MessageSquare size={20} className="text-slate-200 mx-auto mb-2" />
-                    <p className="text-sm text-slate-400">No notes yet</p>
-                  </div>
-                )
-              )}
+              <MessageTimeline
+                messages={messages}
+                calls={lead.calls || []}
+                legacyNotes={lead.call_notes || []}
+              />
             </div>
           </div>
 
-          {/* Call History */}
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm shadow-slate-100/50 overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Phone size={15} className="text-slate-400" />
-                <h3 className="text-sm font-semibold text-slate-900">Call History</h3>
-                {lead.calls?.length > 0 && (
-                  <span className="text-[11px] text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full">{lead.calls.length}</span>
-                )}
-              </div>
-            </div>
-            {!lead.calls || lead.calls.length === 0 ? (
-              <div className="py-14 text-center">
-                <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                  <Phone size={20} className="text-slate-300" />
-                </div>
-                <p className="text-sm font-medium text-slate-500">No call records</p>
-                <p className="text-xs text-slate-400 mt-1">Calls will appear here after the AI handles them</p>
-              </div>
-            ) : (
-              <div className="divide-y divide-slate-100">
-                {lead.calls.map((call) => {
-                  const isExpanded = expandedCalls[call.id];
-                  return (
-                    <div key={call.id} className="group">
-                      {/* Call header */}
-                      <div
-                        className="flex items-center gap-4 px-5 py-4 cursor-pointer hover:bg-slate-50/50 transition-colors"
-                        onClick={() => setExpandedCalls(prev => ({ ...prev, [call.id]: !prev[call.id] }))}
-                      >
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                          call.ended_reason === 'user_hangup' || call.ended_reason === 'agent_hangup'
-                            ? 'bg-blue-50' : 'bg-amber-50'
-                        }`}>
-                          <Mic size={16} className={
-                            call.ended_reason === 'user_hangup' || call.ended_reason === 'agent_hangup'
-                              ? 'text-blue-500' : 'text-amber-500'
-                          } />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <p className="text-sm font-medium text-slate-900">{formatDate(call.created_at)}</p>
-                            {call.sentiment && (
-                              <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-md capitalize ${
-                                call.sentiment === 'positive' ? 'bg-emerald-50 text-emerald-600' :
-                                call.sentiment === 'negative' || call.sentiment === 'distressed' ? 'bg-red-50 text-red-600' :
-                                'bg-slate-50 text-slate-500'
-                              }`}>
-                                {call.sentiment}
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-3 mt-0.5">
-                            <span className="text-xs text-slate-400">{formatDuration(call.duration)}</span>
-                            <span className="text-xs text-slate-300">·</span>
-                            <span className="text-xs text-slate-400 capitalize">{call.ended_reason?.replace(/_/g, ' ')}</span>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {call.recording_url && (
-                            <span className="text-[10px] font-medium text-blue-500 bg-blue-50 px-2 py-1 rounded-md">Recording</span>
-                          )}
-                          {isExpanded ? <ChevronUp size={16} className="text-slate-300" /> : <ChevronDown size={16} className="text-slate-300" />}
-                        </div>
-                      </div>
-
-                      {/* Expanded content */}
-                      {isExpanded && (
-                        <div className="px-5 pb-5 space-y-4">
-                          {call.summary && (
-                            <div className="bg-blue-50 rounded-xl px-4 py-3">
-                              <p className="text-[11px] font-bold text-blue-600 uppercase tracking-wider mb-1">AI Summary</p>
-                              <p className="text-sm text-blue-900 leading-relaxed">{call.summary}</p>
-                            </div>
-                          )}
-
-                          {call.recording_url && (
-                            <div className="bg-slate-50 rounded-xl px-4 py-3">
-                              <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Recording</p>
-                              <audio controls className="w-full h-10" src={call.recording_url} />
-                            </div>
-                          )}
-
-                          {call.transcript && (
-                            <div className="bg-slate-50 rounded-xl overflow-hidden">
-                              <div className="px-4 py-3 border-b border-slate-100">
-                                <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Transcript</p>
-                              </div>
-                              <div className="px-4 py-3 max-h-72 overflow-y-auto">
-                                <pre className="text-sm text-slate-700 whitespace-pre-wrap font-sans leading-relaxed">{call.transcript}</pre>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+          {/* Message Composer */}
+          <MessageComposer leadId={id} onMessageSent={refreshMessages} />
 
           {/* Intake Answers */}
           {lead.intake_answers && lead.intake_answers.length > 0 && (

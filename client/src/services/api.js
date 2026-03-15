@@ -144,6 +144,16 @@ export async function deleteTemplate(id) {
   return apiFetch(`/templates/${id}`, { method: 'DELETE' });
 }
 
+// ── Messages ─────────────────────────────────────────────
+
+export async function fetchMessages(leadId) {
+  return apiFetch(`/messages?lead_id=${leadId}`);
+}
+
+export async function sendMessage(data) {
+  return apiFetch('/messages', { method: 'POST', body: JSON.stringify(data) });
+}
+
 // ── Logs (Admin) ───────────────────────────────────────
 
 export async function fetchLogs(params = {}) {

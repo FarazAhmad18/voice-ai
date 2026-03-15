@@ -16,6 +16,8 @@ const settingsRouter = require('./routes/settings');
 const leadsRouter = require('./routes/leads');
 const appointmentsRouter = require('./routes/appointments');
 const logsRouter = require('./routes/logs');
+const messagesRouter = require('./routes/messages');
+const twilioWebhookRouter = require('./routes/twilioWebhook');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -42,6 +44,8 @@ app.use('/api/settings', settingsRouter);
 app.use('/api/leads', leadsRouter);
 app.use('/api/appointments', appointmentsRouter);
 app.use('/api/logs', logsRouter);
+app.use('/api/messages', messagesRouter);
+app.use('/api/twilio', twilioWebhookRouter);
 
 // Global error handler — catches unhandled Express errors
 app.use((err, req, res, next) => {
