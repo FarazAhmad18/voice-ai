@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { FirmProvider } from './context/FirmContext';
+import { Toaster } from 'sonner';
 import Navbar from './components/Navbar';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -8,6 +9,7 @@ import Leads from './pages/Leads';
 import LeadDetail from './pages/LeadDetail';
 import FollowUps from './pages/FollowUps';
 import Appointments from './pages/Appointments';
+import Staff from './pages/Staff';
 import Settings from './pages/Settings';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ClientList from './pages/admin/ClientList';
@@ -59,6 +61,7 @@ function AppLayout() {
           <Route path="/leads/:id" element={<LeadDetail />} />
           <Route path="/follow-ups" element={<FollowUps />} />
           <Route path="/appointments" element={<Appointments />} />
+          <Route path="/staff" element={<Staff />} />
           <Route path="/settings" element={<Settings />} />
 
           {/* Admin Panel */}
@@ -79,6 +82,7 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <FirmProvider>
+          <Toaster position="top-right" richColors closeButton />
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route

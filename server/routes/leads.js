@@ -4,7 +4,6 @@ const supabase = require('../services/supabase');
 const authenticate = require('../middleware/auth');
 const validateBody = require('../middleware/validateBody');
 const logger = require('../services/logger');
-const { getLocalStore } = require('../controllers/webhookController');
 
 const LEAD_UPDATABLE = ['status', 'assigned_staff_id', 'follow_up_date', 'notes'];
 
@@ -13,87 +12,78 @@ router.use(authenticate);
 
 // GET /api/leads
 router.get('/', async (req, res) => {
-  if (supabase && req.firm) {
-    const { data, error } = await supabase
-      .from('leads')
-      .select('*')
-      .eq('firm_id', req.firm.id)
-      .order('created_at', { ascending: false });
+  if (!supabase) return res.status(503).json({ error: 'Database unavailable' });
+  if (!req.firm) return res.status(400).json({ error: 'No firm associated with user' });
 
-    if (error) return res.status(500).json({ error: error.message });
-    return res.json(data);
-  }
+  const { data, error } = await supabase
+    .from('leads')
+    .select('*')
+    .eq('firm_id', req.firm.id)
+    .order('created_at', { ascending: false });
 
-  const store = getLocalStore();
-  res.json(store.leads.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)));
+  if (error) return res.status(500).json({ error: error.message });
+  return res.json(data);
 });
 
 // GET /api/leads/:id
 router.get('/:id', async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: 'Database unavailable' });
+  if (!req.firm) return res.status(400).json({ error: 'No firm associated with user' });
+
   const { id } = req.params;
 
-  if (supabase && req.firm) {
-    const { data: lead, error } = await supabase
-      .from('leads')
-      .select('*')
-      .eq('id', id)
-      .eq('firm_id', req.firm.id)
-      .single();
+  const { data: lead, error } = await supabase
+    .from('leads')
+    .select('*')
+    .eq('id', id)
+    .eq('firm_id', req.firm.id)
+    .single();
 
-    if (error) return res.status(404).json({ error: 'Lead not found' });
+  if (error) return res.status(404).json({ error: 'Lead not found' });
 
-    const { data: calls } = await supabase
-      .from('calls')
-      .select('*')
-      .eq('lead_id', id)
-      .order('created_at', { ascending: false });
+  const { data: calls } = await supabase
+    .from('calls')
+    .select('*')
+    .eq('lead_id', id)
+    .order('created_at', { ascending: false });
 
-    return res.json({ ...lead, calls: calls || [] });
-  }
-
-  const store = getLocalStore();
-  const lead = store.leads.find((l) => l.id === id);
-  if (!lead) return res.status(404).json({ error: 'Lead not found' });
-  const calls = store.calls.filter((c) => c.lead_id === id);
-  res.json({ ...lead, calls });
+  return res.json({ ...lead, calls: calls || [] });
 });
 
 // PATCH /api/leads/:id
 router.patch('/:id', validateBody(LEAD_UPDATABLE), async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: 'Database unavailable' });
+  if (!req.firm) return res.status(400).json({ error: 'No firm associated with user' });
+
   const { id } = req.params;
 
-  if (supabase && req.firm) {
-    const { data, error } = await supabase
-      .from('leads')
-      .update(req.body)
-      .eq('id', id)
-      .eq('firm_id', req.firm.id)
-      .select()
-      .single();
+  const { data, error } = await supabase
+    .from('leads')
+    .update(req.body)
+    .eq('id', id)
+    .eq('firm_id', req.firm.id)
+    .select()
+    .single();
 
-    if (error) return res.status(500).json({ error: error.message });
-    if (!data) return res.status(404).json({ error: 'Lead not found' });
+  if (error) return res.status(500).json({ error: error.message });
+  if (!data) return res.status(404).json({ error: 'Lead not found' });
 
-    logger.info('lead', `Lead updated: ${id}`, {
-      firmId: req.firm.id,
-      leadId: id,
-      userId: req.user.id,
-      details: req.body,
-      source: 'routes.leads.patch',
-    });
+  logger.info('lead', `Lead updated: ${id}`, {
+    firmId: req.firm.id,
+    leadId: id,
+    userId: req.user.id,
+    details: req.body,
+    source: 'routes.leads.patch',
+  });
 
-    return res.json(data);
-  }
-
-  const store = getLocalStore();
-  const lead = store.leads.find((l) => l.id === id);
-  if (!lead) return res.status(404).json({ error: 'Lead not found' });
-  Object.assign(lead, req.body);
-  res.json(lead);
+  return res.json(data);
 });
 
 // POST /api/leads/:id/notes
 router.post('/:id/notes', async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: 'Database unavailable' });
+  if (!req.firm) return res.status(400).json({ error: 'No firm associated with user' });
+
   const { id } = req.params;
   const { text } = req.body;
 
@@ -101,34 +91,25 @@ router.post('/:id/notes', async (req, res) => {
 
   const note = { text, author: req.user.name, created_at: new Date().toISOString() };
 
-  if (supabase && req.firm) {
-    const { data: lead, error: fetchErr } = await supabase
-      .from('leads')
-      .select('call_notes')
-      .eq('id', id)
-      .eq('firm_id', req.firm.id)
-      .single();
+  const { data: lead, error: fetchErr } = await supabase
+    .from('leads')
+    .select('call_notes')
+    .eq('id', id)
+    .eq('firm_id', req.firm.id)
+    .single();
 
-    if (fetchErr) return res.status(404).json({ error: 'Lead not found' });
+  if (fetchErr) return res.status(404).json({ error: 'Lead not found' });
 
-    const updatedNotes = [...(lead.call_notes || []), note];
-    const { data, error } = await supabase
-      .from('leads')
-      .update({ call_notes: updatedNotes })
-      .eq('id', id)
-      .select()
-      .single();
+  const updatedNotes = [...(lead.call_notes || []), note];
+  const { data, error } = await supabase
+    .from('leads')
+    .update({ call_notes: updatedNotes })
+    .eq('id', id)
+    .select()
+    .single();
 
-    if (error) return res.status(500).json({ error: error.message });
-    return res.json(data);
-  }
-
-  const store = getLocalStore();
-  const lead = store.leads.find((l) => l.id === id);
-  if (!lead) return res.status(404).json({ error: 'Lead not found' });
-  lead.call_notes = lead.call_notes || [];
-  lead.call_notes.push(note);
-  res.json(lead);
+  if (error) return res.status(500).json({ error: error.message });
+  return res.json(data);
 });
 
 module.exports = router;

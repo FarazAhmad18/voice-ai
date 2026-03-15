@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
 import { fetchLead, updateLead, addCallNote, fetchStaff } from '../services/api';
 import { useFirm } from '../context/FirmContext';
+import { toast } from 'sonner';
 import ScoreBadge from '../components/ScoreBadge';
 import StatusBadge from '../components/StatusBadge';
 import {
@@ -76,8 +77,9 @@ export default function LeadDetail() {
     try {
       const updated = await updateLead(id, { status: newStatus });
       setLead((prev) => ({ ...prev, ...updated }));
+      toast.success(`Status updated to ${newStatus}`);
     } catch (err) {
-      console.error('Failed to update status:', err);
+      toast.error('Failed to update status');
     }
   }
 
@@ -85,8 +87,10 @@ export default function LeadDetail() {
     try {
       await updateLead(id, { assigned_staff_id: staffId || null });
       setLead((prev) => ({ ...prev, assigned_staff_id: staffId || null }));
+      const staffMember = staff.find(s => s.id === staffId);
+      toast.success(staffId ? `Assigned to ${staffMember?.name || 'staff'}` : 'Staff unassigned');
     } catch (err) {
-      console.error('Failed to assign staff:', err);
+      toast.error('Failed to assign staff');
     }
   }
 
@@ -95,8 +99,9 @@ export default function LeadDetail() {
     try {
       await updateLead(id, { follow_up_date: followUpDate });
       setLead((prev) => ({ ...prev, follow_up_date: followUpDate }));
+      toast.success(`Follow-up set for ${followUpDate}`);
     } catch (err) {
-      console.error('Failed to set follow-up:', err);
+      toast.error('Failed to set follow-up');
     }
   }
 
@@ -110,8 +115,9 @@ export default function LeadDetail() {
         call_notes: [...(prev.call_notes || []), { text: noteText, created_at: new Date().toISOString() }],
       }));
       setNoteText('');
+      toast.success('Note added');
     } catch (err) {
-      console.error('Failed to add note:', err);
+      toast.error('Failed to add note');
     } finally {
       setSavingNote(false);
     }

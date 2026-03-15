@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useFirm } from '../context/FirmContext';
 import { updateSettings, fetchStaff } from '../services/api';
+import { toast } from 'sonner';
 
 export default function Settings() {
   const { user, firm } = useAuth();
@@ -42,9 +43,11 @@ export default function Settings() {
     try {
       await updateSettings(form);
       setSaved(true);
+      toast.success('Settings saved');
       setTimeout(() => setSaved(false), 3000);
     } catch (err) {
       setError(err.message || 'Failed to save');
+      toast.error('Failed to save settings');
     } finally {
       setSaving(false);
     }

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchLeads, updateLead } from '../services/api';
+import { toast } from 'sonner';
 import ScoreBadge from '../components/ScoreBadge';
 import DateFilter from '../components/DateFilter';
 import {
@@ -68,8 +69,9 @@ export default function FollowUps() {
     try {
       await updateLead(id, { status: 'booked' });
       setLeads(prev => prev.filter(l => l.id !== id));
+      toast.success('Lead marked as booked');
     } catch (err) {
-      console.error('Failed to update lead:', err);
+      toast.error('Failed to mark as booked');
     }
   }
 

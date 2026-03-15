@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchAppointments, updateAppointment } from '../services/api';
+import { toast } from 'sonner';
 import DateFilter from '../components/DateFilter';
 import StatusBadge from '../components/StatusBadge';
 import { CalendarCheck, Clock, Phone, User, ChevronRight, CheckCircle, XCircle } from 'lucide-react';
@@ -38,8 +39,9 @@ export default function Appointments() {
       setAppointments((prev) =>
         prev.map((apt) => (apt.id === id ? { ...apt, status: newStatus } : apt))
       );
+      toast.success(`Appointment marked as ${newStatus}`);
     } catch (err) {
-      console.error('Failed to update appointment:', err);
+      toast.error('Failed to update appointment');
     }
   }
 

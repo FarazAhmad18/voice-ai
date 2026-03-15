@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { fetchLeads } from '../services/api';
+import { supabase } from '../services/supabase';
 import ScoreBadge from '../components/ScoreBadge';
 import StatusBadge from '../components/StatusBadge';
 import DateFilter from '../components/DateFilter';
@@ -105,6 +106,35 @@ export default function Leads() {
       }
     }
     loadLeads();
+  }, []);
+
+  // Supabase Realtime: listen for new and updated leads
+  useEffect(() => {
+    const channel = supabase
+      .channel('leads-changes')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'leads' },
+        (payload) => {
+          setLeads((prev) => [payload.new, ...prev]);
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'leads' },
+        (payload) => {
+          setLeads((prev) =>
+            prev.map((lead) =>
+              lead.id === payload.new.id ? payload.new : lead
+            )
+          );
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const visibleLeads = leads.filter(l => l.status !== 'contacted');

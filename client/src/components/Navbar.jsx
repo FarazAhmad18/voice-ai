@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useFirm } from '../context/FirmContext';
+import { fetchLeads } from '../services/api';
+import { supabase } from '../services/supabase';
 import {
   LayoutDashboard, Users, UserCheck, Calendar, Settings, Phone,
   Building2, FileText, Activity, LogOut, Shield, Search, Bell,
@@ -12,6 +14,7 @@ const clientNav = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/leads', label: 'Leads', icon: Users },
   { path: '/follow-ups', label: 'Follow Ups', icon: UserCheck },
+  { path: '/staff', label: 'Staff', icon: Users, adminOnly: true },
   { path: '/appointments', label: 'Appointments', icon: Calendar },
   { path: '/settings', label: 'Settings', icon: Settings },
 ];
@@ -31,10 +34,15 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
   const userMenuRef = useRef(null);
+  const notifRef = useRef(null);
 
   const isAdminSection = location.pathname.startsWith('/admin');
-  const navItems = isSuperAdmin && isAdminSection ? adminNav : clientNav;
+  const isAdminRole = user?.role === 'admin' || user?.role === 'super_admin';
+  const navItems = (isSuperAdmin && isAdminSection ? adminNav : clientNav)
+    .filter(item => !item.adminOnly || isAdminRole);
   const brandName = isSuperAdmin && isAdminSection ? 'LeapingAI' : (firm?.name || 'LeapingAI');
 
   // Close user menu on outside click
@@ -51,7 +59,69 @@ export default function Navbar() {
   // Close mobile menu on route change
   useEffect(() => {
     setMobileOpen(false);
+    setNotifOpen(false);
   }, [location.pathname]);
+
+  // Close notification dropdown on outside click
+  useEffect(() => {
+    function handleClick(e) {
+      if (notifRef.current && !notifRef.current.contains(e.target)) {
+        setNotifOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  // Fetch today's leads as notifications on mount
+  useEffect(() => {
+    async function loadNotifications() {
+      try {
+        const leads = await fetchLeads();
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const todayLeads = leads.filter((l) => {
+          const created = new Date(l.created_at);
+          return created >= today;
+        });
+        setNotifications(todayLeads);
+      } catch (err) {
+        console.error('Failed to load notifications:', err);
+      }
+    }
+    if (user) loadNotifications();
+  }, [user]);
+
+  // Realtime: add new leads to notifications
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel('navbar-notifications')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'leads' },
+        (payload) => {
+          setNotifications((prev) => [payload.new, ...prev]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
+  function formatNotifTime(dateStr) {
+    if (!dateStr) return '';
+    const now = new Date();
+    const date = new Date(dateStr);
+    const diffMin = Math.floor((now - date) / 60000);
+    if (diffMin < 1) return 'Just now';
+    if (diffMin < 60) return `${diffMin}m ago`;
+    const diffHr = Math.floor(diffMin / 60);
+    if (diffHr < 24) return `${diffHr}h ago`;
+    return `${Math.floor(diffHr / 24)}d ago`;
+  }
 
   function isActive(path) {
     if (path === '/' || path === '/admin') return location.pathname === path;
@@ -137,9 +207,69 @@ export default function Navbar() {
             </form>
 
             {/* Notifications */}
-            <button className="relative p-2 rounded-lg hover:bg-slate-50 transition-colors">
-              <Bell size={18} className="text-slate-400" />
-            </button>
+            <div className="relative" ref={notifRef}>
+              <button
+                onClick={() => setNotifOpen(!notifOpen)}
+                className="relative p-2 rounded-lg hover:bg-slate-50 transition-colors"
+              >
+                <Bell size={18} className="text-slate-400" />
+                {notifications.length > 0 && (
+                  <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                    {notifications.length > 9 ? '9+' : notifications.length}
+                  </span>
+                )}
+              </button>
+
+              {notifOpen && (
+                <div className="absolute right-0 top-12 w-80 bg-white rounded-xl shadow-lg shadow-slate-200/50 border border-slate-100 z-50 overflow-hidden">
+                  <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+                    <p className="text-sm font-semibold text-slate-900">Notifications</p>
+                    <span className="text-xs text-slate-400">{notifications.length} today</span>
+                  </div>
+                  <div className="max-h-80 overflow-y-auto">
+                    {notifications.length === 0 ? (
+                      <div className="py-8 text-center">
+                        <Bell size={20} className="text-slate-200 mx-auto mb-2" />
+                        <p className="text-sm text-slate-400">No new leads today</p>
+                      </div>
+                    ) : (
+                      notifications.slice(0, 10).map((lead) => {
+                        const initials = lead.caller_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || '??';
+                        return (
+                          <Link
+                            key={lead.id}
+                            to={`/leads/${lead.id}`}
+                            onClick={() => setNotifOpen(false)}
+                            className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0"
+                          >
+                            <div className="w-8 h-8 bg-blue-50 rounded-full flex items-center justify-center text-[10px] font-semibold text-blue-600 flex-shrink-0">
+                              {initials}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-slate-800 truncate">{lead.caller_name || 'Unknown Caller'}</p>
+                              <p className="text-xs text-slate-400 truncate">
+                                <span className="capitalize">{lead.case_type || 'New lead'}</span>
+                                {lead.score_label === 'hot' && <span className="ml-1.5 text-red-500 font-medium">Hot</span>}
+                              </p>
+                            </div>
+                            <span className="text-[10px] text-slate-300 flex-shrink-0">{formatNotifTime(lead.created_at)}</span>
+                          </Link>
+                        );
+                      })
+                    )}
+                  </div>
+                  {notifications.length > 0 && (
+                    <Link
+                      to="/leads"
+                      onClick={() => setNotifOpen(false)}
+                      className="block text-center text-xs font-medium text-blue-600 hover:bg-blue-50 py-2.5 border-t border-slate-100 transition-colors"
+                    >
+                      View all leads
+                    </Link>
+                  )}
+                </div>
+              )}
+            </div>
 
             {/* User Menu */}
             <div className="relative" ref={userMenuRef}>

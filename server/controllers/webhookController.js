@@ -4,22 +4,47 @@ const { getAvailableSlots, createAppointmentEvent } = require('../services/googl
 const { verifyWebhookSignature } = require('../services/retell');
 const logger = require('../services/logger');
 
-// Default firm ID for MVP (Mitchell Family Law)
-// In multi-tenant mode, this will be looked up from firms table via agent_id
-const DEFAULT_FIRM_ID = 'a0000000-0000-0000-0000-000000000001';
+/**
+ * Look up the firm associated with a Retell agent_id.
+ * Returns the firm record or null if not found.
+ */
+async function lookupFirmByAgentId(agentId) {
+  if (!supabase || !agentId) return null;
 
-// In-memory storage fallback (will be removed in multi-tenant phase)
-const localStore = {
-  leads: [],
-  calls: [],
-  appointments: [],
-};
+  const { data, error } = await supabase
+    .from('firms')
+    .select('*')
+    .eq('retell_agent_id', agentId)
+    .single();
+
+  if (error || !data) return null;
+  return data;
+}
 
 /**
  * Main Retell webhook handler — receives all call events.
  * Events: call_started, call_ended, call_analyzed
  */
 async function handleWebhook(req, res) {
+  // --- Signature verification ---
+  const signature = req.headers['x-retell-signature'];
+  if (process.env.RETELL_API_KEY) {
+    const isValid = verifyWebhookSignature(JSON.stringify(req.body), signature);
+    if (!isValid) {
+      logger.warn('retell_webhook', 'Webhook signature verification failed', {
+        details: { signature: signature || 'missing' },
+        ip: req.ip,
+        source: 'webhookController.handleWebhook',
+      });
+      return res.status(401).json({ error: 'Invalid signature' });
+    }
+  } else {
+    logger.warn('retell_webhook', 'RETELL_API_KEY not set — skipping webhook signature verification', {
+      ip: req.ip,
+      source: 'webhookController.handleWebhook',
+    });
+  }
+
   const { event, call } = req.body;
 
   if (!event || !call) {
@@ -73,11 +98,34 @@ function handleCallStarted(call, res) {
 /**
  * call_ended — main processing.
  * Creates lead + call record from the completed call data.
+ * Looks up the firm via agent_id for proper multi-tenant routing.
  */
 async function handleCallEnded(call) {
   const start = Date.now();
+
+  if (!supabase) {
+    logger.error('database', 'Supabase not available — cannot process call_ended', {
+      callId: call.call_id,
+      source: 'webhookController.handleCallEnded',
+    });
+    return;
+  }
+
   const callerPhone = call.from_number || 'unknown';
   const agentId = call.agent_id;
+
+  // Look up firm by agent_id — multi-tenant routing
+  const firm = await lookupFirmByAgentId(agentId);
+  if (!firm) {
+    logger.error('retell_webhook', `No firm found for agent_id: ${agentId} — skipping lead creation`, {
+      callId: call.call_id,
+      details: { agentId, from: callerPhone },
+      source: 'webhookController.handleCallEnded',
+    });
+    return;
+  }
+
+  const firmId = firm.id;
 
   // Calculate duration from timestamps
   const durationMs = (call.end_timestamp && call.start_timestamp)
@@ -95,19 +143,14 @@ async function handleCallEnded(call) {
 
   // Find if this caller booked an appointment during the call
   let recentAppointment = null;
-  if (supabase) {
-    const { data } = await supabase
-      .from('appointments')
-      .select('*')
-      .eq('caller_phone', callerPhone)
-      .order('created_at', { ascending: false })
-      .limit(1);
-    recentAppointment = data?.[0] || null;
-  } else {
-    recentAppointment = localStore.appointments.find(
-      (apt) => apt.caller_phone === callerPhone
-    );
-  }
+  const { data: aptData } = await supabase
+    .from('appointments')
+    .select('*')
+    .eq('caller_phone', callerPhone)
+    .eq('firm_id', firmId)
+    .order('created_at', { ascending: false })
+    .limit(1);
+  recentAppointment = aptData?.[0] || null;
 
   // Build lead data
   const leadData = {
@@ -126,7 +169,7 @@ async function handleCallEnded(call) {
 
   const lead = {
     id: `lead_${Date.now()}`,
-    firm_id: DEFAULT_FIRM_ID,
+    firm_id: firmId,
     ...leadData,
     score,
     score_label: scoreLabel,
@@ -138,7 +181,7 @@ async function handleCallEnded(call) {
   const callRecord = {
     id: `call_${Date.now()}`,
     lead_id: lead.id,
-    firm_id: DEFAULT_FIRM_ID,
+    firm_id: firmId,
     retell_call_id: call.call_id,
     transcript: transcriptText,
     summary: '',
@@ -149,46 +192,60 @@ async function handleCallEnded(call) {
   };
 
   // Link appointment to lead
-  if (recentAppointment && supabase) {
+  if (recentAppointment) {
     await supabase
       .from('appointments')
       .update({ lead_id: lead.id })
       .eq('id', recentAppointment.id);
   }
 
-  // Save to Supabase or local store
-  if (supabase) {
-    try {
-      await supabase.from('leads').insert(lead);
-      await supabase.from('calls').insert(callRecord);
+  // Save to Supabase
+  try {
+    await supabase.from('leads').insert(lead);
+    await supabase.from('calls').insert(callRecord);
 
-      logger.info('lead_scoring', `Lead created: ${lead.caller_name} (score: ${score}, ${scoreLabel})`, {
-        firmId: lead.firm_id,
-        leadId: lead.id,
-        callId: call.call_id,
-        details: { score, scoreLabel, caseType: lead.case_type, urgency: lead.urgency, booked: lead.appointment_booked },
-        durationMs: Date.now() - start,
-        source: 'webhookController.handleCallEnded',
-      });
-    } catch (err) {
-      logger.error('database', `Failed to save lead: ${err.message}`, {
-        firmId: DEFAULT_FIRM_ID,
-        callId: call.call_id,
-        details: { error: err.message, leadId: lead.id },
-        source: 'webhookController.handleCallEnded',
-      });
-      localStore.leads.push(lead);
-      localStore.calls.push(callRecord);
-    }
-  } else {
-    localStore.leads.push(lead);
-    localStore.calls.push(callRecord);
-
-    logger.info('lead_scoring', `Lead created (local): ${lead.caller_name} (score: ${score}, ${scoreLabel})`, {
+    logger.info('lead_scoring', `Lead created: ${lead.caller_name} (score: ${score}, ${scoreLabel})`, {
+      firmId,
       leadId: lead.id,
       callId: call.call_id,
-      details: { score, scoreLabel, caseType: lead.case_type },
+      details: { score, scoreLabel, caseType: lead.case_type, urgency: lead.urgency, booked: lead.appointment_booked },
       durationMs: Date.now() - start,
+      source: 'webhookController.handleCallEnded',
+    });
+
+    // Persist any pending intake answers for this call
+    if (global._pendingIntakeAnswers && global._pendingIntakeAnswers[call.call_id]) {
+      const pendingAnswers = global._pendingIntakeAnswers[call.call_id].map((a) => ({
+        ...a,
+        call_id: callRecord.id,
+        lead_id: lead.id,
+        firm_id: firmId,
+      }));
+
+      const { error: intakeErr } = await supabase.from('intake_answers').insert(pendingAnswers);
+      if (intakeErr) {
+        logger.error('intake', `Failed to persist intake answers: ${intakeErr.message}`, {
+          firmId,
+          callId: call.call_id,
+          leadId: lead.id,
+          details: { error: intakeErr.message, answerCount: pendingAnswers.length },
+          source: 'webhookController.handleCallEnded',
+        });
+      } else {
+        logger.info('intake', `Persisted ${pendingAnswers.length} intake answers for lead ${lead.id}`, {
+          firmId,
+          callId: call.call_id,
+          leadId: lead.id,
+          source: 'webhookController.handleCallEnded',
+        });
+      }
+      delete global._pendingIntakeAnswers[call.call_id];
+    }
+  } catch (err) {
+    logger.error('database', `Failed to save lead: ${err.message}`, {
+      firmId,
+      callId: call.call_id,
+      details: { error: err.message, leadId: lead.id },
       source: 'webhookController.handleCallEnded',
     });
   }
@@ -199,6 +256,14 @@ async function handleCallEnded(call) {
  * Updates the call and lead with summary and sentiment.
  */
 async function handleCallAnalyzed(call) {
+  if (!supabase) {
+    logger.error('database', 'Supabase not available — cannot process call_analyzed', {
+      callId: call.call_id,
+      source: 'webhookController.handleCallAnalyzed',
+    });
+    return;
+  }
+
   const analysis = call.call_analysis;
   if (!analysis) {
     logger.warn('retell_webhook', 'call_analyzed received with no analysis data', {
@@ -212,49 +277,31 @@ async function handleCallAnalyzed(call) {
   const sentiment = analysis.user_sentiment || null;
   const retellCallId = call.call_id;
 
-  if (supabase) {
-    try {
-      const { data: callData } = await supabase
-        .from('calls')
-        .update({ summary, sentiment })
-        .eq('retell_call_id', retellCallId)
-        .select('lead_id')
-        .single();
+  try {
+    const { data: callData } = await supabase
+      .from('calls')
+      .update({ summary, sentiment })
+      .eq('retell_call_id', retellCallId)
+      .select('lead_id')
+      .single();
 
-      if (callData?.lead_id) {
-        await supabase
-          .from('leads')
-          .update({ notes: summary, sentiment })
-          .eq('id', callData.lead_id);
-      }
+    if (callData?.lead_id) {
+      await supabase
+        .from('leads')
+        .update({ notes: summary, sentiment })
+        .eq('id', callData.lead_id);
+    }
 
-      logger.info('retell_webhook', `Call analyzed: sentiment=${sentiment}`, {
-        callId: retellCallId,
-        leadId: callData?.lead_id,
-        details: { summary: summary.slice(0, 200), sentiment },
-        source: 'webhookController.handleCallAnalyzed',
-      });
-    } catch (err) {
-      logger.error('database', `Failed to update call analysis: ${err.message}`, {
-        callId: retellCallId,
-        details: { error: err.message },
-        source: 'webhookController.handleCallAnalyzed',
-      });
-    }
-  } else {
-    const callRecord = localStore.calls.find((c) => c.retell_call_id === retellCallId);
-    if (callRecord) {
-      callRecord.summary = summary;
-      callRecord.sentiment = sentiment;
-      const lead = localStore.leads.find((l) => l.id === callRecord.lead_id);
-      if (lead) {
-        lead.notes = summary;
-        lead.sentiment = sentiment;
-      }
-    }
-    logger.info('retell_webhook', `Call analyzed (local): sentiment=${sentiment}`, {
+    logger.info('retell_webhook', `Call analyzed: sentiment=${sentiment}`, {
       callId: retellCallId,
+      leadId: callData?.lead_id,
       details: { summary: summary.slice(0, 200), sentiment },
+      source: 'webhookController.handleCallAnalyzed',
+    });
+  } catch (err) {
+    logger.error('database', `Failed to update call analysis: ${err.message}`, {
+      callId: retellCallId,
+      details: { error: err.message },
       source: 'webhookController.handleCallAnalyzed',
     });
   }
@@ -313,8 +360,13 @@ async function handleCheckAvailability(req, res) {
 
 /**
  * Handle book_appointment tool call.
+ * Looks up firm by agent_id for multi-tenant support.
  */
 async function handleBookAppointment(req, res) {
+  if (!supabase) {
+    return res.status(503).json({ error: 'Database unavailable' });
+  }
+
   const { args, call } = req.body;
   const {
     caller_name,
@@ -327,15 +379,30 @@ async function handleBookAppointment(req, res) {
     notes,
   } = args || {};
 
+  // Look up firm by agent_id
+  const firm = await lookupFirmByAgentId(call?.agent_id);
+  if (!firm) {
+    logger.error('tool_call', `book_appointment: No firm found for agent_id ${call?.agent_id}`, {
+      callId: call?.call_id,
+      source: 'webhookController.handleBookAppointment',
+    });
+    return res.json({
+      success: false,
+      message: 'Sorry, I was unable to book the appointment. Please try again later.',
+    });
+  }
+
+  const firmId = firm.id;
+
   logger.info('tool_call', `book_appointment: ${caller_name} on ${appointment_date} at ${appointment_time}`, {
     callId: call?.call_id,
-    details: { caller_name, caller_phone, case_type, appointment_date, appointment_time, urgency },
+    details: { caller_name, caller_phone, case_type, appointment_date, appointment_time, urgency, firmId },
     source: 'webhookController.handleBookAppointment',
   });
 
   const appointment = {
     id: `apt_${Date.now()}`,
-    firm_id: DEFAULT_FIRM_ID,
+    firm_id: firmId,
     caller_name: caller_name || 'Unknown',
     caller_phone: caller_phone || call?.from_number || 'unknown',
     caller_email: caller_email || null,
@@ -348,26 +415,21 @@ async function handleBookAppointment(req, res) {
     created_at: new Date().toISOString(),
   };
 
-  if (supabase) {
-    try {
-      await supabase.from('appointments').insert(appointment);
-      logger.info('appointment', `Booked: ${caller_name} — ${appointment_date} ${appointment_time}`, {
-        firmId: DEFAULT_FIRM_ID,
-        callId: call?.call_id,
-        details: { appointmentId: appointment.id, caseType: case_type },
-        source: 'webhookController.handleBookAppointment',
-      });
-    } catch (err) {
-      logger.error('database', `Failed to save appointment: ${err.message}`, {
-        firmId: DEFAULT_FIRM_ID,
-        callId: call?.call_id,
-        details: { error: err.message, appointment },
-        source: 'webhookController.handleBookAppointment',
-      });
-      localStore.appointments.push(appointment);
-    }
-  } else {
-    localStore.appointments.push(appointment);
+  try {
+    await supabase.from('appointments').insert(appointment);
+    logger.info('appointment', `Booked: ${caller_name} — ${appointment_date} ${appointment_time}`, {
+      firmId,
+      callId: call?.call_id,
+      details: { appointmentId: appointment.id, caseType: case_type },
+      source: 'webhookController.handleBookAppointment',
+    });
+  } catch (err) {
+    logger.error('database', `Failed to save appointment: ${err.message}`, {
+      firmId,
+      callId: call?.call_id,
+      details: { error: err.message, appointment },
+      source: 'webhookController.handleBookAppointment',
+    });
   }
 
   // Create Google Calendar event
@@ -396,8 +458,14 @@ async function handleBookAppointment(req, res) {
 /**
  * Handle save_intake_data tool call.
  * Stores structured Q&A from the AI intake conversation.
+ * Saves directly to intake_answers table if possible, otherwise holds in memory
+ * until the lead is created in handleCallEnded.
  */
 async function handleSaveIntakeData(req, res) {
+  if (!supabase) {
+    return res.status(503).json({ error: 'Database unavailable' });
+  }
+
   const { args, call } = req.body;
 
   const answerCount = args ? Object.keys(args).length : 0;
@@ -407,32 +475,41 @@ async function handleSaveIntakeData(req, res) {
     source: 'webhookController.handleSaveIntakeData',
   });
 
-  if (supabase && args) {
-    try {
-      const answers = Object.entries(args).map(([question, answer]) => ({
-        call_id: null,
-        lead_id: null,
-        firm_id: DEFAULT_FIRM_ID,
-        question: question.replace(/_/g, ' '),
-        answer: String(answer),
-        created_at: new Date().toISOString(),
-      }));
+  if (args) {
+    // Look up firm by agent_id
+    const firm = await lookupFirmByAgentId(call?.agent_id);
+    const firmId = firm?.id || null;
 
-      if (!global._pendingIntakeAnswers) global._pendingIntakeAnswers = {};
-      global._pendingIntakeAnswers[call?.call_id] = answers;
+    const answers = Object.entries(args).map(([question, answer]) => ({
+      call_id: null,   // will be set in handleCallEnded when the call record is created
+      lead_id: null,   // will be set in handleCallEnded when the lead is created
+      firm_id: firmId,
+      question: question.replace(/_/g, ' '),
+      answer: String(answer),
+      created_at: new Date().toISOString(),
+    }));
 
-      logger.info('intake', `Stored ${answers.length} intake answers for call ${call?.call_id}`, {
+    // Save to intake_answers table immediately (lead_id and call_id will be updated later)
+    const { error: insertErr } = await supabase.from('intake_answers').insert(answers);
+
+    if (insertErr) {
+      logger.error('intake', `Failed to insert intake answers: ${insertErr.message}`, {
         callId: call?.call_id,
+        details: { error: insertErr.message, answerCount: answers.length },
+        source: 'webhookController.handleSaveIntakeData',
+      });
+    } else {
+      logger.info('intake', `Saved ${answers.length} intake answers to DB`, {
+        callId: call?.call_id,
+        firmId,
         details: { answerCount: answers.length },
         source: 'webhookController.handleSaveIntakeData',
       });
-    } catch (err) {
-      logger.error('intake', `Failed to store intake data: ${err.message}`, {
-        callId: call?.call_id,
-        details: { error: err.message, args },
-        source: 'webhookController.handleSaveIntakeData',
-      });
     }
+
+    // Also store in memory so handleCallEnded can update lead_id and call_id
+    if (!global._pendingIntakeAnswers) global._pendingIntakeAnswers = {};
+    global._pendingIntakeAnswers[call?.call_id] = answers;
   }
 
   return res.json({
@@ -441,15 +518,9 @@ async function handleSaveIntakeData(req, res) {
   });
 }
 
-// Export for API routes
-function getLocalStore() {
-  return localStore;
-}
-
 module.exports = {
   handleWebhook,
   handleCheckAvailability,
   handleBookAppointment,
   handleSaveIntakeData,
-  getLocalStore,
 };
