@@ -7,9 +7,10 @@ const logger = require('./logger');
  * @param {object} template - { body, case_types }
  * @param {object} firm - firm record from DB
  * @param {array} activeStaff - staff records where is_active = true
+ * @param {array} knowledgeEntries - active firm_knowledge records
  * @returns {string} rendered prompt
  */
-function renderPrompt(template, firm, activeStaff = []) {
+function renderPrompt(template, firm, activeStaff = [], knowledgeEntries = []) {
   let prompt = template.body;
 
   const staffList = activeStaff.length > 0
@@ -37,6 +38,16 @@ function renderPrompt(template, firm, activeStaff = []) {
 
   for (const [key, value] of Object.entries(replacements)) {
     prompt = prompt.replaceAll(key, value);
+  }
+
+  // Append knowledge base FAQ section if there are active entries
+  if (knowledgeEntries.length > 0) {
+    const faqLines = knowledgeEntries.map(entry =>
+      `Q: ${entry.question}\nA: ${entry.answer}`
+    );
+
+    prompt += '\n\nFREQUENTLY ASKED QUESTIONS:\nWhen callers ask these questions, use the answers below:\n\n'
+      + faqLines.join('\n\n');
   }
 
   return prompt;
@@ -89,7 +100,16 @@ async function reRenderFirmPrompt(firmId) {
       .eq('is_active', true)
       .order('name');
 
-    const rendered = renderPrompt(template, firm, staff || []);
+    // Fetch active knowledge entries for FAQ section
+    const { data: knowledge } = await supabase
+      .from('firm_knowledge')
+      .select('question, answer, category')
+      .eq('firm_id', firmId)
+      .eq('is_active', true)
+      .order('sort_order')
+      .order('created_at');
+
+    const rendered = renderPrompt(template, firm, staff || [], knowledge || []);
 
     // Save rendered prompt to firm
     await supabase
@@ -99,7 +119,7 @@ async function reRenderFirmPrompt(firmId) {
 
     logger.info('prompt', `Prompt re-rendered for ${firm.name}`, {
       firmId,
-      details: { templateName: template.name, staffCount: staff?.length || 0, promptLength: rendered.length },
+      details: { templateName: template.name, staffCount: staff?.length || 0, knowledgeCount: knowledge?.length || 0, promptLength: rendered.length },
       source: 'promptRenderer.reRenderFirmPrompt',
     });
 

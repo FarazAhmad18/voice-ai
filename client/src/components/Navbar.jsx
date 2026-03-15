@@ -7,7 +7,7 @@ import { supabase } from '../services/supabase';
 import {
   LayoutDashboard, Users, UserCheck, Calendar, Settings, Phone,
   Building2, FileText, Activity, LogOut, Shield, Search, Bell,
-  Menu, X, ChevronDown, Command, Keyboard,
+  Menu, X, ChevronDown, Command, Keyboard, Brain,
 } from 'lucide-react';
 
 const clientNav = [
@@ -15,6 +15,7 @@ const clientNav = [
   { path: '/leads', label: 'Leads', icon: Users },
   { path: '/follow-ups', label: 'Follow Ups', icon: UserCheck },
   { path: '/staff', label: 'Staff', icon: Users, adminOnly: true },
+  { path: '/knowledge', label: 'AI Knowledge', icon: Brain, adminOnly: true },
   { path: '/appointments', label: 'Appointments', icon: Calendar },
   { path: '/settings', label: 'Settings', icon: Settings },
 ];

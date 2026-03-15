@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useFirm } from '../context/FirmContext';
-import { updateSettings, fetchStaff } from '../services/api';
+import { updateSettings, fetchStaff, fetchKnowledge } from '../services/api';
 import { toast } from 'sonner';
 import {
   Webhook, Eye, EyeOff, Loader2, Building2, Bot, Users,
   CreditCard, User, CheckCircle, Shield, Sparkles,
-  Globe, Clock, MapPin, Mail, Phone, ExternalLink,
+  Globe, Clock, MapPin, Mail, Phone, ExternalLink, Brain, ArrowRight,
 } from 'lucide-react';
 
 /* ─── Inject keyframe styles once ─── */
@@ -47,6 +48,7 @@ export default function Settings() {
   const { user, firm } = useAuth();
   const { labels } = useFirm();
   const [staff, setStaff] = useState([]);
+  const [knowledgeCount, setKnowledgeCount] = useState(0);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
@@ -84,6 +86,10 @@ export default function Settings() {
       });
     }
     fetchStaff().then(setStaff).catch(() => {});
+    fetchKnowledge().then(data => {
+      const items = Array.isArray(data) ? data : [];
+      setKnowledgeCount(items.filter(e => e.is_active !== false).length);
+    }).catch(() => {});
   }, [firm]);
 
   async function handleSave() {
@@ -316,6 +322,38 @@ export default function Settings() {
                 )}
               </span>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* AI Knowledge Preview */}
+      <div className="settings-fade-in-up bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden" style={{ animationDelay: '150ms' }}>
+        <div className="bg-gradient-to-r from-violet-500 to-purple-500 px-6 py-4 flex items-center gap-3">
+          <div className="w-8 h-8 bg-white/15 rounded-lg flex items-center justify-center">
+            <Brain size={16} className="text-white/90" />
+          </div>
+          <h3 className="text-sm font-bold text-white">AI Knowledge</h3>
+        </div>
+        <div className="p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 bg-gradient-to-br from-violet-50 to-purple-50 rounded-xl flex items-center justify-center">
+                <Brain size={20} className="text-violet-500" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-slate-800">
+                  {knowledgeCount} active {knowledgeCount === 1 ? 'entry' : 'entries'}
+                </p>
+                <p className="text-xs text-slate-400 mt-0.5">Questions your AI can answer</p>
+              </div>
+            </div>
+            <Link
+              to="/knowledge"
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-violet-600 bg-violet-50 hover:bg-violet-100 rounded-lg border border-violet-100 transition-all duration-200"
+            >
+              Manage Knowledge
+              <ArrowRight size={12} />
+            </Link>
           </div>
         </div>
       </div>

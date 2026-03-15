@@ -156,6 +156,28 @@ export async function sendMessage(data) {
   return apiFetch('/messages', { method: 'POST', body: JSON.stringify(data) });
 }
 
+// ── Knowledge Base ───────────────────────────────────────
+
+export async function fetchKnowledge() {
+  return apiFetch('/knowledge');
+}
+
+export async function createKnowledge(data) {
+  return apiFetch('/knowledge', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function updateKnowledge(id, updates) {
+  return apiFetch(`/knowledge/${id}`, { method: 'PATCH', body: JSON.stringify(updates) });
+}
+
+export async function deleteKnowledge(id) {
+  return apiFetch(`/knowledge/${id}`, { method: 'DELETE' });
+}
+
+export async function reorderKnowledge(items) {
+  return apiFetch('/knowledge/reorder', { method: 'PATCH', body: JSON.stringify({ items }) });
+}
+
 // ── Logs (Admin) ───────────────────────────────────────
 
 export async function fetchLogs(params = {}) {
