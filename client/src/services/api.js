@@ -22,6 +22,16 @@ export async function updateLead(id, updates) {
   return res.json();
 }
 
+export async function addCallNote(leadId, text) {
+  const res = await fetch(`${API_BASE}/leads/${leadId}/notes`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text }),
+  });
+  if (!res.ok) throw new Error('Failed to add note');
+  return res.json();
+}
+
 export async function fetchAppointments() {
   const res = await fetch(`${API_BASE}/appointments`);
   if (!res.ok) throw new Error('Failed to fetch appointments');

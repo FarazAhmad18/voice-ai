@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { fetchLead, updateLead } from '../services/api';
+import { fetchLead, updateLead, addCallNote } from '../services/api';
 import ScoreBadge from '../components/ScoreBadge';
 import StatusBadge from '../components/StatusBadge';
-import { ArrowLeft, Phone, Mail, Briefcase, AlertTriangle, CalendarCheck, Clock, Play, FileText, Bot, User } from 'lucide-react';
+import { ArrowLeft, Phone, Mail, Briefcase, AlertTriangle, CalendarCheck, Clock, Play, FileText, Send, UserCheck, StickyNote, Bell } from 'lucide-react';
 
 const STATUS_OPTIONS = ['new', 'contacted', 'booked', 'converted', 'closed'];
 
@@ -11,12 +11,18 @@ export default function LeadDetail() {
   const { id } = useParams();
   const [lead, setLead] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [noteText, setNoteText] = useState('');
+  const [savingNote, setSavingNote] = useState(false);
+  const [assignedAttorney, setAssignedAttorney] = useState('');
+  const [followUpDate, setFollowUpDate] = useState('');
 
   useEffect(() => {
     async function loadLead() {
       try {
         const data = await fetchLead(id);
         setLead(data);
+        setAssignedAttorney(data.assigned_attorney || '');
+        setFollowUpDate(data.follow_up_date || '');
       } catch (err) {
         console.error('Failed to fetch lead:', err);
       } finally {
@@ -35,127 +41,127 @@ export default function LeadDetail() {
     }
   }
 
+  async function handleAssignAttorney() {
+    if (!assignedAttorney.trim()) return;
+    try {
+      await updateLead(id, { assigned_attorney: assignedAttorney });
+      setLead((prev) => ({ ...prev, assigned_attorney: assignedAttorney }));
+    } catch (err) {
+      console.error('Failed to assign attorney:', err);
+    }
+  }
+
+  async function handleSetFollowUp() {
+    if (!followUpDate) return;
+    try {
+      await updateLead(id, { follow_up_date: followUpDate });
+      setLead((prev) => ({ ...prev, follow_up_date: followUpDate }));
+    } catch (err) {
+      console.error('Failed to set follow-up:', err);
+    }
+  }
+
+  async function handleAddNote() {
+    if (!noteText.trim()) return;
+    setSavingNote(true);
+    try {
+      await addCallNote(id, noteText);
+      setLead((prev) => ({
+        ...prev,
+        call_notes: [...(prev.call_notes || []), { text: noteText, created_at: new Date().toISOString() }],
+      }));
+      setNoteText('');
+    } catch (err) {
+      console.error('Failed to add note:', err);
+    } finally {
+      setSavingNote(false);
+    }
+  }
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-          <p className="text-sm text-slate-400">Loading lead details...</p>
-        </div>
+      <div className="flex items-center justify-center h-96">
+        <div className="w-6 h-6 border-2 border-slate-900 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   if (!lead) {
     return (
-      <div className="text-center p-12">
-        <p className="text-base font-semibold text-slate-700">Lead not found</p>
-        <Link to="/leads" className="text-sm text-blue-600 hover:text-blue-700 mt-2 inline-block">Back to Leads</Link>
+      <div className="text-center py-16">
+        <p className="text-sm font-medium text-slate-500">Lead not found</p>
+        <Link to="/leads" className="text-sm text-blue-600 mt-2 inline-block">Back to Leads</Link>
       </div>
     );
   }
 
+  const initials = lead.caller_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+
   return (
-    <div className="max-w-7xl mx-auto">
-      {/* Back Button */}
-      <Link to="/leads" className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors mb-5">
+    <div className="max-w-6xl mx-auto space-y-5">
+      {/* Back */}
+      <Link to="/leads" className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-600 transition-colors">
         <ArrowLeft size={15} />
-        Back to Leads
+        Leads
       </Link>
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center text-lg font-bold text-white shadow-lg shadow-blue-500/20">
-            {lead.caller_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+          <div className="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center text-base font-semibold text-white">
+            {initials}
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">{lead.caller_name}</h1>
-            <p className="text-sm text-slate-400 capitalize">{lead.case_type} case</p>
+            <h1 className="text-xl font-semibold text-slate-900 tracking-tight">{lead.caller_name}</h1>
+            <p className="text-sm text-slate-400 capitalize">{lead.case_type}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           <ScoreBadge score={lead.score} label={lead.score_label} />
           <StatusBadge status={lead.status} />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column */}
-        <div className="space-y-5">
-          {/* Contact Info */}
-          <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-5">
-            <h3 className="text-[13px] font-bold uppercase tracking-wider text-slate-400 mb-4">Contact Information</h3>
-            <div className="space-y-3.5">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
-                  <Phone size={14} className="text-blue-600" />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {/* Left sidebar */}
+        <div className="space-y-4">
+          {/* Contact */}
+          <div className="bg-white rounded-2xl border border-slate-100 p-5 space-y-4">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Contact</h3>
+            <div className="space-y-3">
+              {[
+                { icon: Phone, label: 'Phone', value: lead.caller_phone, color: 'text-blue-600 bg-blue-50' },
+                { icon: Mail, label: 'Email', value: lead.caller_email || 'Not provided', color: 'text-violet-600 bg-violet-50' },
+                { icon: Briefcase, label: 'Case Type', value: lead.case_type, color: 'text-amber-600 bg-amber-50' },
+                { icon: AlertTriangle, label: 'Urgency', value: lead.urgency, color: 'text-red-600 bg-red-50' },
+                { icon: CalendarCheck, label: 'Booked', value: lead.appointment_booked ? 'Yes' : 'No', color: 'text-emerald-600 bg-emerald-50' },
+                { icon: Clock, label: 'First Contact', value: new Date(lead.created_at).toLocaleDateString(), color: 'text-slate-500 bg-slate-50' },
+              ].map(({ icon: Icon, label, value, color }) => (
+                <div key={label} className="flex items-center gap-3">
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${color}`}>
+                    <Icon size={14} />
+                  </div>
+                  <div>
+                    <p className="text-[11px] text-slate-400">{label}</p>
+                    <p className="text-sm font-medium text-slate-800 capitalize">{value}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-[11px] text-slate-400">Phone</p>
-                  <p className="text-sm font-semibold text-slate-900">{lead.caller_phone || 'N/A'}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-violet-50 rounded-lg flex items-center justify-center">
-                  <Mail size={14} className="text-violet-600" />
-                </div>
-                <div>
-                  <p className="text-[11px] text-slate-400">Email</p>
-                  <p className="text-sm font-semibold text-slate-900">{lead.caller_email || 'N/A'}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-amber-50 rounded-lg flex items-center justify-center">
-                  <Briefcase size={14} className="text-amber-600" />
-                </div>
-                <div>
-                  <p className="text-[11px] text-slate-400">Case Type</p>
-                  <p className="text-sm font-semibold text-slate-900 capitalize">{lead.case_type}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-rose-50 rounded-lg flex items-center justify-center">
-                  <AlertTriangle size={14} className="text-rose-600" />
-                </div>
-                <div>
-                  <p className="text-[11px] text-slate-400">Urgency</p>
-                  <p className="text-sm font-semibold text-slate-900 capitalize">{lead.urgency}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-emerald-50 rounded-lg flex items-center justify-center">
-                  <CalendarCheck size={14} className="text-emerald-600" />
-                </div>
-                <div>
-                  <p className="text-[11px] text-slate-400">Consultation Booked</p>
-                  <p className="text-sm font-semibold text-slate-900">{lead.appointment_booked ? 'Yes' : 'No'}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-slate-50 rounded-lg flex items-center justify-center">
-                  <Clock size={14} className="text-slate-500" />
-                </div>
-                <div>
-                  <p className="text-[11px] text-slate-400">First Contact</p>
-                  <p className="text-sm font-semibold text-slate-900">{new Date(lead.created_at).toLocaleString()}</p>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
 
-          {/* Status Update */}
-          <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-5">
-            <h3 className="text-[13px] font-bold uppercase tracking-wider text-slate-400 mb-4">Update Status</h3>
-            <div className="flex flex-wrap gap-2">
+          {/* Pipeline status */}
+          <div className="bg-white rounded-2xl border border-slate-100 p-5">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Pipeline</h3>
+            <div className="flex flex-wrap gap-1.5">
               {STATUS_OPTIONS.map((status) => (
                 <button
                   key={status}
                   onClick={() => handleStatusChange(status)}
-                  className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold capitalize transition-all duration-200 ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-all ${
                     lead.status === status
-                      ? 'bg-blue-600 text-white shadow-sm shadow-blue-600/25'
-                      : 'bg-slate-50 text-slate-500 border border-slate-200 hover:border-blue-300 hover:text-blue-600'
+                      ? 'bg-slate-900 text-white'
+                      : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
                   }`}
                 >
                   {status}
@@ -164,79 +170,152 @@ export default function LeadDetail() {
             </div>
           </div>
 
-          {/* AI Notes */}
-          {lead.notes && (
-            <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-5">
-              <div className="flex items-center gap-2 mb-3">
-                <Bot size={14} className="text-blue-600" />
-                <h3 className="text-[13px] font-bold uppercase tracking-wider text-slate-400">AI Notes</h3>
-              </div>
-              <p className="text-sm text-slate-600 leading-relaxed">{lead.notes}</p>
+          {/* Assign Attorney */}
+          <div className="bg-white rounded-2xl border border-slate-100 p-5">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
+              <UserCheck size={12} className="inline mr-1" />
+              Assign Attorney
+            </h3>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Attorney name..."
+                value={assignedAttorney}
+                onChange={(e) => setAssignedAttorney(e.target.value)}
+                className="flex-1 px-3 py-2 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 placeholder:text-slate-300"
+              />
+              <button
+                onClick={handleAssignAttorney}
+                className="px-3 py-2 bg-slate-900 text-white text-xs font-medium rounded-xl hover:bg-slate-800 transition-colors"
+              >
+                Assign
+              </button>
             </div>
-          )}
+          </div>
+
+          {/* Follow-up */}
+          <div className="bg-white rounded-2xl border border-slate-100 p-5">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
+              <Bell size={12} className="inline mr-1" />
+              Follow-up Reminder
+            </h3>
+            <div className="flex gap-2">
+              <input
+                type="date"
+                value={followUpDate}
+                onChange={(e) => setFollowUpDate(e.target.value)}
+                className="flex-1 px-3 py-2 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100"
+              />
+              <button
+                onClick={handleSetFollowUp}
+                className="px-3 py-2 bg-slate-900 text-white text-xs font-medium rounded-xl hover:bg-slate-800 transition-colors"
+              >
+                Set
+              </button>
+            </div>
+            {lead.follow_up_date && (
+              <p className="text-xs text-emerald-600 mt-2">Follow-up set for {lead.follow_up_date}</p>
+            )}
+          </div>
         </div>
 
-        {/* Right Column: Call History */}
-        <div className="lg:col-span-2">
-          <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm">
-            <div className="px-5 py-4 border-b border-slate-100">
-              <h3 className="font-semibold text-slate-900 text-[15px]">Call History</h3>
-              <p className="text-xs text-slate-400 mt-0.5">All recorded conversations with this client</p>
+        {/* Right: Calls + Notes */}
+        <div className="lg:col-span-2 space-y-4">
+          {/* Call Notes */}
+          <div className="bg-white rounded-2xl border border-slate-100">
+            <div className="px-5 py-4 border-b border-slate-50 flex items-center gap-2">
+              <StickyNote size={15} className="text-slate-400" />
+              <h3 className="text-sm font-semibold text-slate-800">Call Notes</h3>
+            </div>
+            <div className="p-5">
+              {/* Add note */}
+              <div className="flex gap-2 mb-4">
+                <input
+                  type="text"
+                  placeholder="Add a note about this lead..."
+                  value={noteText}
+                  onChange={(e) => setNoteText(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAddNote()}
+                  className="flex-1 px-4 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 placeholder:text-slate-300"
+                />
+                <button
+                  onClick={handleAddNote}
+                  disabled={savingNote || !noteText.trim()}
+                  className="px-4 py-2.5 bg-slate-900 text-white text-sm font-medium rounded-xl hover:bg-slate-800 transition-colors disabled:opacity-40"
+                >
+                  <Send size={15} />
+                </button>
+              </div>
+
+              {/* Notes list */}
+              {lead.call_notes && lead.call_notes.length > 0 ? (
+                <div className="space-y-2">
+                  {lead.call_notes.map((note, i) => (
+                    <div key={i} className="px-4 py-3 bg-slate-50 rounded-xl">
+                      <p className="text-sm text-slate-700">{note.text}</p>
+                      <p className="text-xs text-slate-400 mt-1">{new Date(note.created_at).toLocaleString()}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-slate-400">No notes yet</p>
+              )}
+
+              {/* AI Notes */}
+              {lead.notes && (
+                <div className="mt-4 px-4 py-3 bg-blue-50 rounded-xl">
+                  <p className="text-xs font-semibold text-blue-600 mb-1">AI Summary</p>
+                  <p className="text-sm text-blue-800">{lead.notes}</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Call History */}
+          <div className="bg-white rounded-2xl border border-slate-100">
+            <div className="px-5 py-4 border-b border-slate-50">
+              <h3 className="text-sm font-semibold text-slate-800">Call History</h3>
             </div>
             {!lead.calls || lead.calls.length === 0 ? (
-              <div className="p-8 text-center">
-                <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-3">
-                  <Phone size={20} className="text-slate-400" />
-                </div>
-                <p className="text-sm font-medium text-slate-500">No call records found</p>
-                <p className="text-xs text-slate-400 mt-1">Call transcripts and recordings will appear here.</p>
+              <div className="py-10 text-center">
+                <Phone size={20} className="text-slate-300 mx-auto mb-2" />
+                <p className="text-sm text-slate-400">No call records</p>
               </div>
             ) : (
-              <div className="divide-y divide-slate-100">
+              <div className="divide-y divide-slate-50">
                 {lead.calls.map((call) => (
-                  <div key={call.id} className="p-5">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center">
-                          <Phone size={15} className="text-blue-600" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold text-slate-900">
-                            {new Date(call.created_at).toLocaleString()}
-                          </p>
-                          <p className="text-xs text-slate-400">
-                            Duration: {Math.round((call.duration || 0) / 60)} min · {call.ended_reason}
-                          </p>
-                        </div>
+                  <div key={call.id} className="p-5 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-slate-800">
+                          {new Date(call.created_at).toLocaleString()}
+                        </p>
+                        <p className="text-xs text-slate-400">
+                          {Math.round((call.duration || 0) / 60)} min · {call.ended_reason}
+                        </p>
                       </div>
                       {call.recording_url && (
-                        <div className="flex items-center gap-2 bg-slate-50 rounded-lg px-3 py-2">
-                          <Play size={12} className="text-blue-600" />
-                          <audio controls className="h-7 w-48" src={call.recording_url}>
-                            Your browser does not support audio.
-                          </audio>
-                        </div>
+                        <audio controls className="h-8 w-48" src={call.recording_url} />
                       )}
                     </div>
 
                     {call.summary && (
-                      <div className="mb-4 p-3.5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
-                        <div className="flex items-center gap-1.5 mb-1.5">
-                          <Bot size={12} className="text-blue-600" />
-                          <p className="text-[11px] font-bold uppercase tracking-wider text-blue-600">AI Summary</p>
-                        </div>
-                        <p className="text-sm text-blue-900 leading-relaxed">{call.summary}</p>
+                      <div className="px-4 py-3 bg-blue-50 rounded-xl">
+                        <p className="text-xs font-semibold text-blue-600 mb-1">AI Summary</p>
+                        <p className="text-sm text-blue-800 leading-relaxed">{call.summary}</p>
                       </div>
                     )}
 
                     {call.transcript && (
-                      <div className="p-3.5 bg-slate-50 rounded-xl max-h-80 overflow-y-auto border border-slate-100">
-                        <div className="flex items-center gap-1.5 mb-2">
-                          <FileText size={12} className="text-slate-500" />
-                          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Transcript</p>
+                      <details className="group">
+                        <summary className="flex items-center gap-1.5 cursor-pointer text-xs font-medium text-slate-400 hover:text-slate-600">
+                          <FileText size={12} />
+                          View Transcript
+                        </summary>
+                        <div className="mt-2 p-4 bg-slate-50 rounded-xl max-h-64 overflow-y-auto">
+                          <pre className="text-sm text-slate-700 whitespace-pre-wrap font-sans leading-relaxed">{call.transcript}</pre>
                         </div>
-                        <pre className="text-sm text-slate-700 whitespace-pre-wrap font-sans leading-relaxed">{call.transcript}</pre>
-                      </div>
+                      </details>
                     )}
                   </div>
                 ))}

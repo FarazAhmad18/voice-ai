@@ -77,4 +77,50 @@ router.patch('/:id', async (req, res) => {
   res.json(lead);
 });
 
+// POST /api/leads/:id/notes - Add a call note
+router.post('/:id/notes', async (req, res) => {
+  const { id } = req.params;
+  const { text } = req.body;
+
+  if (!text) return res.status(400).json({ error: 'Note text is required' });
+
+  const note = {
+    text,
+    created_at: new Date().toISOString(),
+  };
+
+  if (supabase) {
+    // Get current notes
+    const { data: lead, error: fetchErr } = await supabase
+      .from('leads')
+      .select('call_notes')
+      .eq('id', id)
+      .single();
+
+    if (fetchErr) return res.status(404).json({ error: 'Lead not found' });
+
+    const existingNotes = lead.call_notes || [];
+    const updatedNotes = [...existingNotes, note];
+
+    const { data, error } = await supabase
+      .from('leads')
+      .update({ call_notes: updatedNotes })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) return res.status(500).json({ error: error.message });
+    return res.json(data);
+  }
+
+  // Fallback: local store
+  const store = getLocalStore();
+  const lead = store.leads.find((l) => l.id === id);
+  if (!lead) return res.status(404).json({ error: 'Lead not found' });
+
+  lead.call_notes = lead.call_notes || [];
+  lead.call_notes.push(note);
+  res.json(lead);
+});
+
 module.exports = router;
