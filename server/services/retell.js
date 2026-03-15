@@ -91,6 +91,22 @@ async function createWebCall(agentId) {
 }
 
 /**
+ * Import an existing phone number (e.g., from Twilio) into Retell.
+ * This allows the same number to handle voice (Retell) + SMS (Twilio).
+ */
+async function importPhoneNumber(phoneNumber, agentId, twilioAccountSid, twilioAuthToken) {
+  return retellFetch('/v2/import-phone-number', {
+    method: 'POST',
+    body: JSON.stringify({
+      phone_number: phoneNumber,
+      agent_id: agentId,
+      twilio_account_sid: twilioAccountSid,
+      twilio_auth_token: twilioAuthToken,
+    }),
+  });
+}
+
+/**
  * Verify Retell webhook signature.
  * Uses HMAC comparison of the request body against the API key.
  */
@@ -110,6 +126,7 @@ module.exports = {
   getAgent,
   listAgents,
   createPhoneNumber,
+  importPhoneNumber,
   createWebCall,
   verifyWebhookSignature,
 };

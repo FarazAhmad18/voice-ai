@@ -113,4 +113,82 @@ function verifySignature(req) {
   }
 }
 
-module.exports = { sendSMS, verifySignature };
+/**
+ * Buy a phone number from Twilio.
+ *
+ * @param {number|string} areaCode - Area code (e.g., 425)
+ * @returns {Promise<{phoneNumber: string, sid: string}>}
+ */
+async function buyPhoneNumber(areaCode) {
+  if (!twilioClient) {
+    const mockNumber = `+1${areaCode || '555'}${Math.random().toString().slice(2, 9)}`;
+    logger.info('sms', `[DEV] Mock phone number purchased: ${mockNumber}`, {
+      source: 'twilio.buyPhoneNumber',
+    });
+    return { phoneNumber: mockNumber, sid: `MOCK_PN_${Date.now()}` };
+  }
+
+  try {
+    // Search for available numbers
+    const available = await twilioClient.availablePhoneNumbers('US')
+      .local
+      .list({ areaCode: parseInt(areaCode) || 425, limit: 1 });
+
+    if (!available || available.length === 0) {
+      throw new Error(`No numbers available for area code ${areaCode}`);
+    }
+
+    // Buy the number
+    const purchased = await twilioClient.incomingPhoneNumbers.create({
+      phoneNumber: available[0].phoneNumber,
+    });
+
+    logger.info('sms', `Phone number purchased: ${purchased.phoneNumber}`, {
+      details: { sid: purchased.sid, phoneNumber: purchased.phoneNumber, areaCode },
+      source: 'twilio.buyPhoneNumber',
+    });
+
+    return { phoneNumber: purchased.phoneNumber, sid: purchased.sid };
+  } catch (err) {
+    logger.error('sms', `Failed to buy phone number: ${err.message}`, {
+      details: { error: err.message, areaCode },
+      source: 'twilio.buyPhoneNumber',
+    });
+    throw err;
+  }
+}
+
+/**
+ * Configure SMS webhook URL on a Twilio phone number.
+ *
+ * @param {string} phoneNumberSid - Twilio phone number SID
+ * @param {string} webhookUrl - URL for inbound SMS (POST /api/twilio/sms)
+ */
+async function configureSmsWebhook(phoneNumberSid, webhookUrl) {
+  if (!twilioClient) {
+    logger.info('sms', `[DEV] Mock SMS webhook configured: ${webhookUrl}`, {
+      source: 'twilio.configureSmsWebhook',
+    });
+    return;
+  }
+
+  try {
+    await twilioClient.incomingPhoneNumbers(phoneNumberSid).update({
+      smsUrl: webhookUrl,
+      smsMethod: 'POST',
+    });
+
+    logger.info('sms', `SMS webhook configured on ${phoneNumberSid}: ${webhookUrl}`, {
+      details: { phoneNumberSid, webhookUrl },
+      source: 'twilio.configureSmsWebhook',
+    });
+  } catch (err) {
+    logger.error('sms', `Failed to configure SMS webhook: ${err.message}`, {
+      details: { error: err.message, phoneNumberSid },
+      source: 'twilio.configureSmsWebhook',
+    });
+    throw err;
+  }
+}
+
+module.exports = { sendSMS, verifySignature, buyPhoneNumber, configureSmsWebhook };

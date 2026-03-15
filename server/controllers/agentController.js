@@ -1,11 +1,21 @@
 const supabase = require('../services/supabase');
-const { createAgent, updateAgent, createPhoneNumber } = require('../services/retell');
+const { createAgent, updateAgent, importPhoneNumber } = require('../services/retell');
+const { buyPhoneNumber, configureSmsWebhook } = require('../services/twilio');
 const { reRenderFirmPrompt } = require('../services/promptRenderer');
 const logger = require('../services/logger');
 
 /**
  * Deploy a Retell agent for a firm.
- * Creates the agent via Retell API, optionally assigns a phone number.
+ *
+ * Flow:
+ * 1. Render prompt template
+ * 2. Create Retell agent
+ * 3. Buy phone number from Twilio
+ * 4. Import that number into Retell (so calls go to AI agent)
+ * 5. Configure SMS webhook on the Twilio number (so texts go to our server)
+ * 6. Save everything to the firm record
+ *
+ * Result: one number for both voice (Retell) and SMS (Twilio).
  *
  * @param {string} firmId - firm UUID
  * @param {object} opts - { voiceId, areaCode }
@@ -21,10 +31,10 @@ async function deployAgent(firmId, opts = {}) {
 
   if (!firm) throw new Error('Firm not found');
 
-  // Render prompt first
+  // 1. Render prompt
   const renderedPrompt = await reRenderFirmPrompt(firmId);
 
-  // Create Retell agent
+  // 2. Create Retell agent
   const webhookBase = process.env.WEBHOOK_BASE_URL || process.env.FRONTEND_URL || '';
   let agent;
 
@@ -50,20 +60,23 @@ async function deployAgent(firmId, opts = {}) {
     throw err;
   }
 
-  // Assign phone number if area code provided
+  // 3. Buy phone number from Twilio
   let phoneNumber = null;
+  let twilioPhoneSid = null;
+
   if (opts.areaCode) {
     try {
-      const phoneData = await createPhoneNumber(opts.areaCode, agent.agent_id, firm.name);
-      phoneNumber = phoneData.phone_number;
+      const purchased = await buyPhoneNumber(opts.areaCode);
+      phoneNumber = purchased.phoneNumber;
+      twilioPhoneSid = purchased.sid;
 
-      logger.info('retell_api', `Phone number assigned: ${phoneNumber} for ${firm.name}`, {
+      logger.info('sms', `Twilio number purchased: ${phoneNumber} for ${firm.name}`, {
         firmId,
-        details: { phoneNumber, agentId: agent.agent_id },
+        details: { phoneNumber, sid: twilioPhoneSid, areaCode: opts.areaCode },
         source: 'agentController.deployAgent',
       });
     } catch (err) {
-      logger.warn('retell_api', `Failed to assign phone number: ${err.message}`, {
+      logger.warn('sms', `Failed to buy Twilio number: ${err.message}`, {
         firmId,
         details: { error: err.message, areaCode: opts.areaCode },
         source: 'agentController.deployAgent',
@@ -71,7 +84,55 @@ async function deployAgent(firmId, opts = {}) {
     }
   }
 
-  // Update firm with agent ID and phone number
+  // 4. Import number into Retell (voice goes to AI agent)
+  if (phoneNumber) {
+    const twilioSid = process.env.TWILIO_ACCOUNT_SID;
+    const twilioToken = process.env.TWILIO_AUTH_TOKEN;
+
+    if (twilioSid && twilioToken) {
+      try {
+        await importPhoneNumber(phoneNumber, agent.agent_id, twilioSid, twilioToken);
+
+        logger.info('retell_api', `Phone imported to Retell: ${phoneNumber} → ${agent.agent_id}`, {
+          firmId,
+          details: { phoneNumber, agentId: agent.agent_id },
+          source: 'agentController.deployAgent',
+        });
+      } catch (err) {
+        logger.warn('retell_api', `Failed to import number into Retell: ${err.message}`, {
+          firmId,
+          details: { error: err.message, phoneNumber },
+          source: 'agentController.deployAgent',
+        });
+      }
+    } else {
+      logger.warn('retell_api', 'Twilio credentials missing — skipped Retell phone import', {
+        firmId,
+        source: 'agentController.deployAgent',
+      });
+    }
+
+    // 5. Configure SMS webhook on the Twilio number
+    if (twilioPhoneSid && webhookBase) {
+      try {
+        await configureSmsWebhook(twilioPhoneSid, `${webhookBase}/api/twilio/sms`);
+
+        logger.info('sms', `SMS webhook configured for ${phoneNumber}`, {
+          firmId,
+          details: { phoneNumber, webhookUrl: `${webhookBase}/api/twilio/sms` },
+          source: 'agentController.deployAgent',
+        });
+      } catch (err) {
+        logger.warn('sms', `Failed to configure SMS webhook: ${err.message}`, {
+          firmId,
+          details: { error: err.message },
+          source: 'agentController.deployAgent',
+        });
+      }
+    }
+  }
+
+  // 6. Update firm record
   const updates = {
     retell_agent_id: agent.agent_id,
     rendered_prompt: renderedPrompt,
