@@ -91,6 +91,39 @@ async function createWebCall(agentId) {
 }
 
 /**
+ * Create a new Retell LLM with a prompt.
+ * The LLM is where the actual prompt/instructions live.
+ * The agent references the LLM via llm_id.
+ */
+async function createLLM({ generalPrompt, beginMessage }) {
+  return retellFetch('/v2/create-retell-llm', {
+    method: 'POST',
+    body: JSON.stringify({
+      general_prompt: generalPrompt,
+      begin_message: beginMessage || null,
+    }),
+  });
+}
+
+/**
+ * Update an existing Retell LLM's prompt.
+ * This is how prompt changes actually reach the live agent.
+ */
+async function updateLLM(llmId, updates) {
+  return retellFetch(`/v2/update-retell-llm/${llmId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(updates),
+  });
+}
+
+/**
+ * Get a Retell LLM by ID.
+ */
+async function getLLM(llmId) {
+  return retellFetch(`/v2/get-retell-llm/${llmId}`);
+}
+
+/**
  * Import an existing phone number (e.g., from Twilio) into Retell.
  * This allows the same number to handle voice (Retell) + SMS (Twilio).
  */
@@ -125,6 +158,9 @@ module.exports = {
   updateAgent,
   getAgent,
   listAgents,
+  createLLM,
+  updateLLM,
+  getLLM,
   createPhoneNumber,
   importPhoneNumber,
   createWebCall,
