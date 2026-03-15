@@ -6,7 +6,7 @@ const path = require('path');
 // Load .env from project root
 dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
-const vapiWebhookRouter = require('./routes/vapiWebhook');
+const retellWebhookRouter = require('./routes/retellWebhook');
 const leadsRouter = require('./routes/leads');
 const appointmentsRouter = require('./routes/appointments');
 
@@ -26,7 +26,7 @@ app.get('/', (req, res) => {
 });
 
 // Routes
-app.use('/api/vapi', vapiWebhookRouter);
+app.use('/api/retell', retellWebhookRouter);
 app.use('/api/leads', leadsRouter);
 app.use('/api/appointments', appointmentsRouter);
 

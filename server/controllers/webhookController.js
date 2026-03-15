@@ -1,11 +1,13 @@
 const supabase = require('../services/supabase');
 const { calculateLeadScore, getScoreLabel } = require('../services/leadScoring');
 const { getAvailableSlots, createAppointmentEvent } = require('../services/googleCalendar');
+const { verifyWebhookSignature } = require('../services/retell');
 
 // Default firm ID for MVP (Mitchell Family Law)
+// In multi-tenant mode, this will be looked up from firms table via agent_id
 const DEFAULT_FIRM_ID = 'a0000000-0000-0000-0000-000000000001';
 
-// In-memory storage for when Supabase isn't configured yet
+// In-memory storage fallback (will be removed in multi-tenant phase)
 const localStore = {
   leads: [],
   calls: [],
@@ -13,163 +15,66 @@ const localStore = {
 };
 
 /**
- * Main webhook handler - receives ALL events from VAPI
+ * Main Retell webhook handler — receives all call events.
+ * Events: call_started, call_ended, call_analyzed
  */
 async function handleWebhook(req, res) {
-  const { message } = req.body;
+  const { event, call } = req.body;
 
-  if (!message) {
-    return res.status(400).json({ error: 'No message in request body' });
+  if (!event || !call) {
+    console.log('[Retell Webhook] Invalid payload — missing event or call');
+    return res.status(400).json({ error: 'Invalid payload' });
   }
 
-  console.log(`[VAPI Event] ${message.type}`);
+  console.log(`[Retell Event] ${event} | call_id: ${call.call_id} | agent_id: ${call.agent_id}`);
 
-  switch (message.type) {
-    case 'tool-calls':
-      return handleToolCalls(message, res);
+  switch (event) {
+    case 'call_started':
+      return handleCallStarted(call, res);
 
-    case 'end-of-call-report':
-      await handleEndOfCallReport(message);
+    case 'call_ended':
+      await handleCallEnded(call);
       return res.status(200).json({ received: true });
 
-    case 'status-update':
-      console.log(`[Call Status] ${message.status}`);
-      return res.status(200).json({ received: true });
-
-    case 'transcript':
-      return res.status(200).json({ received: true });
-
-    case 'conversation-update':
+    case 'call_analyzed':
+      await handleCallAnalyzed(call);
       return res.status(200).json({ received: true });
 
     default:
-      console.log(`[Unhandled Event] ${message.type}`);
+      console.log(`[Retell] Unhandled event: ${event}`);
       return res.status(200).json({ received: true });
   }
 }
 
 /**
- * Handle tool calls from VAPI (mid-call)
- * VAPI expects a response within 7.5 seconds
+ * call_started — log that a call has begun.
  */
-async function handleToolCalls(message, res) {
-  const toolCallList = message.toolCallList || [];
-  const results = [];
-
-  for (const toolCall of toolCallList) {
-    console.log(`[Tool Call] ${toolCall.function.name}`, toolCall.function.arguments);
-
-    let result;
-    switch (toolCall.function.name) {
-      case 'check_availability':
-        result = await handleCheckAvailability(toolCall.function.arguments);
-        break;
-      case 'book_appointment':
-        result = await handleBookAppointment(toolCall.function.arguments);
-        break;
-      default:
-        result = { error: 'Unknown tool' };
-    }
-
-    results.push({
-      toolCallId: toolCall.id,
-      result: result.message || JSON.stringify(result),
-    });
-  }
-
-  return res.status(200).json({ results });
+function handleCallStarted(call, res) {
+  console.log(`[Call Started] ${call.call_id} | from: ${call.from_number} | to: ${call.to_number} | direction: ${call.direction}`);
+  return res.status(200).json({ received: true });
 }
 
 /**
- * Check available appointment slots (uses Google Calendar)
+ * call_ended — main processing.
+ * Creates lead + call record from the completed call data.
  */
-async function handleCheckAvailability(args) {
-  const { date } = args;
+async function handleCallEnded(call) {
+  const callerPhone = call.from_number || 'unknown';
+  const agentId = call.agent_id;
 
-  const slots = await getAvailableSlots(date);
+  // Calculate duration from timestamps
+  const durationMs = (call.end_timestamp && call.start_timestamp)
+    ? call.end_timestamp - call.start_timestamp
+    : 0;
+  const durationSec = Math.round(durationMs / 1000);
 
-  console.log(`[Availability] Checking ${date} - returning ${slots.length} slots`);
-
-  if (slots.length === 0) {
-    return {
-      available: false,
-      date: date,
-      slots: [],
-      message: `Unfortunately, we don't have any available times on ${date}. Would you like to try another day?`,
-    };
+  // Build transcript string from transcript_object if available
+  let transcriptText = call.transcript || '';
+  if (!transcriptText && call.transcript_object && Array.isArray(call.transcript_object)) {
+    transcriptText = call.transcript_object
+      .map((t) => `${t.role === 'agent' ? 'Agent' : 'User'}: ${t.content}`)
+      .join('\n');
   }
-
-  return {
-    available: true,
-    date: date,
-    slots: slots,
-    message: `We have the following times available on ${date}: ${slots.join(', ')}`,
-  };
-}
-
-/**
- * Book an appointment
- */
-async function handleBookAppointment(args) {
-  const {
-    caller_name,
-    caller_phone,
-    caller_email,
-    case_type,
-    appointment_date,
-    appointment_time,
-    urgency,
-    notes,
-  } = args;
-
-  const appointment = {
-    id: `apt_${Date.now()}`,
-    firm_id: DEFAULT_FIRM_ID,
-    caller_name,
-    caller_phone,
-    caller_email: caller_email || null,
-    case_type,
-    appointment_date,
-    appointment_time,
-    urgency,
-    notes,
-    status: 'confirmed',
-  };
-
-  // Save to Supabase if available
-  if (supabase) {
-    try {
-      await supabase.from('appointments').insert(appointment);
-      console.log(`[Booked → Supabase] ${caller_name} - ${appointment_date} ${appointment_time}`);
-    } catch (err) {
-      console.error('[Supabase Error]', err.message);
-      localStore.appointments.push(appointment);
-    }
-  } else {
-    localStore.appointments.push(appointment);
-  }
-
-  // Create Google Calendar event
-  await createAppointmentEvent(appointment);
-
-  console.log(`[Booked] ${caller_name} - ${appointment_date} ${appointment_time} - ${case_type}`);
-
-  return {
-    success: true,
-    appointment_id: appointment.id,
-    message: `Your consultation has been booked for ${appointment_date} at ${appointment_time}. Please arrive 10 minutes early and bring a photo ID and any relevant court documents.`,
-  };
-}
-
-/**
- * Handle end-of-call report (after call ends)
- * This is where we save the lead, transcript, and call data
- */
-async function handleEndOfCallReport(message) {
-  const { call, transcript, summary, recordingUrl, endedReason } = message;
-
-  // Extract caller phone from call object
-  const callerPhone = call?.customer?.number || 'unknown';
 
   // Find if this caller booked an appointment during the call
   let recentAppointment = null;
@@ -195,7 +100,7 @@ async function handleEndOfCallReport(message) {
     case_type: recentAppointment?.case_type || 'other',
     urgency: recentAppointment?.urgency || 'low',
     appointment_booked: !!recentAppointment,
-    notes: recentAppointment?.notes || summary || '',
+    notes: recentAppointment?.notes || '',
   };
 
   // Calculate lead score
@@ -209,21 +114,24 @@ async function handleEndOfCallReport(message) {
     score,
     score_label: scoreLabel,
     status: recentAppointment ? 'booked' : 'new',
+    source: 'phone',
+    created_at: new Date().toISOString(),
   };
 
   const callRecord = {
     id: `call_${Date.now()}`,
     lead_id: lead.id,
     firm_id: DEFAULT_FIRM_ID,
-    vapi_call_id: call?.id || null,
-    transcript: transcript || '',
-    summary: summary || '',
-    recording_url: recordingUrl || null,
-    duration: call?.duration || 0,
-    ended_reason: endedReason || 'unknown',
+    retell_call_id: call.call_id,
+    transcript: transcriptText,
+    summary: '', // will be filled by call_analyzed event
+    recording_url: call.recording_url || null,
+    duration: durationSec,
+    ended_reason: call.disconnection_reason || 'unknown',
+    created_at: new Date().toISOString(),
   };
 
-  // Update the appointment with the lead_id
+  // Link appointment to lead
   if (recentAppointment && supabase) {
     await supabase
       .from('appointments')
@@ -231,12 +139,12 @@ async function handleEndOfCallReport(message) {
       .eq('id', recentAppointment.id);
   }
 
-  // Save to Supabase if configured, otherwise local store
+  // Save to Supabase or local store
   if (supabase) {
     try {
       await supabase.from('leads').insert(lead);
       await supabase.from('calls').insert(callRecord);
-      console.log(`[Saved to Supabase] Lead: ${lead.id}, Score: ${score} (${scoreLabel})`);
+      console.log(`[Saved to Supabase] Lead: ${lead.id} | Score: ${score} (${scoreLabel})`);
     } catch (err) {
       console.error('[Supabase Error]', err.message);
       localStore.leads.push(lead);
@@ -245,15 +153,205 @@ async function handleEndOfCallReport(message) {
   } else {
     localStore.leads.push(lead);
     localStore.calls.push(callRecord);
-    console.log(`[Saved Locally] Lead: ${lead.id}, Score: ${score} (${scoreLabel})`);
+    console.log(`[Saved Locally] Lead: ${lead.id} | Score: ${score} (${scoreLabel})`);
   }
 
-  console.log(`[End of Call] ${lead.caller_name} | ${lead.case_type} | Score: ${score} (${scoreLabel}) | Booked: ${lead.status === 'booked'}`);
+  console.log(`[Call Ended] ${lead.caller_name} | ${lead.case_type} | Score: ${score} (${scoreLabel}) | Booked: ${lead.appointment_booked} | Duration: ${durationSec}s | Reason: ${callRecord.ended_reason}`);
 }
 
-// Export local store for API routes to access
+/**
+ * call_analyzed — enrichment after post-call analysis.
+ * Updates the call and lead with summary and sentiment.
+ */
+async function handleCallAnalyzed(call) {
+  const analysis = call.call_analysis;
+  if (!analysis) {
+    console.log('[Call Analyzed] No analysis data');
+    return;
+  }
+
+  const summary = analysis.call_summary || '';
+  const sentiment = analysis.user_sentiment || null;
+  const retellCallId = call.call_id;
+
+  console.log(`[Call Analyzed] ${retellCallId} | Sentiment: ${sentiment} | Summary: ${summary.slice(0, 100)}...`);
+
+  if (supabase) {
+    try {
+      // Update call record with summary and sentiment
+      const { data: callData } = await supabase
+        .from('calls')
+        .update({ summary, sentiment })
+        .eq('retell_call_id', retellCallId)
+        .select('lead_id')
+        .single();
+
+      // Update lead with summary and sentiment
+      if (callData?.lead_id) {
+        await supabase
+          .from('leads')
+          .update({ notes: summary, sentiment })
+          .eq('id', callData.lead_id);
+      }
+
+      console.log(`[Enriched] Call ${retellCallId} updated with analysis`);
+    } catch (err) {
+      console.error('[Call Analyzed Error]', err.message);
+    }
+  } else {
+    // Local store fallback
+    const callRecord = localStore.calls.find((c) => c.retell_call_id === retellCallId);
+    if (callRecord) {
+      callRecord.summary = summary;
+      callRecord.sentiment = sentiment;
+      const lead = localStore.leads.find((l) => l.id === callRecord.lead_id);
+      if (lead) {
+        lead.notes = summary;
+        lead.sentiment = sentiment;
+      }
+    }
+  }
+}
+
+// ============================================================
+// TOOL CALL HANDLERS (called by Retell mid-call)
+// ============================================================
+
+/**
+ * Handle check_availability tool call.
+ * Retell sends: { call: {...}, name: "check_availability", args: { date: "2026-03-17" } }
+ * We return JSON that gets fed back to the LLM.
+ */
+async function handleCheckAvailability(req, res) {
+  const { args, call } = req.body;
+  const date = args?.date;
+
+  console.log(`[Tool: check_availability] date: ${date} | call: ${call?.call_id}`);
+
+  const slots = await getAvailableSlots(date);
+
+  if (slots.length === 0) {
+    return res.json({
+      available: false,
+      date,
+      slots: [],
+      message: `Unfortunately, we don't have any available times on ${date}. Would you like to try another day?`,
+    });
+  }
+
+  return res.json({
+    available: true,
+    date,
+    slots,
+    message: `We have the following times available on ${date}: ${slots.join(', ')}`,
+  });
+}
+
+/**
+ * Handle book_appointment tool call.
+ */
+async function handleBookAppointment(req, res) {
+  const { args, call } = req.body;
+  const {
+    caller_name,
+    caller_phone,
+    caller_email,
+    case_type,
+    appointment_date,
+    appointment_time,
+    urgency,
+    notes,
+  } = args || {};
+
+  console.log(`[Tool: book_appointment] ${caller_name} | ${appointment_date} ${appointment_time} | call: ${call?.call_id}`);
+
+  const appointment = {
+    id: `apt_${Date.now()}`,
+    firm_id: DEFAULT_FIRM_ID,
+    caller_name: caller_name || 'Unknown',
+    caller_phone: caller_phone || call?.from_number || 'unknown',
+    caller_email: caller_email || null,
+    case_type: case_type || 'other',
+    appointment_date,
+    appointment_time,
+    urgency: urgency || 'low',
+    notes: notes || '',
+    status: 'confirmed',
+    created_at: new Date().toISOString(),
+  };
+
+  // Save to Supabase
+  if (supabase) {
+    try {
+      await supabase.from('appointments').insert(appointment);
+      console.log(`[Booked → Supabase] ${caller_name} - ${appointment_date} ${appointment_time}`);
+    } catch (err) {
+      console.error('[Supabase Error]', err.message);
+      localStore.appointments.push(appointment);
+    }
+  } else {
+    localStore.appointments.push(appointment);
+  }
+
+  // Create Google Calendar event
+  await createAppointmentEvent(appointment);
+
+  return res.json({
+    success: true,
+    appointment_id: appointment.id,
+    message: `Your consultation has been booked for ${appointment_date} at ${appointment_time}. Please arrive 10 minutes early and bring a photo ID and any relevant documents.`,
+  });
+}
+
+/**
+ * Handle save_intake_data tool call.
+ * Stores structured Q&A from the AI intake conversation.
+ */
+async function handleSaveIntakeData(req, res) {
+  const { args, call } = req.body;
+
+  console.log(`[Tool: save_intake_data] call: ${call?.call_id}`, args);
+
+  // args is a dynamic object like:
+  // { "divorce_papers_filed": "no", "children_involved": "yes, 2 children", ... }
+
+  if (supabase && args) {
+    try {
+      const answers = Object.entries(args).map(([question, answer]) => ({
+        call_id: null, // will be linked when call record is created
+        lead_id: null, // will be linked when lead is created
+        firm_id: DEFAULT_FIRM_ID,
+        question: question.replace(/_/g, ' '),
+        answer: String(answer),
+        created_at: new Date().toISOString(),
+      }));
+
+      // Store with caller phone as temporary key — will link to lead after call_ended
+      // For now, store in a temp location keyed by call_id
+      if (!global._pendingIntakeAnswers) global._pendingIntakeAnswers = {};
+      global._pendingIntakeAnswers[call?.call_id] = answers;
+
+      console.log(`[Intake Data] Stored ${answers.length} answers for call ${call?.call_id}`);
+    } catch (err) {
+      console.error('[Intake Data Error]', err.message);
+    }
+  }
+
+  return res.json({
+    success: true,
+    message: 'Thank you, I have recorded all the details.',
+  });
+}
+
+// Export for API routes
 function getLocalStore() {
   return localStore;
 }
 
-module.exports = { handleWebhook, getLocalStore };
+module.exports = {
+  handleWebhook,
+  handleCheckAvailability,
+  handleBookAppointment,
+  handleSaveIntakeData,
+  getLocalStore,
+};
