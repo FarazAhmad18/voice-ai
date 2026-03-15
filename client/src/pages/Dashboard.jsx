@@ -6,6 +6,7 @@ import { fetchLeads, fetchAppointments } from '../services/api';
 import { supabase } from '../services/supabase';
 import ScoreBadge from '../components/ScoreBadge';
 import StatusBadge from '../components/StatusBadge';
+import AppointmentCalendar from '../components/AppointmentCalendar';
 import {
   Users, UserCheck, Flame, CalendarCheck, ArrowRight, Clock,
   ChevronRight, AlertCircle, Phone, PhoneIncoming, PhoneMissed,
@@ -461,29 +462,26 @@ export default function Dashboard() {
             )}
           </div>
 
+          {/* ── Appointment Calendar ── */}
+          <AppointmentCalendar appointments={appointments} />
+
           {/* ── Today's Schedule ── */}
-          <div className="bg-white rounded-2xl border border-slate-100/80 shadow-sm">
-            <div className="px-6 py-5 border-b border-slate-100/80 flex justify-between items-center">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-gradient-to-br from-violet-50 to-purple-50 rounded-xl flex items-center justify-center">
-                  <CalendarCheck size={16} className="text-violet-500" />
+          {todayApts.length > 0 && (
+            <div className="bg-white rounded-2xl border border-slate-100/80 shadow-sm">
+              <div className="px-6 py-5 border-b border-slate-100/80 flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 bg-gradient-to-br from-violet-50 to-purple-50 rounded-xl flex items-center justify-center">
+                    <CalendarCheck size={16} className="text-violet-500" />
+                  </div>
+                  <div>
+                    <h3 className="text-[15px] font-semibold text-slate-900">Today's Schedule</h3>
+                    <p className="text-xs text-slate-400 mt-0.5">{todayApts.length} appointment{todayApts.length !== 1 ? 's' : ''} today</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-[15px] font-semibold text-slate-900">Today's Schedule</h3>
-                  <p className="text-xs text-slate-400 mt-0.5">{todayApts.length} appointment{todayApts.length !== 1 ? 's' : ''} today</p>
-                </div>
+                <Link to="/appointments" className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-slate-600 transition-colors group">
+                  All appointments <ArrowRight size={12} className="arrow-slide" />
+                </Link>
               </div>
-              <Link to="/appointments" className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-slate-600 transition-colors group">
-                All appointments <ArrowRight size={12} className="arrow-slide" />
-              </Link>
-            </div>
-            {todayApts.length === 0 ? (
-              <div className="py-16 text-center">
-                <div className="text-4xl mb-3 opacity-40">&#128197;</div>
-                <p className="text-sm font-medium text-slate-500">No appointments today</p>
-                <p className="text-xs text-slate-400 mt-1">Upcoming appointments will appear here</p>
-              </div>
-            ) : (
               <div className="p-4 space-y-2">
                 {todayApts.map((apt, idx) => {
                   const initials = ((apt.caller_name || 'U').split(' ').map(n => n?.[0] || '').join('').slice(0, 2).toUpperCase()) || '?';
@@ -511,8 +509,8 @@ export default function Dashboard() {
                   );
                 })}
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* ══════════════════════════════════════════════
@@ -704,6 +702,8 @@ function QuickStat({ label, value, icon: Icon, accent, trend, brandColor }) {
     </div>
   );
 }
+
+/* ─── Appointment Calendar ─── inserted into the grid */
 
 /* ─── Score Row ─── */
 function ScoreRow({ label, count, total, colorFrom, colorTo, textColor }) {
