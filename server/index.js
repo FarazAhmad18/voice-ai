@@ -7,6 +7,7 @@ const path = require('path');
 dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
 const logger = require('./services/logger');
+require('./services/scheduler');
 const authRouter = require('./routes/auth');
 const retellWebhookRouter = require('./routes/retellWebhook');
 const firmsRouter = require('./routes/firms');

@@ -7,7 +7,7 @@ const validateBody = require('../middleware/validateBody');
 const logger = require('../services/logger');
 
 // Client-facing settings — admin can update their own firm
-const CLIENT_UPDATABLE = ['name', 'email', 'phone', 'address', 'website', 'business_hours'];
+const CLIENT_UPDATABLE = ['name', 'email', 'phone', 'address', 'website', 'business_hours', 'crm_mode', 'crm_type', 'crm_webhook_url', 'crm_api_key'];
 
 router.use(authenticate, requireRole('admin', 'super_admin'));
 

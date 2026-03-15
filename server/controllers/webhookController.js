@@ -3,6 +3,8 @@ const { calculateLeadScore, getScoreLabel } = require('../services/leadScoring')
 const { getAvailableSlots, createAppointmentEvent } = require('../services/googleCalendar');
 const { verifyWebhookSignature } = require('../services/retell');
 const logger = require('../services/logger');
+const { maybePushToCRM } = require('./crmPushController');
+const { sendMissedCallFollowUp, sendBookingConfirmation } = require('../services/scheduler');
 
 /**
  * Look up the firm associated with a Retell agent_id.
@@ -240,6 +242,20 @@ async function handleCallEnded(call) {
         });
       }
       delete global._pendingIntakeAnswers[call.call_id];
+    }
+
+    // Push to external CRM if configured (non-blocking, never throws)
+    maybePushToCRM(firm, lead, callRecord, recentAppointment);
+
+    // Send booking confirmation if appointment was booked during call
+    if (recentAppointment && lead.caller_phone) {
+      sendBookingConfirmation(recentAppointment, lead, firm);
+    }
+
+    // Send missed call follow-up for unanswered calls
+    const missedReasons = ['no_answer', 'dial_no_answer', 'voicemail_reached'];
+    if (missedReasons.includes(call.disconnection_reason) && lead.caller_phone) {
+      sendMissedCallFollowUp(lead, firm);
     }
   } catch (err) {
     logger.error('database', `Failed to save lead: ${err.message}`, {

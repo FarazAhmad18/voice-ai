@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useFirm } from '../context/FirmContext';
 import { updateSettings, fetchStaff } from '../services/api';
 import { toast } from 'sonner';
+import { Webhook, Eye, EyeOff, Loader2 } from 'lucide-react';
 
 export default function Settings() {
   const { user, firm } = useAuth();
@@ -12,6 +13,9 @@ export default function Settings() {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
 
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [testingWebhook, setTestingWebhook] = useState(false);
+
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -19,6 +23,10 @@ export default function Settings() {
     address: '',
     business_hours: '',
     website: '',
+    crm_mode: 'builtin',
+    crm_type: '',
+    crm_webhook_url: '',
+    crm_api_key: '',
   });
 
   useEffect(() => {
@@ -30,6 +38,10 @@ export default function Settings() {
         address: firm.address || '',
         business_hours: firm.business_hours || '',
         website: firm.website || '',
+        crm_mode: firm.crm_mode || 'builtin',
+        crm_type: firm.crm_type || '',
+        crm_webhook_url: firm.crm_webhook_url || '',
+        crm_api_key: firm.crm_api_key || '',
       });
     }
     fetchStaff().then(setStaff).catch(() => {});
@@ -41,7 +53,14 @@ export default function Settings() {
     setSaved(false);
     setError('');
     try {
-      await updateSettings(form);
+      const payload = { ...form };
+      // Set crm_type based on crm_mode
+      if (payload.crm_mode === 'builtin') {
+        payload.crm_type = null;
+      } else {
+        payload.crm_type = 'webhook';
+      }
+      await updateSettings(payload);
       setSaved(true);
       toast.success('Settings saved');
       setTimeout(() => setSaved(false), 3000);
@@ -191,6 +210,140 @@ export default function Settings() {
           </div>
         )}
       </div>
+
+      {/* CRM Integration — admin only */}
+      {user?.role === 'admin' || user?.role === 'super_admin' ? (
+        <div className="bg-white rounded-2xl border border-slate-100 p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Webhook size={16} className="text-slate-400" />
+            <h3 className="text-sm font-semibold text-slate-800">CRM Integration</h3>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-medium text-slate-400 mb-1.5">CRM Mode</label>
+              <select
+                value={form.crm_mode}
+                onChange={(e) => {
+                  const mode = e.target.value;
+                  setForm(p => ({
+                    ...p,
+                    crm_mode: mode,
+                    crm_type: mode === 'builtin' ? '' : p.crm_type || 'webhook',
+                  }));
+                }}
+                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200"
+              >
+                <option value="builtin">Built-in Only</option>
+                <option value="external">External Webhook</option>
+                <option value="both">Both (Built-in + External)</option>
+              </select>
+              <p className="text-[11px] text-slate-400 mt-1">
+                {form.crm_mode === 'builtin'
+                  ? 'Lead data stays in the built-in CRM only.'
+                  : form.crm_mode === 'external'
+                  ? 'Lead data is pushed to your external CRM via webhook.'
+                  : 'Lead data is stored locally and also pushed to your external CRM.'}
+              </p>
+            </div>
+
+            {(form.crm_mode === 'external' || form.crm_mode === 'both') && (
+              <>
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 mb-1.5">Webhook URL</label>
+                  <input
+                    type="url"
+                    value={form.crm_webhook_url}
+                    onChange={(e) => setForm(p => ({ ...p, crm_webhook_url: e.target.value }))}
+                    placeholder="https://your-crm.com/api/webhook"
+                    className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200 placeholder:text-slate-300"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 mb-1.5">API Key (optional)</label>
+                  <div className="relative">
+                    <input
+                      type={showApiKey ? 'text' : 'password'}
+                      value={form.crm_api_key}
+                      onChange={(e) => setForm(p => ({ ...p, crm_api_key: e.target.value }))}
+                      placeholder="Bearer token for webhook authentication"
+                      className="w-full px-3.5 py-2.5 pr-10 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200 placeholder:text-slate-300"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowApiKey(!showApiKey)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    >
+                      {showApiKey ? <EyeOff size={14} /> : <Eye size={14} />}
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    Sent as Authorization: Bearer header with each webhook request.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  disabled={testingWebhook || !form.crm_webhook_url}
+                  onClick={async () => {
+                    setTestingWebhook(true);
+                    try {
+                      const testPayload = {
+                        event: 'test',
+                        timestamp: new Date().toISOString(),
+                        firm: { id: firm.id, name: firm.name },
+                        lead: {
+                          id: 'test_lead_001',
+                          name: 'Test Lead',
+                          phone: '+10000000000',
+                          email: 'test@example.com',
+                          service_type: 'other',
+                          urgency: 'low',
+                          score: 50,
+                          score_label: 'warm',
+                          summary: 'This is a test webhook payload from LeapingAI.',
+                          recording_url: null,
+                        },
+                        appointment: null,
+                      };
+
+                      const headers = { 'Content-Type': 'application/json' };
+                      if (form.crm_api_key) {
+                        headers['Authorization'] = `Bearer ${form.crm_api_key}`;
+                      }
+
+                      const res = await fetch(form.crm_webhook_url, {
+                        method: 'POST',
+                        headers,
+                        body: JSON.stringify(testPayload),
+                      });
+
+                      if (res.ok) {
+                        toast.success('Test webhook sent successfully');
+                      } else {
+                        toast.error(`Webhook returned ${res.status}`);
+                      }
+                    } catch (err) {
+                      toast.error(`Webhook test failed: ${err.message}`);
+                    } finally {
+                      setTestingWebhook(false);
+                    }
+                  }}
+                  className="inline-flex items-center gap-2 px-4 py-2 text-xs font-medium bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors disabled:opacity-40"
+                >
+                  {testingWebhook ? (
+                    <Loader2 size={13} className="animate-spin" />
+                  ) : (
+                    <Webhook size={13} />
+                  )}
+                  Send Test Webhook
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      ) : null}
 
       {/* Plan */}
       <div className="bg-white rounded-2xl border border-slate-100 p-6">

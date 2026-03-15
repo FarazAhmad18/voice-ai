@@ -6,6 +6,7 @@ const authenticate = require('../middleware/auth');
 const requireRole = require('../middleware/requireRole');
 const validateBody = require('../middleware/validateBody');
 const { sendSMS } = require('../services/twilio');
+const { sendEmail } = require('../services/email');
 
 // All message routes require authentication and admin/staff role
 router.use(authenticate);
@@ -143,13 +144,33 @@ router.post('/', validateBody(MESSAGE_FIELDS), async (req, res) => {
 
     // ── Channel: Email ──
     if (channel === 'email') {
-      status = 'pending'; // Email service not built yet
-      logger.info('email', `Email queued for lead ${lead_id} (service not yet implemented)`, {
-        firmId: messageFirmId,
-        leadId: lead_id,
-        userId: req.user.id,
-        source: 'routes.messages.POST.email',
-      });
+      if (!lead.caller_email) {
+        return res.status(400).json({ error: 'Lead has no email address on file' });
+      }
+
+      try {
+        const resendId = await sendEmail(lead.caller_email, subject || '(No subject)', body);
+        externalId = resendId;
+        status = 'sent';
+
+        logger.info('email', `Email sent to ${lead.caller_email} for lead ${lead_id}`, {
+          firmId: messageFirmId,
+          leadId: lead_id,
+          userId: req.user.id,
+          details: { to: lead.caller_email, subject, resendId },
+          source: 'routes.messages.POST.email',
+        });
+      } catch (emailErr) {
+        status = 'failed';
+        logger.error('email', `Email send failed for lead ${lead_id}: ${emailErr.message}`, {
+          firmId: messageFirmId,
+          leadId: lead_id,
+          userId: req.user.id,
+          details: { error: emailErr.message, to: lead.caller_email },
+          source: 'routes.messages.POST.email',
+        });
+        // Continue to save the message record with 'failed' status
+      }
     }
 
     // ── Channel: Note ──

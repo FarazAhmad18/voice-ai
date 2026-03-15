@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Send, MessageSquare, Mail, StickyNote, Loader2 } from 'lucide-react';
 import { sendMessage } from '../services/api';
 import { toast } from 'sonner';
+import MessageTemplateSelector from './MessageTemplateSelector';
 
 const CHANNELS = [
   { key: 'sms', label: 'SMS', icon: MessageSquare },
@@ -106,6 +107,7 @@ export default function MessageComposer({ leadId, onMessageSent }) {
 
         {/* Message body */}
         <div className="flex gap-2 items-end">
+          <MessageTemplateSelector onSelect={(text) => setBody(text)} />
           <textarea
             ref={textareaRef}
             rows={1}
