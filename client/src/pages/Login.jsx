@@ -70,9 +70,9 @@ export default function Login() {
           <div>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/10">
-                <span className="text-white text-lg font-bold">L</span>
+                <span className="text-white text-lg font-bold">V</span>
               </div>
-              <span className="text-xl font-semibold text-white tracking-tight">LeapingAI</span>
+              <span className="text-xl font-semibold text-white tracking-tight">VoibixAI</span>
             </div>
           </div>
 
@@ -132,9 +132,9 @@ export default function Login() {
           {/* Mobile logo (shown on small screens) */}
           <div className="lg:hidden text-center mb-10">
             <div className="w-12 h-12 bg-[#09090b] rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <span className="text-white text-lg font-bold">L</span>
+              <span className="text-white text-lg font-bold">V</span>
             </div>
-            <h1 className="text-xl font-semibold text-zinc-900 tracking-tight">LeapingAI</h1>
+            <h1 className="text-xl font-semibold text-zinc-900 tracking-tight">VoibixAI</h1>
             <p className="text-sm text-zinc-400 mt-1">AI-Powered Voice CRM</p>
           </div>
 

@@ -69,7 +69,7 @@ async function pushViaWebhook(firm, lead, call, appointment) {
   try {
     const headers = {
       'Content-Type': 'application/json',
-      'User-Agent': 'LeapingAI/1.0',
+      'User-Agent': 'VoibixAI/1.0',
     };
 
     // Include API key as bearer token if configured

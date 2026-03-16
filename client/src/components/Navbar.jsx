@@ -46,7 +46,7 @@ export default function Navbar() {
   const isAdminRole = user?.role === 'admin' || user?.role === 'super_admin';
   const navItems = (isSuperAdmin && isAdminSection ? adminNav : clientNav)
     .filter(item => !item.adminOnly || isAdminRole);
-  const brandName = isSuperAdmin && isAdminSection ? 'LeapingAI' : (firm?.name || 'LeapingAI');
+  const brandName = isSuperAdmin && isAdminSection ? 'VoibixAI' : (firm?.name || 'VoibixAI');
 
   // Close user menu on outside click
   useEffect(() => {

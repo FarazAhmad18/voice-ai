@@ -504,7 +504,7 @@ export default function Settings() {
                             urgency: 'low',
                             score: 50,
                             score_label: 'warm',
-                            summary: 'This is a test webhook payload from LeapingAI.',
+                            summary: 'This is a test webhook payload from VoibixAI.',
                             recording_url: null,
                           },
                           appointment: null,
