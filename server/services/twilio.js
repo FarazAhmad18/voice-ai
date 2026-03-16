@@ -70,10 +70,17 @@ async function sendSMS(to, body, from) {
  */
 function verifySignature(req) {
   if (!TWILIO_AUTH_TOKEN) {
-    logger.warn('sms', 'Twilio auth token not set — skipping signature verification', {
+    if (process.env.NODE_ENV === 'development') {
+      logger.warn('sms', 'Twilio auth token not set — skipping signature verification (dev only)', {
+        source: 'twilio.verifySignature',
+      });
+      return true;
+    }
+    logger.error('sms', 'TWILIO_AUTH_TOKEN not set in production — rejecting webhook', {
       source: 'twilio.verifySignature',
+      ip: req.ip,
     });
-    return true; // Allow in development
+    return false;
   }
 
   try {

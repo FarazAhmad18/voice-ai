@@ -3,6 +3,48 @@ const logger = require('../services/logger');
 const WEBHOOK_TIMEOUT_MS = 5000;
 
 /**
+ * Validate a webhook URL to prevent SSRF attacks.
+ * Rejects private IPs, localhost, and non-http(s) protocols.
+ *
+ * @param {string} urlString - URL to validate
+ * @returns {{ valid: boolean, reason?: string }}
+ */
+function validateWebhookUrl(urlString) {
+  let parsed;
+  try {
+    parsed = new URL(urlString);
+  } catch {
+    return { valid: false, reason: 'Malformed URL' };
+  }
+
+  // Must be http or https
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+    return { valid: false, reason: `Disallowed protocol: ${parsed.protocol}` };
+  }
+
+  const hostname = parsed.hostname.toLowerCase();
+
+  // Block localhost variants
+  if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname === '[::1]') {
+    return { valid: false, reason: 'Localhost not allowed' };
+  }
+
+  // Block private/reserved IP ranges
+  const ipParts = hostname.split('.').map(Number);
+  if (ipParts.length === 4 && ipParts.every(p => !isNaN(p) && p >= 0 && p <= 255)) {
+    const [a, b] = ipParts;
+    if (a === 10) return { valid: false, reason: 'Private IP (10.x.x.x)' };
+    if (a === 172 && b >= 16 && b <= 31) return { valid: false, reason: 'Private IP (172.16-31.x.x)' };
+    if (a === 192 && b === 168) return { valid: false, reason: 'Private IP (192.168.x.x)' };
+    if (a === 169 && b === 254) return { valid: false, reason: 'Link-local IP (169.254.x.x)' };
+    if (a === 127) return { valid: false, reason: 'Loopback IP (127.x.x.x)' };
+    if (a === 0) return { valid: false, reason: 'Reserved IP (0.x.x.x)' };
+  }
+
+  return { valid: true };
+}
+
+/**
  * Main entry point — push lead data to external CRM if configured.
  * Never throws — all errors are caught and logged so the main flow is not disrupted.
  *
@@ -55,6 +97,18 @@ async function pushViaWebhook(firm, lead, call, appointment) {
     logger.warn('crm_push', 'Webhook URL not configured — skipping push', {
       firmId: firm.id,
       leadId: lead.id,
+      source: 'crmPushController.pushViaWebhook',
+    });
+    return;
+  }
+
+  // SSRF protection — validate URL before making the request
+  const urlCheck = validateWebhookUrl(url);
+  if (!urlCheck.valid) {
+    logger.error('crm_push', `Webhook URL rejected (SSRF protection): ${urlCheck.reason}`, {
+      firmId: firm.id,
+      leadId: lead.id,
+      details: { url, reason: urlCheck.reason },
       source: 'crmPushController.pushViaWebhook',
     });
     return;

@@ -28,29 +28,24 @@ async function lookupFirmByAgentId(agentId) {
  * Events: call_started, call_ended, call_analyzed
  */
 async function handleWebhook(req, res) {
-  // --- Signature verification ---
-  const signature = req.headers['x-retell-signature'];
-  if (process.env.RETELL_API_KEY) {
-    const isValid = verifyWebhookSignature(JSON.stringify(req.body), signature);
-    if (!isValid) {
-      logger.warn('retell_webhook', 'Webhook signature verification failed', {
-        details: { signature: signature || 'missing' },
-        ip: req.ip,
-        source: 'webhookController.handleWebhook',
-      });
-      return res.status(401).json({ error: 'Invalid signature' });
-    }
-  } else if (process.env.NODE_ENV === 'development') {
-    logger.warn('retell_webhook', 'RETELL_API_KEY not set — skipping webhook signature verification (dev mode)', {
-      ip: req.ip,
-      source: 'webhookController.handleWebhook',
-    });
-  } else {
-    logger.error('retell_webhook', 'RETELL_API_KEY not set in production — rejecting webhook', {
+  // --- Signature verification (always required, all environments) ---
+  if (!process.env.RETELL_API_KEY) {
+    logger.error('retell_webhook', 'RETELL_API_KEY not set — rejecting webhook', {
       ip: req.ip,
       source: 'webhookController.handleWebhook',
     });
     return res.status(500).json({ error: 'Server misconfiguration: webhook verification unavailable' });
+  }
+
+  const signature = req.headers['x-retell-signature'];
+  const isValid = verifyWebhookSignature(JSON.stringify(req.body), signature);
+  if (!isValid) {
+    logger.warn('retell_webhook', 'Webhook signature verification failed', {
+      details: { signature: signature || 'missing' },
+      ip: req.ip,
+      source: 'webhookController.handleWebhook',
+    });
+    return res.status(401).json({ error: 'Invalid signature' });
   }
 
   const { event, call } = req.body;

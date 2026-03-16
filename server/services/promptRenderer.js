@@ -2,6 +2,62 @@ const supabase = require('./supabase');
 const logger = require('./logger');
 
 /**
+ * Dangerous prompt injection patterns to strip from user-controlled data.
+ * These patterns could trick the LLM into ignoring its system prompt.
+ */
+const INJECTION_PATTERNS = [
+  /ignore\s+(all\s+)?previous\s+instructions?/gi,
+  /ignore\s+(all\s+)?above\s+instructions?/gi,
+  /you\s+are\s+now\b/gi,
+  /forget\s+(all\s+)?(your\s+)?instructions?/gi,
+  /forget\s+(everything|all)/gi,
+  /disregard\s+(all\s+)?(previous|above|your)/gi,
+  /\bIMPORTANT\s*:/gi,
+  /\bSYSTEM\s*:/gi,
+  /\bINSTRUCTION\s*:/gi,
+  /\bASSISTANT\s*:/gi,
+  /\bnew\s+instructions?\s*:/gi,
+  /\boverride\s*:/gi,
+  /\bdo\s+not\s+follow/gi,
+  /\bact\s+as\s+(if\s+)?you\s+are/gi,
+  /\bpretend\s+(you\s+are|to\s+be)/gi,
+  /\brole\s*play\s+as/gi,
+  /```[\s\S]*?```/g, // strip code blocks that could contain hidden instructions
+];
+
+/**
+ * Escape user-controlled text for safe inclusion in AI prompts.
+ * Strips injection patterns, newlines, and enforces length limits.
+ *
+ * @param {string} text - User-controlled text to escape
+ * @param {number} maxLength - Maximum allowed length
+ * @returns {string} Sanitized text
+ */
+function escapeForPrompt(text, maxLength = 200) {
+  if (!text || typeof text !== 'string') return '';
+
+  let sanitized = text;
+
+  // Replace newlines with spaces (prevents multi-line injection)
+  sanitized = sanitized.replace(/[\r\n]+/g, ' ');
+
+  // Strip dangerous instruction patterns
+  for (const pattern of INJECTION_PATTERNS) {
+    sanitized = sanitized.replace(pattern, '');
+  }
+
+  // Collapse multiple spaces
+  sanitized = sanitized.replace(/\s{2,}/g, ' ').trim();
+
+  // Enforce length limit
+  if (sanitized.length > maxLength) {
+    sanitized = sanitized.slice(0, maxLength).trim();
+  }
+
+  return sanitized;
+}
+
+/**
  * Render a prompt template by replacing {{variables}} with real values.
  *
  * @param {object} template - { body, case_types }
@@ -14,26 +70,30 @@ function renderPrompt(template, firm, activeStaff = [], knowledgeEntries = []) {
   let prompt = template.body;
 
   const staffList = activeStaff.length > 0
-    ? activeStaff.map(s => `- ${s.name} (${s.specialization || s.role || 'Staff'})`).join('\n')
+    ? activeStaff.map(s => {
+        const name = escapeForPrompt(s.name, 100);
+        const spec = escapeForPrompt(s.specialization || s.role || 'Staff', 100);
+        return `- ${name} (${spec})`;
+      }).join('\n')
     : 'No staff currently available';
 
   const replacements = {
-    '{{agent_name}}': firm.agent_name || 'AI Assistant',
-    '{{company_name}}': firm.name || 'Our Company',
-    '{{business_hours}}': firm.business_hours || '9:00 AM - 5:00 PM, Monday - Friday',
+    '{{agent_name}}': escapeForPrompt(firm.agent_name || 'AI Assistant', 100),
+    '{{company_name}}': escapeForPrompt(firm.name || 'Our Company', 200),
+    '{{business_hours}}': escapeForPrompt(firm.business_hours || '9:00 AM - 5:00 PM, Monday - Friday', 200),
     '{{active_staff}}': staffList,
-    '{{phone}}': firm.phone || '',
-    '{{address}}': firm.address || '',
+    '{{phone}}': escapeForPrompt(firm.phone || '', 30),
+    '{{address}}': escapeForPrompt(firm.address || '', 300),
     '{{services}}': (() => {
       try {
         const ct = template.case_types;
-        if (Array.isArray(ct)) return ct.join(', ');
-        if (typeof ct === 'string') return JSON.parse(ct).join(', ');
+        if (Array.isArray(ct)) return ct.map(c => escapeForPrompt(c, 50)).join(', ');
+        if (typeof ct === 'string') return JSON.parse(ct).map(c => escapeForPrompt(c, 50)).join(', ');
         return '';
       } catch { return ''; }
     })(),
-    '{{email}}': firm.email || '',
-    '{{website}}': firm.website || '',
+    '{{email}}': escapeForPrompt(firm.email || '', 100),
+    '{{website}}': escapeForPrompt(firm.website || '', 200),
   };
 
   for (const [key, value] of Object.entries(replacements)) {
@@ -42,9 +102,11 @@ function renderPrompt(template, firm, activeStaff = [], knowledgeEntries = []) {
 
   // Append knowledge base FAQ section if there are active entries
   if (knowledgeEntries.length > 0) {
-    const faqLines = knowledgeEntries.map(entry =>
-      `Q: ${entry.question}\nA: ${entry.answer}`
-    );
+    const faqLines = knowledgeEntries.map(entry => {
+      const question = escapeForPrompt(entry.question, 300);
+      const answer = escapeForPrompt(entry.answer, 500);
+      return `Q: ${question}\nA: ${answer}`;
+    });
 
     prompt += '\n\nFREQUENTLY ASKED QUESTIONS:\nWhen callers ask these questions, use the answers below:\n\n'
       + faqLines.join('\n\n');
@@ -134,4 +196,4 @@ async function reRenderFirmPrompt(firmId) {
   }
 }
 
-module.exports = { renderPrompt, reRenderFirmPrompt };
+module.exports = { renderPrompt, reRenderFirmPrompt, escapeForPrompt };
