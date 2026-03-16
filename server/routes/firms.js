@@ -20,6 +20,7 @@ router.use(authenticate, requireRole('super_admin'));
 
 // GET /api/firms — list all clients
 router.get('/', async (req, res) => {
+  const start = Date.now();
   if (!supabase) return res.status(500).json({ error: 'Database not configured' });
 
   const { data: firms, error } = await supabase
@@ -49,11 +50,19 @@ router.get('/', async (req, res) => {
     })
   );
 
+  logger.info('admin', `Fetched ${firmsWithCounts.length} firms`, {
+    userId: req.user?.id,
+    details: { count: firmsWithCounts.length, duration: Date.now() - start },
+    durationMs: Date.now() - start,
+    source: 'routes.firms.getAll',
+  });
+
   res.json(firmsWithCounts);
 });
 
 // GET /api/firms/:id — single client detail
 router.get('/:id', async (req, res) => {
+  const start = Date.now();
   if (!supabase) return res.status(500).json({ error: 'Database not configured' });
 
   const { data: firm, error } = await supabase
@@ -76,6 +85,15 @@ router.get('/:id', async (req, res) => {
     supabase.from('leads').select('id', { count: 'exact', head: true }).eq('firm_id', firm.id),
     supabase.from('appointments').select('id', { count: 'exact', head: true }).eq('firm_id', firm.id),
   ]);
+
+  const duration = Date.now() - start;
+  logger.info('admin', `Fetched firm detail: ${firm.name}`, {
+    userId: req.user?.id,
+    firmId: firm.id,
+    details: { firmId: firm.id, staffCount: staff?.length || 0, duration },
+    durationMs: duration,
+    source: 'routes.firms.getById',
+  });
 
   res.json({
     ...firm,

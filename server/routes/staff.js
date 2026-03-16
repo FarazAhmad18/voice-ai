@@ -12,6 +12,7 @@ router.use(authenticate);
 
 // GET /api/staff — list staff for current firm
 router.get('/', async (req, res) => {
+  const start = Date.now();
   if (!supabase || !req.firm) return res.json([]);
 
   const { data, error } = await supabase
@@ -21,6 +22,15 @@ router.get('/', async (req, res) => {
     .order('name');
 
   if (error) return res.status(500).json({ error: error.message });
+
+  logger.info('staff', `Fetched ${data?.length || 0} staff members`, {
+    firmId: req.firm?.id,
+    userId: req.user?.id,
+    details: { count: data?.length || 0, duration: Date.now() - start },
+    durationMs: Date.now() - start,
+    source: 'routes.staff.getAll',
+  });
+
   res.json(data);
 });
 

@@ -12,6 +12,7 @@ router.use(authenticate);
 
 // GET /api/appointments
 router.get('/', async (req, res) => {
+  const start = Date.now();
   if (!supabase) return res.status(503).json({ error: 'Database unavailable' });
 
   const limit = Math.min(Math.max(parseInt(req.query.limit) || 100, 1), 500);
@@ -42,6 +43,15 @@ router.get('/', async (req, res) => {
   const { data, error, count } = await query;
 
   if (error) return res.status(500).json({ error: error.message });
+
+  logger.info('appointment', `Fetched ${data?.length || 0} appointments (total: ${count})`, {
+    firmId: req.firm?.id,
+    userId: req.user?.id,
+    details: { count: data?.length || 0, total: count, duration: Date.now() - start },
+    durationMs: Date.now() - start,
+    source: 'routes.appointments.getAll',
+  });
+
   return res.json({ data, total: count });
 });
 

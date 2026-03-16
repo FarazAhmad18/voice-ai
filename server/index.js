@@ -21,8 +21,14 @@ const messagesRouter = require('./routes/messages');
 const twilioWebhookRouter = require('./routes/twilioWebhook');
 const knowledgeRouter = require('./routes/knowledge');
 
+const requestId = require('./middleware/requestId');
+const requestLogger = require('./middleware/requestLogger');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Request ID must be first — before all other middleware
+app.use(requestId);
 
 // Middleware
 app.use(cors({
@@ -30,6 +36,9 @@ app.use(cors({
   methods: ['GET', 'POST', 'PATCH', 'DELETE'],
 }));
 app.use(express.json());
+
+// Request/response logging — after body parser, before routes
+app.use(requestLogger);
 
 // Health check
 app.get('/', (req, res) => {

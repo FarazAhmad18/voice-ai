@@ -1,24 +1,59 @@
+const logger = require('./logger');
+
 const RETELL_API_BASE = 'https://api.retellai.com';
 const RETELL_API_KEY = process.env.RETELL_API_KEY;
 
 /**
  * Make an authenticated request to the Retell API.
+ * Logs every call with timing for observability.
  */
 async function retellFetch(path, options = {}) {
-  const res = await fetch(`${RETELL_API_BASE}${path}`, {
-    ...options,
-    headers: {
-      Authorization: `Bearer ${RETELL_API_KEY}`,
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
+  const method = options.method || 'GET';
+  const start = Date.now();
+
+  logger.info('retell_api', `API call: ${method} ${path}`, {
+    details: { method, path },
+    source: 'retell.retellFetch',
   });
 
+  let res;
+  try {
+    res = await fetch(`${RETELL_API_BASE}${path}`, {
+      ...options,
+      headers: {
+        Authorization: `Bearer ${RETELL_API_KEY}`,
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+    });
+  } catch (networkErr) {
+    const duration = Date.now() - start;
+    logger.error('retell_api', `API network error: ${method} ${path} - ${networkErr.message}`, {
+      details: { method, path, error: networkErr.message, duration },
+      durationMs: duration,
+      source: 'retell.retellFetch',
+    });
+    throw networkErr;
+  }
+
+  const duration = Date.now() - start;
   const data = await res.json();
+
   if (!res.ok) {
-    console.error(`[Retell API Error] ${res.status}`, data);
+    logger.error('retell_api', `API error: ${res.status} ${method} ${path}`, {
+      details: { method, path, status: res.status, error: data, duration },
+      durationMs: duration,
+      source: 'retell.retellFetch',
+    });
     throw new Error(data.error || `Retell API error: ${res.status}`);
   }
+
+  logger.info('retell_api', `API response: ${res.status} ${method} ${path}`, {
+    details: { method, path, status: res.status, duration },
+    durationMs: duration,
+    source: 'retell.retellFetch',
+  });
+
   return data;
 }
 

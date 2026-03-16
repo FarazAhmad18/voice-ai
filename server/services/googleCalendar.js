@@ -1,5 +1,6 @@
 const { google } = require('googleapis');
 const path = require('path');
+const logger = require('./logger');
 
 let calendar = null;
 const CALENDAR_ID = process.env.GOOGLE_CALENDAR_ID;
@@ -26,24 +27,36 @@ try {
 
   if (auth) {
     calendar = google.calendar({ version: 'v3', auth });
-    console.log('[Google Calendar] Connected successfully');
+    logger.info('calendar', 'Google Calendar connected successfully', {
+      source: 'googleCalendar.init',
+    });
   } else {
-    console.warn('[Google Calendar] No credentials found, using mock data');
+    logger.warn('calendar', 'No credentials found, using mock data', {
+      source: 'googleCalendar.init',
+    });
   }
 } catch (err) {
-  console.warn('[Google Calendar] Not configured, using mock data:', err.message);
+  logger.warn('calendar', `Not configured, using mock data: ${err.message}`, {
+    details: { error: err.message },
+    source: 'googleCalendar.init',
+  });
 }
 
 /**
  * Get available time slots for a given date
  * Checks Google Calendar for existing events and returns open 30-min slots
  */
-async function getAvailableSlots(date) {
+async function getAvailableSlots(date, firmId) {
   if (!calendar || !CALENDAR_ID) {
     // Fallback mock slots
+    logger.debug('calendar', `Returning mock slots for ${date} (calendar not configured)`, {
+      firmId,
+      source: 'googleCalendar.getAvailableSlots',
+    });
     return ['9:00 AM', '10:30 AM', '1:00 PM', '2:30 PM', '4:00 PM'];
   }
 
+  const start = Date.now();
   try {
     const dayStart = new Date(`${date}T09:00:00`);
     const dayEnd = new Date(`${date}T17:00:00`);
@@ -86,9 +99,23 @@ async function getAvailableSlots(date) {
       }
     }
 
+    const duration = Date.now() - start;
+    logger.info('calendar', `Fetched ${slots.length} available slots for ${date}`, {
+      firmId,
+      details: { date, slotsCount: slots.length, busyCount: busyTimes.length, duration },
+      durationMs: duration,
+      source: 'googleCalendar.getAvailableSlots',
+    });
+
     return slots;
   } catch (err) {
-    console.error('[Google Calendar] Error fetching slots:', err.message);
+    const duration = Date.now() - start;
+    logger.error('calendar', `Error fetching slots for ${date}: ${err.message}`, {
+      firmId,
+      details: { error: err.message, date, duration },
+      durationMs: duration,
+      source: 'googleCalendar.getAvailableSlots',
+    });
     // Fallback to mock slots on error
     return ['9:00 AM', '10:30 AM', '1:00 PM', '2:30 PM', '4:00 PM'];
   }
@@ -97,12 +124,16 @@ async function getAvailableSlots(date) {
 /**
  * Create a calendar event for the booked appointment
  */
-async function createAppointmentEvent(appointment) {
+async function createAppointmentEvent(appointment, firmId) {
   if (!calendar || !CALENDAR_ID) {
-    console.log('[Google Calendar] Not configured, skipping event creation');
+    logger.debug('calendar', 'Not configured, skipping event creation', {
+      firmId,
+      source: 'googleCalendar.createAppointmentEvent',
+    });
     return null;
   }
 
+  const start = Date.now();
   try {
     const startTime = parseTime(appointment.appointment_date, appointment.appointment_time);
     const endTime = new Date(startTime.getTime() + 30 * 60000); // 30 min consultation
@@ -135,10 +166,23 @@ async function createAppointmentEvent(appointment) {
       resource: event,
     });
 
-    console.log(`[Google Calendar] Event created: ${response.data.id}`);
+    const duration = Date.now() - start;
+    logger.info('calendar', `Event created: ${response.data.id} for ${appointment.caller_name}`, {
+      firmId,
+      details: { eventId: response.data.id, date: appointment.appointment_date, time: appointment.appointment_time, duration },
+      durationMs: duration,
+      source: 'googleCalendar.createAppointmentEvent',
+    });
+
     return response.data;
   } catch (err) {
-    console.error('[Google Calendar] Error creating event:', err.message);
+    const duration = Date.now() - start;
+    logger.error('calendar', `Error creating event: ${err.message}`, {
+      firmId,
+      details: { error: err.message, appointment: { date: appointment.appointment_date, time: appointment.appointment_time, name: appointment.caller_name }, duration },
+      durationMs: duration,
+      source: 'googleCalendar.createAppointmentEvent',
+    });
     return null;
   }
 }

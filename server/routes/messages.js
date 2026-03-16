@@ -15,6 +15,7 @@ router.use(requireRole('admin', 'staff', 'super_admin'));
 // ── GET /api/messages?lead_id=xxx ────────────────────────────
 // Returns all messages for a lead, scoped to the user's firm.
 router.get('/', async (req, res) => {
+  const start = Date.now();
   const { lead_id } = req.query;
 
   if (!lead_id) {
@@ -44,6 +45,15 @@ router.get('/', async (req, res) => {
       });
       return res.status(500).json({ error: 'Failed to fetch messages' });
     }
+
+    logger.info('sms', `Fetched ${data?.length || 0} messages for lead ${lead_id}`, {
+      firmId: req.firm?.id,
+      userId: req.user?.id,
+      leadId: lead_id,
+      details: { count: data?.length || 0, duration: Date.now() - start },
+      durationMs: Date.now() - start,
+      source: 'routes.messages.getAll',
+    });
 
     res.json(data || []);
   } catch (err) {

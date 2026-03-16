@@ -10,6 +10,7 @@ router.use(authenticate, requireRole('super_admin'));
 
 // GET /api/templates — list all prompt templates
 router.get('/', async (req, res) => {
+  const start = Date.now();
   if (!supabase) return res.status(500).json({ error: 'Database not configured' });
 
   const { data, error } = await supabase
@@ -18,6 +19,14 @@ router.get('/', async (req, res) => {
     .order('industry', { ascending: true });
 
   if (error) return res.status(500).json({ error: error.message });
+
+  logger.info('admin', `Fetched ${data?.length || 0} templates`, {
+    userId: req.user?.id,
+    details: { count: data?.length || 0, duration: Date.now() - start },
+    durationMs: Date.now() - start,
+    source: 'routes.templates.getAll',
+  });
+
   res.json(data);
 });
 
@@ -113,6 +122,13 @@ router.delete('/:id', async (req, res) => {
     .eq('id', req.params.id);
 
   if (error) return res.status(500).json({ error: error.message });
+
+  logger.info('admin', `Template deleted: ${req.params.id}`, {
+    userId: req.user?.id,
+    details: { templateId: req.params.id },
+    source: 'routes.templates.delete',
+  });
+
   res.json({ deleted: true });
 });
 

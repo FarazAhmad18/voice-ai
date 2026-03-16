@@ -12,6 +12,7 @@ router.use(authenticate);
 
 // GET /api/leads
 router.get('/', async (req, res) => {
+  const start = Date.now();
   if (!supabase) return res.status(503).json({ error: 'Database unavailable' });
 
   const limit = Math.min(Math.max(parseInt(req.query.limit) || 100, 1), 500);
@@ -42,11 +43,21 @@ router.get('/', async (req, res) => {
   const { data, error, count } = await query;
 
   if (error) return res.status(500).json({ error: error.message });
+
+  logger.info('lead', `Fetched ${data?.length || 0} leads (total: ${count})`, {
+    firmId: req.firm?.id,
+    userId: req.user?.id,
+    details: { count: data?.length || 0, total: count, duration: Date.now() - start },
+    durationMs: Date.now() - start,
+    source: 'routes.leads.getAll',
+  });
+
   return res.json({ data, total: count });
 });
 
 // GET /api/leads/:id
 router.get('/:id', async (req, res) => {
+  const start = Date.now();
   if (!supabase) return res.status(503).json({ error: 'Database unavailable' });
 
   const { id } = req.params;
@@ -71,6 +82,15 @@ router.get('/:id', async (req, res) => {
     .select('*')
     .eq('lead_id', id)
     .order('created_at', { ascending: false });
+
+  logger.info('lead', `Fetched lead detail: ${id}`, {
+    firmId: req.firm?.id,
+    userId: req.user?.id,
+    leadId: id,
+    details: { callsCount: calls?.length || 0, duration: Date.now() - start },
+    durationMs: Date.now() - start,
+    source: 'routes.leads.getById',
+  });
 
   return res.json({ ...lead, calls: calls || [] });
 });
