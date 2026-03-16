@@ -102,6 +102,17 @@ router.patch('/:id', validateBody(LEAD_UPDATABLE), async (req, res) => {
 
   const { id } = req.params;
 
+  // First check the lead exists to avoid cryptic Supabase errors on missing rows
+  const { data: existing, error: checkErr } = await supabase
+    .from('leads')
+    .select('id')
+    .eq('id', id)
+    .eq('firm_id', req.firm.id)
+    .maybeSingle();
+
+  if (checkErr) return res.status(500).json({ error: checkErr.message });
+  if (!existing) return res.status(404).json({ error: 'Lead not found' });
+
   const { data, error } = await supabase
     .from('leads')
     .update(req.body)
@@ -111,7 +122,6 @@ router.patch('/:id', validateBody(LEAD_UPDATABLE), async (req, res) => {
     .single();
 
   if (error) return res.status(500).json({ error: error.message });
-  if (!data) return res.status(404).json({ error: 'Lead not found' });
 
   logger.info('lead', `Lead updated: ${id}`, {
     firmId: req.firm.id,

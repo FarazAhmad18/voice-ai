@@ -6,6 +6,7 @@ const requireRole = require('../middleware/requireRole');
 const { reRenderFirmPrompt } = require('../services/promptRenderer');
 const { updateFirmAgent } = require('../controllers/agentController');
 const logger = require('../services/logger');
+const { sanitizeText, sanitizeForPrompt } = require('../utils/sanitize');
 
 const VALID_CATEGORIES = [
   'general', 'services', 'pricing', 'location', 'hours', 'insurance', 'policies', 'other',
@@ -64,12 +65,19 @@ router.post('/', requireRole('admin', 'super_admin'), async (req, res) => {
   }
 
   try {
+    // Sanitize inputs: strip HTML and prompt injection patterns at storage time
+    const safeQuestion = sanitizeForPrompt(question.trim(), 500);
+    const safeAnswer = sanitizeForPrompt(answer.trim(), 2000);
+
+    if (!safeQuestion) return res.status(400).json({ error: 'Question is empty after sanitization' });
+    if (!safeAnswer) return res.status(400).json({ error: 'Answer is empty after sanitization' });
+
     const { data, error } = await supabase
       .from('firm_knowledge')
       .insert({
         firm_id: req.firm.id,
-        question: question.trim(),
-        answer: answer.trim(),
+        question: safeQuestion,
+        answer: safeAnswer,
         category: cat,
         is_active: is_active !== false,
         sort_order: typeof sort_order === 'number' ? sort_order : 0,
@@ -179,9 +187,10 @@ router.patch('/:id', requireRole('admin', 'super_admin'), async (req, res) => {
         return res.status(400).json({ error: `Invalid category. Must be one of: ${VALID_CATEGORIES.join(', ')}` });
       }
       if ((field === 'question' || field === 'answer') && typeof req.body[field] === 'string') {
-        updates[field] = req.body[field].trim();
+        const maxLen = field === 'question' ? 500 : 2000;
+        updates[field] = sanitizeForPrompt(req.body[field].trim(), maxLen);
         if (!updates[field]) {
-          return res.status(400).json({ error: `${field} cannot be empty` });
+          return res.status(400).json({ error: `${field} cannot be empty after sanitization` });
         }
       } else {
         updates[field] = req.body[field];

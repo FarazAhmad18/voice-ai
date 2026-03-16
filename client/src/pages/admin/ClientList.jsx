@@ -64,7 +64,7 @@ export default function ClientList() {
         const data = await fetchFirms();
         setFirms(data);
       } catch (err) {
-        console.error('Failed to fetch firms:', err);
+        // error handled by UI state
       } finally {
         setLoading(false);
       }

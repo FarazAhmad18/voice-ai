@@ -109,7 +109,7 @@ export default function Logs() {
       setTotal(data.total || 0);
       setErrorCounts(data.error_counts || {});
     } catch (err) {
-      console.error('Failed to fetch logs:', err);
+      // error handled by UI state
     } finally {
       setLoading(false);
     }

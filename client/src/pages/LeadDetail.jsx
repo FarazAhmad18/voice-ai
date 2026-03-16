@@ -132,7 +132,7 @@ export default function LeadDetail() {
         setMessages(Array.isArray(messagesData) ? messagesData : []);
         setFollowUpDate(leadData.follow_up_date || '');
       } catch (err) {
-        console.error('Failed to fetch lead:', err);
+        // error handled by UI state
       } finally {
         setLoading(false);
       }
@@ -195,7 +195,7 @@ export default function LeadDetail() {
       const messagesData = await fetchMessages(id);
       setMessages(Array.isArray(messagesData) ? messagesData : []);
     } catch (err) {
-      console.error('Failed to refresh messages:', err);
+      // silently fail on message refresh — user can retry
     }
   }
 

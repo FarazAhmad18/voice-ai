@@ -182,7 +182,6 @@ export default function Dashboard() {
       setLeads(leadsData);
       setAppointments(aptsData);
     } catch (err) {
-      console.error('Failed to load dashboard data:', err);
       setError(err.message || 'Failed to load dashboard data');
     } finally {
       setLoading(false);

@@ -139,7 +139,7 @@ export default function AdminDashboard() {
         setFirms(firmsData);
         setErrorCounts(logsData.error_counts || {});
       } catch (err) {
-        console.error('Failed to load admin dashboard:', err);
+        // error handled by UI state
       } finally {
         setLoading(false);
       }

@@ -6,6 +6,7 @@ const requireRole = require('../middleware/requireRole');
 const { reRenderFirmPrompt } = require('../services/promptRenderer');
 const { updateFirmAgent } = require('../controllers/agentController');
 const logger = require('../services/logger');
+const { sanitizeText } = require('../utils/sanitize');
 
 // All staff routes require authentication
 router.use(authenticate);
@@ -42,14 +43,22 @@ router.post('/', requireRole('admin', 'super_admin'), async (req, res) => {
 
   if (!name) return res.status(400).json({ error: 'Name is required' });
 
+  // Sanitize and enforce max lengths
+  const safeName = sanitizeText(name, 100);
+  const safeRole = role ? sanitizeText(role, 50) : null;
+  const safeSpec = specialization ? sanitizeText(specialization, 100) : null;
+  const safeEmail = email ? sanitizeText(email, 200) : null;
+
+  if (!safeName) return res.status(400).json({ error: 'Name is required (after sanitization)' });
+
   const { data, error } = await supabase
     .from('staff')
     .insert({
       firm_id: req.firm.id,
-      name,
-      role: role || null,
-      specialization: specialization || null,
-      email: email || null,
+      name: safeName,
+      role: safeRole,
+      specialization: safeSpec,
+      email: safeEmail,
       phone: phone || null,
       is_active: is_active !== false,
       calendar_id: calendar_id || null,
@@ -80,6 +89,12 @@ router.patch('/:id', requireRole('admin', 'super_admin'), async (req, res) => {
   for (const field of allowed) {
     if (req.body[field] !== undefined) updates[field] = req.body[field];
   }
+
+  // Sanitize and enforce max lengths on text fields
+  if (updates.name !== undefined) updates.name = sanitizeText(updates.name, 100);
+  if (updates.role !== undefined) updates.role = updates.role ? sanitizeText(updates.role, 50) : null;
+  if (updates.specialization !== undefined) updates.specialization = updates.specialization ? sanitizeText(updates.specialization, 100) : null;
+  if (updates.email !== undefined) updates.email = updates.email ? sanitizeText(updates.email, 200) : null;
 
   if (Object.keys(updates).length === 0) {
     return res.status(400).json({ error: 'No valid fields provided' });

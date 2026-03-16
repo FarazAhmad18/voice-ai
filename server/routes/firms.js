@@ -7,6 +7,7 @@ const validateBody = require('../middleware/validateBody');
 const { deployAgent, updateFirmAgent } = require('../controllers/agentController');
 const { reRenderFirmPrompt } = require('../services/promptRenderer');
 const logger = require('../services/logger');
+const { sanitizeText } = require('../utils/sanitize');
 
 const FIRM_UPDATABLE = [
   'name', 'industry', 'email', 'phone', 'address', 'website',
@@ -123,16 +124,28 @@ router.post('/', async (req, res) => {
     return res.status(400).json({ error: 'Name and industry are required' });
   }
 
+  // BUG 5: Reject if admin_email is provided but password is too short
+  if (admin_email && (!admin_password || admin_password.length < 6)) {
+    return res.status(400).json({ error: 'Admin password must be at least 6 characters' });
+  }
+
+  // Sanitize text inputs to prevent XSS
+  const safeName = sanitizeText(name, 200);
+  const safeAgentName = agent_name ? sanitizeText(agent_name, 100) : 'AI Assistant';
+  const safeAdminName = admin_name ? sanitizeText(admin_name, 200) : null;
+
   try {
     // 1. Create firm
     const { data: firm, error: firmErr } = await supabase
       .from('firms')
       .insert({
-        name,
+        name: safeName,
         industry: industry || 'other',
-        email, phone, address, website,
+        email, phone,
+        address: address ? sanitizeText(address, 500) : null,
+        website,
         business_hours: business_hours || '9:00 AM - 5:00 PM, Monday - Friday',
-        agent_name: agent_name || 'AI Assistant',
+        agent_name: safeAgentName,
         agent_voice_id: agent_voice_id || null,
         prompt_template_id: prompt_template_id || null,
         brand_color: brand_color || '#6d28d9',
@@ -146,7 +159,7 @@ router.post('/', async (req, res) => {
       return res.status(500).json({ error: firmErr.message });
     }
 
-    logger.info('admin', `Client created: ${name} (${industry})`, {
+    logger.info('admin', `Client created: ${safeName} (${industry})`, {
       firmId: firm.id,
       userId: req.user.id,
       source: 'routes.firms.create',
@@ -156,10 +169,10 @@ router.post('/', async (req, res) => {
     if (staffList && Array.isArray(staffList) && staffList.length > 0) {
       const staffRecords = staffList.map(s => ({
         firm_id: firm.id,
-        name: s.name,
-        role: s.role || null,
-        specialization: s.specialization || null,
-        email: s.email || null,
+        name: sanitizeText(s.name, 100),
+        role: s.role ? sanitizeText(s.role, 50) : null,
+        specialization: s.specialization ? sanitizeText(s.specialization, 100) : null,
+        email: s.email ? sanitizeText(s.email, 200) : null,
         phone: s.phone || null,
         is_active: s.is_active !== false,
       }));
@@ -185,7 +198,7 @@ router.post('/', async (req, res) => {
           await supabase.from('users').insert({
             id: authData.user.id,
             email: admin_email,
-            name: admin_name || name + ' Admin',
+            name: safeAdminName || safeName + ' Admin',
             role: 'admin',
             firm_id: firm.id,
           });
@@ -241,7 +254,7 @@ router.post('/', async (req, res) => {
   } catch (err) {
     logger.error('admin', `Failed to create client: ${err.message}`, {
       userId: req.user.id,
-      details: { error: err.message, name, industry },
+      details: { error: err.message, name: safeName, industry },
       source: 'routes.firms.create',
     });
     res.status(500).json({ error: 'Failed to create client' });
@@ -252,9 +265,16 @@ router.post('/', async (req, res) => {
 router.patch('/:id', validateBody(FIRM_UPDATABLE), async (req, res) => {
   if (!supabase) return res.status(500).json({ error: 'Database not configured' });
 
+  // Sanitize text fields to prevent XSS
+  const sanitizedBody = { ...req.body };
+  if (sanitizedBody.name) sanitizedBody.name = sanitizeText(sanitizedBody.name, 200);
+  if (sanitizedBody.agent_name) sanitizedBody.agent_name = sanitizeText(sanitizedBody.agent_name, 100);
+  if (sanitizedBody.address) sanitizedBody.address = sanitizeText(sanitizedBody.address, 500);
+  if (sanitizedBody.business_hours) sanitizedBody.business_hours = sanitizeText(sanitizedBody.business_hours, 200);
+
   const { data, error } = await supabase
     .from('firms')
-    .update(req.body)
+    .update(sanitizedBody)
     .eq('id', req.params.id)
     .select()
     .single();

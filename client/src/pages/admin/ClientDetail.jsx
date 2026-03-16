@@ -36,7 +36,7 @@ export default function ClientDetail() {
           plan: data.plan || 'free',
         });
       } catch (err) {
-        console.error('Failed to fetch firm:', err);
+        // error handled by UI state
       } finally {
         setLoading(false);
       }

@@ -166,7 +166,6 @@ export default function Leads() {
       const data = await fetchLeads();
       setLeads(data);
     } catch (err) {
-      console.error('Failed to fetch leads:', err);
       setError(err.message || 'Failed to fetch leads');
     } finally {
       setLoading(false);

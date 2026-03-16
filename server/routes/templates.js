@@ -4,6 +4,7 @@ const supabase = require('../services/supabase');
 const authenticate = require('../middleware/auth');
 const requireRole = require('../middleware/requireRole');
 const logger = require('../services/logger');
+const { sanitizeText } = require('../utils/sanitize');
 
 // All template routes require super_admin
 router.use(authenticate, requireRole('super_admin'));
@@ -54,10 +55,13 @@ router.post('/', async (req, res) => {
     return res.status(400).json({ error: 'Name, industry, and body are required' });
   }
 
+  // Sanitize name (but NOT body — body is the prompt template and needs special chars)
+  const safeName = sanitizeText(name, 200);
+
   const { data, error } = await supabase
     .from('prompt_templates')
     .insert({
-      name,
+      name: safeName,
       industry,
       body,
       case_types: case_types || [],
@@ -87,6 +91,9 @@ router.patch('/:id', async (req, res) => {
   for (const field of allowed) {
     if (req.body[field] !== undefined) updates[field] = req.body[field];
   }
+
+  // Sanitize name but NOT body (body is the prompt template)
+  if (updates.name) updates.name = sanitizeText(updates.name, 200);
 
   if (updates.body) {
     updates.variables = extractVariables(updates.body);

@@ -101,7 +101,7 @@ export default function Navbar() {
         });
         setNotifications(todayLeads);
       } catch (err) {
-        console.error('Failed to load notifications:', err);
+        // silently fail on notification load
       }
     }
     if (user) loadNotifications();
