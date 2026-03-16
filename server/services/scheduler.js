@@ -186,6 +186,21 @@ cron.schedule('0 9 * * *', async () => {
       const firm = firmMap[apt.firm_id];
       if (!firm) continue;
 
+      // BUG #6: Check if a 24h reminder was already sent for this appointment today
+      if (apt.lead_id) {
+        const { data: existingReminder } = await supabase
+          .from('messages')
+          .select('id')
+          .eq('lead_id', apt.lead_id)
+          .eq('channel', 'sms')
+          .eq('sender', 'System')
+          .ilike('body', '%reminder%')
+          .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+          .maybeSingle();
+
+        if (existingReminder) continue; // Already sent
+      }
+
       const msg = `Reminder: You have an appointment with ${firm.name} tomorrow at ${apt.appointment_time}.`;
 
       try {
@@ -288,6 +303,21 @@ cron.schedule('0 * * * *', async () => {
 
       const firm = firmMap[apt.firm_id];
       if (!firm) continue;
+
+      // BUG #6: Check if a 1h reminder was already sent for this appointment
+      if (apt.lead_id) {
+        const { data: existingReminder } = await supabase
+          .from('messages')
+          .select('id')
+          .eq('lead_id', apt.lead_id)
+          .eq('channel', 'sms')
+          .eq('sender', 'System')
+          .ilike('body', '%in about 1 hour%')
+          .gte('created_at', new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString())
+          .maybeSingle();
+
+        if (existingReminder) continue; // Already sent
+      }
 
       const msg = `Your appointment with ${firm.name} is in about 1 hour at ${apt.appointment_time}. See you soon!`;
 

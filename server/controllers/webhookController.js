@@ -77,6 +77,7 @@ async function handleWebhook(req, res) {
       await handleCallAnalyzed(call);
       return res.status(200).json({ received: true });
 
+
     default:
       logger.warn('retell_webhook', `Unhandled event: ${event}`, {
         callId: call.call_id,
@@ -114,6 +115,21 @@ async function handleCallEnded(call) {
     return;
   }
 
+  // BUG #1: Idempotency — check if this call was already processed (webhook retries)
+  const { data: existingCall } = await supabase
+    .from('calls')
+    .select('id, lead_id')
+    .eq('retell_call_id', call.call_id)
+    .maybeSingle();
+
+  if (existingCall) {
+    logger.info('retell_webhook', `Call ${call.call_id} already processed, skipping`, {
+      callId: call.call_id,
+      source: 'webhookController.handleCallEnded',
+    });
+    return;
+  }
+
   const callerPhone = call.from_number || 'unknown';
   const agentId = call.agent_id;
 
@@ -123,6 +139,16 @@ async function handleCallEnded(call) {
     logger.error('retell_webhook', `No firm found for agent_id: ${agentId} — skipping lead creation`, {
       callId: call.call_id,
       details: { agentId, from: callerPhone },
+      source: 'webhookController.handleCallEnded',
+    });
+    return;
+  }
+
+  // BUG #4: Skip lead creation for paused/cancelled firms
+  if (firm.status !== 'active') {
+    logger.warn('retell_webhook', `Firm ${firm.name} is ${firm.status}, skipping lead creation`, {
+      firmId: firm.id,
+      callId: call.call_id,
       source: 'webhookController.handleCallEnded',
     });
     return;
@@ -322,6 +348,45 @@ async function handleCallEnded(call) {
  * call_analyzed — enrichment after post-call analysis.
  * Updates the call and lead with summary and sentiment.
  */
+/**
+ * Core logic for processing call analysis data.
+ * Extracted so it can be called from both the handler and retry.
+ */
+async function processCallAnalysis(call) {
+  const analysis = call.call_analysis;
+  if (!analysis) return;
+
+  const summary = analysis.call_summary || '';
+  const sentiment = analysis.user_sentiment || null;
+  const retellCallId = call.call_id;
+
+  const { data: callData } = await supabase
+    .from('calls')
+    .update({ summary, sentiment })
+    .eq('retell_call_id', retellCallId)
+    .select('lead_id')
+    .single();
+
+  if (!callData) {
+    // Call record not found — throw so caller knows to retry
+    throw new Error(`Call record not found for retell_call_id: ${retellCallId}`);
+  }
+
+  if (callData.lead_id) {
+    await supabase
+      .from('leads')
+      .update({ notes: summary, sentiment })
+      .eq('id', callData.lead_id);
+  }
+
+  logger.info('retell_webhook', `Call analyzed: sentiment=${sentiment}`, {
+    callId: retellCallId,
+    leadId: callData?.lead_id,
+    details: { summary: summary.slice(0, 200), sentiment },
+    source: 'webhookController.processCallAnalysis',
+  });
+}
+
 async function handleCallAnalyzed(call) {
   if (!supabase) {
     logger.error('database', 'Supabase not available — cannot process call_analyzed', {
@@ -340,37 +405,35 @@ async function handleCallAnalyzed(call) {
     return;
   }
 
-  const summary = analysis.call_summary || '';
-  const sentiment = analysis.user_sentiment || null;
-  const retellCallId = call.call_id;
-
   try {
-    const { data: callData } = await supabase
-      .from('calls')
-      .update({ summary, sentiment })
-      .eq('retell_call_id', retellCallId)
-      .select('lead_id')
-      .single();
-
-    if (callData?.lead_id) {
-      await supabase
-        .from('leads')
-        .update({ notes: summary, sentiment })
-        .eq('id', callData.lead_id);
-    }
-
-    logger.info('retell_webhook', `Call analyzed: sentiment=${sentiment}`, {
-      callId: retellCallId,
-      leadId: callData?.lead_id,
-      details: { summary: summary.slice(0, 200), sentiment },
-      source: 'webhookController.handleCallAnalyzed',
-    });
+    await processCallAnalysis(call);
   } catch (err) {
-    logger.error('database', `Failed to update call analysis: ${err.message}`, {
-      callId: retellCallId,
-      details: { error: err.message },
-      source: 'webhookController.handleCallAnalyzed',
-    });
+    // BUG #2: call_analyzed can fire before call_ended — queue and retry
+    if (err.message.includes('Call record not found')) {
+      logger.warn('retell_webhook', `call_analyzed received before call_ended for ${call.call_id}, queuing retry`, {
+        callId: call.call_id,
+        source: 'webhookController.handleCallAnalyzed',
+      });
+
+      // Retry after 5 seconds to allow call_ended to finish processing
+      setTimeout(async () => {
+        try {
+          await processCallAnalysis(call);
+        } catch (e) {
+          logger.error('retell_webhook', `Retry failed for call_analyzed ${call.call_id}: ${e.message}`, {
+            callId: call.call_id,
+            details: { error: e.message },
+            source: 'webhookController.handleCallAnalyzed',
+          });
+        }
+      }, 5000);
+    } else {
+      logger.error('database', `Failed to update call analysis: ${err.message}`, {
+        callId: call.call_id,
+        details: { error: err.message },
+        source: 'webhookController.handleCallAnalyzed',
+      });
+    }
   }
 }
 
@@ -460,10 +523,33 @@ async function handleBookAppointment(req, res) {
   }
 
   const firmId = firm.id;
+  const callerPhone = caller_phone || call?.from_number || 'unknown';
+
+  // BUG #5: Prevent double-booked appointments for same person/date/time/firm
+  const { data: existingApt } = await supabase
+    .from('appointments')
+    .select('id')
+    .eq('firm_id', firmId)
+    .eq('caller_phone', callerPhone)
+    .eq('appointment_date', appointment_date)
+    .eq('appointment_time', appointment_time)
+    .maybeSingle();
+
+  if (existingApt) {
+    logger.info('tool_call', `Duplicate appointment prevented: ${caller_name} on ${appointment_date} at ${appointment_time}`, {
+      callId: call?.call_id,
+      firmId,
+      source: 'webhookController.handleBookAppointment',
+    });
+    return res.json({
+      success: true,
+      message: `Your appointment is already confirmed for ${appointment_date} at ${appointment_time}.`,
+    });
+  }
 
   logger.info('tool_call', `book_appointment: ${caller_name} on ${appointment_date} at ${appointment_time}`, {
     callId: call?.call_id,
-    details: { caller_name, caller_phone, case_type, appointment_date, appointment_time, urgency, firmId },
+    details: { caller_name, caller_phone: callerPhone, case_type, appointment_date, appointment_time, urgency, firmId },
     source: 'webhookController.handleBookAppointment',
   });
 
@@ -471,7 +557,7 @@ async function handleBookAppointment(req, res) {
     id: `apt_${Date.now()}`,
     firm_id: firmId,
     caller_name: caller_name || 'Unknown',
-    caller_phone: caller_phone || call?.from_number || 'unknown',
+    caller_phone: callerPhone,
     caller_email: caller_email || null,
     case_type: case_type || 'other',
     appointment_date,

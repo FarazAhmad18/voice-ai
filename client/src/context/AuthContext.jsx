@@ -80,6 +80,12 @@ export function AuthProvider({ children }) {
     setSession(null);
   }
 
+  async function refreshProfile() {
+    if (session?.access_token) {
+      await fetchProfile(session.access_token);
+    }
+  }
+
   const value = {
     user,
     firm,
@@ -88,6 +94,7 @@ export function AuthProvider({ children }) {
     loading,
     login,
     logout,
+    refreshProfile,
     isAuthenticated: !!user,
     isSuperAdmin: user?.role === 'super_admin',
     isAdmin: user?.role === 'admin',

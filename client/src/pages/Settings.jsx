@@ -45,7 +45,7 @@ if (typeof document !== 'undefined' && !document.getElementById(STYLE_ID)) {
 }
 
 export default function Settings() {
-  const { user, firm } = useAuth();
+  const { user, firm, refreshProfile } = useAuth();
   const { labels } = useFirm();
   const [staff, setStaff] = useState([]);
   const [knowledgeCount, setKnowledgeCount] = useState(0);
@@ -106,6 +106,8 @@ export default function Settings() {
         payload.crm_type = 'webhook';
       }
       await updateSettings(payload);
+      // BUG #7: Refresh auth context so firm data is up-to-date everywhere
+      await refreshProfile();
       setSaved(true);
       toast.success('Settings saved');
       setTimeout(() => setSaved(false), 3000);

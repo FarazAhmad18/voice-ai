@@ -149,9 +149,27 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
-app.listen(PORT, () => {
-  logger.info('system', `Server started on port ${PORT}`);
-});
+// Startup health check and listen
+(async () => {
+  const supabase = require('./services/supabase');
+  if (supabase) {
+    try {
+      const { error } = await supabase.from('firms').select('id').limit(1);
+      if (error) {
+        logger.error('system', `Startup health check failed: ${error.message}`);
+        process.exit(1);
+      }
+      logger.info('system', 'Startup health check passed — Supabase is reachable');
+    } catch (err) {
+      logger.error('system', `Startup health check failed: ${err.message}`);
+      process.exit(1);
+    }
+  }
+
+  app.listen(PORT, () => {
+    logger.info('system', `Server started on port ${PORT}`);
+  });
+})();
 
 // Catch unhandled promise rejections
 process.on('unhandledRejection', (reason) => {
