@@ -58,7 +58,10 @@ router.post('/', requireRole('admin', 'super_admin'), async (req, res) => {
     return res.status(400).json({ error: 'Answer is required' });
   }
 
-  const cat = category && VALID_CATEGORIES.includes(category) ? category : 'general';
+  const cat = category || 'general';
+  if (!VALID_CATEGORIES.includes(cat)) {
+    return res.status(400).json({ error: `Invalid category. Must be one of: ${VALID_CATEGORIES.join(', ')}` });
+  }
 
   try {
     const { data, error } = await supabase
