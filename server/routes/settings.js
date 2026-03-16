@@ -70,7 +70,14 @@ router.patch('/', validateBody(CLIENT_UPDATABLE), async (req, res) => {
     .select()
     .single();
 
-  if (error) return res.status(500).json({ error: error.message });
+  if (error) {
+    logger.error('database', `Failed to update settings: ${error.message}`, {
+      firmId: req.firm.id,
+      userId: req.user.id,
+      source: 'routes.settings.patch',
+    });
+    return res.status(500).json({ error: 'Failed to update settings. Please try again.' });
+  }
 
   logger.info('settings', `Firm settings updated: ${data.name}`, {
     firmId: req.firm.id,

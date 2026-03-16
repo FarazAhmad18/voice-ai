@@ -29,7 +29,13 @@ router.get('/', async (req, res) => {
     .select('*')
     .order('created_at', { ascending: false });
 
-  if (error) return res.status(500).json({ error: error.message });
+  if (error) {
+    logger.error('database', `Failed to fetch firms: ${error.message}`, {
+      userId: req.user?.id,
+      source: 'routes.firms.getAll',
+    });
+    return res.status(500).json({ error: 'Failed to fetch clients. Please try again.' });
+  }
 
   // Get counts for each firm
   const firmsWithCounts = await Promise.all(
@@ -156,7 +162,12 @@ router.post('/', async (req, res) => {
       .single();
 
     if (firmErr) {
-      return res.status(500).json({ error: firmErr.message });
+      logger.error('database', `Failed to create firm: ${firmErr.message}`, {
+        userId: req.user.id,
+        details: { name: safeName, industry },
+        source: 'routes.firms.create',
+      });
+      return res.status(500).json({ error: 'Failed to create client. Please try again.' });
     }
 
     logger.info('admin', `Client created: ${safeName} (${industry})`, {
@@ -279,13 +290,26 @@ router.patch('/:id', validateBody(FIRM_UPDATABLE), async (req, res) => {
     .select()
     .single();
 
-  if (error) return res.status(500).json({ error: error.message });
+  if (error) {
+    logger.error('database', `Failed to update firm: ${error.message}`, {
+      firmId: req.params.id,
+      userId: req.user.id,
+      source: 'routes.firms.patch',
+    });
+    return res.status(500).json({ error: 'Failed to update client. Please try again.' });
+  }
   if (!data) return res.status(404).json({ error: 'Firm not found' });
+
+  // FIX 3: Strip sensitive fields before logging
+  const safeDetails = { ...req.body };
+  delete safeDetails.admin_password;
+  delete safeDetails.crm_api_key;
+  delete safeDetails.crm_access_token;
 
   logger.info('admin', `Client updated: ${data.name}`, {
     firmId: data.id,
     userId: req.user.id,
-    details: req.body,
+    details: safeDetails,
     source: 'routes.firms.patch',
   });
 

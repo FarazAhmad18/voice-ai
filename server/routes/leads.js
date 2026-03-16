@@ -42,7 +42,14 @@ router.get('/', async (req, res) => {
 
   const { data, error, count } = await query;
 
-  if (error) return res.status(500).json({ error: error.message });
+  if (error) {
+    logger.error('database', `Failed to fetch leads: ${error.message}`, {
+      firmId: req.firm?.id,
+      userId: req.user?.id,
+      source: 'routes.leads.getAll',
+    });
+    return res.status(500).json({ error: 'Failed to fetch data. Please try again.' });
+  }
 
   logger.info('lead', `Fetched ${data?.length || 0} leads (total: ${count})`, {
     firmId: req.firm?.id,
@@ -110,7 +117,14 @@ router.patch('/:id', validateBody(LEAD_UPDATABLE), async (req, res) => {
     .eq('firm_id', req.firm.id)
     .maybeSingle();
 
-  if (checkErr) return res.status(500).json({ error: checkErr.message });
+  if (checkErr) {
+    logger.error('database', `Failed to check lead existence: ${checkErr.message}`, {
+      firmId: req.firm.id,
+      leadId: id,
+      source: 'routes.leads.patch',
+    });
+    return res.status(500).json({ error: 'Failed to fetch data. Please try again.' });
+  }
   if (!existing) return res.status(404).json({ error: 'Lead not found' });
 
   const { data, error } = await supabase
@@ -121,7 +135,14 @@ router.patch('/:id', validateBody(LEAD_UPDATABLE), async (req, res) => {
     .select()
     .single();
 
-  if (error) return res.status(500).json({ error: error.message });
+  if (error) {
+    logger.error('database', `Failed to update lead: ${error.message}`, {
+      firmId: req.firm.id,
+      leadId: id,
+      source: 'routes.leads.patch',
+    });
+    return res.status(500).json({ error: 'Failed to update data. Please try again.' });
+  }
 
   logger.info('lead', `Lead updated: ${id}`, {
     firmId: req.firm.id,
@@ -144,6 +165,11 @@ router.post('/:id/notes', async (req, res) => {
 
   if (!text) return res.status(400).json({ error: 'Note text is required' });
 
+  // FIX 6: Note length limit
+  if (text.length > 5000) {
+    return res.status(400).json({ error: 'Note too long. Maximum 5000 characters.' });
+  }
+
   const note = { text, author: req.user.name, created_at: new Date().toISOString() };
 
   const { data: lead, error: fetchErr } = await supabase
@@ -163,7 +189,14 @@ router.post('/:id/notes', async (req, res) => {
     .select()
     .single();
 
-  if (error) return res.status(500).json({ error: error.message });
+  if (error) {
+    logger.error('database', `Failed to save note: ${error.message}`, {
+      firmId: req.firm.id,
+      leadId: id,
+      source: 'routes.leads.postNote',
+    });
+    return res.status(500).json({ error: 'Failed to save note. Please try again.' });
+  }
   return res.json(data);
 });
 

@@ -42,7 +42,14 @@ router.get('/', async (req, res) => {
 
   const { data, error, count } = await query;
 
-  if (error) return res.status(500).json({ error: error.message });
+  if (error) {
+    logger.error('database', `Failed to fetch appointments: ${error.message}`, {
+      firmId: req.firm?.id,
+      userId: req.user?.id,
+      source: 'routes.appointments.getAll',
+    });
+    return res.status(500).json({ error: 'Failed to fetch data. Please try again.' });
+  }
 
   logger.info('appointment', `Fetched ${data?.length || 0} appointments (total: ${count})`, {
     firmId: req.firm?.id,
@@ -70,7 +77,14 @@ router.patch('/:id', validateBody(APPOINTMENT_UPDATABLE), async (req, res) => {
     .select()
     .single();
 
-  if (error) return res.status(500).json({ error: error.message });
+  if (error) {
+    logger.error('database', `Failed to update appointment: ${error.message}`, {
+      firmId: req.firm.id,
+      userId: req.user.id,
+      source: 'routes.appointments.patch',
+    });
+    return res.status(500).json({ error: 'Failed to update data. Please try again.' });
+  }
   if (!data) return res.status(404).json({ error: 'Appointment not found' });
 
   logger.info('appointment', `Appointment updated: ${id} → ${req.body.status || 'updated'}`, {

@@ -32,7 +32,7 @@ router.get('/', async (req, res) => {
         firmId: req.firm.id,
         source: 'routes.knowledge.get',
       });
-      return res.status(500).json({ error: error.message });
+      return res.status(500).json({ error: 'Failed to fetch knowledge entries. Please try again.' });
     }
 
     res.json(data);
@@ -65,6 +65,16 @@ router.post('/', requireRole('admin', 'super_admin'), async (req, res) => {
   }
 
   try {
+    // FIX 4: Enforce maximum 200 knowledge entries per firm
+    const { count: entryCount } = await supabase
+      .from('firm_knowledge')
+      .select('id', { count: 'exact', head: true })
+      .eq('firm_id', req.firm.id);
+
+    if (entryCount >= 200) {
+      return res.status(400).json({ error: 'Maximum 200 knowledge entries per firm. Delete some to add new ones.' });
+    }
+
     // Sanitize inputs: strip HTML and prompt injection patterns at storage time
     const safeQuestion = sanitizeForPrompt(question.trim(), 500);
     const safeAnswer = sanitizeForPrompt(answer.trim(), 2000);
@@ -91,7 +101,7 @@ router.post('/', requireRole('admin', 'super_admin'), async (req, res) => {
         userId: req.user.id,
         source: 'routes.knowledge.create',
       });
-      return res.status(500).json({ error: error.message });
+      return res.status(500).json({ error: 'Failed to create knowledge entry. Please try again.' });
     }
 
     logger.info('knowledge', `Knowledge entry created: "${question.trim().slice(0, 60)}"`, {
@@ -220,7 +230,7 @@ router.patch('/:id', requireRole('admin', 'super_admin'), async (req, res) => {
         details: { knowledgeId: req.params.id },
         source: 'routes.knowledge.patch',
       });
-      return res.status(500).json({ error: error.message });
+      return res.status(500).json({ error: 'Failed to update knowledge entry. Please try again.' });
     }
 
     if (!data) return res.status(404).json({ error: 'Knowledge entry not found' });
@@ -274,7 +284,7 @@ router.delete('/:id', requireRole('admin', 'super_admin'), async (req, res) => {
         details: { knowledgeId: req.params.id },
         source: 'routes.knowledge.delete',
       });
-      return res.status(500).json({ error: error.message });
+      return res.status(500).json({ error: 'Failed to delete knowledge entry. Please try again.' });
     }
 
     logger.info('knowledge', `Knowledge entry deleted: "${(existing.question || '').slice(0, 60)}"`, {

@@ -7,6 +7,9 @@ const requireRole = require('../middleware/requireRole');
 const validateBody = require('../middleware/validateBody');
 const { sendSMS } = require('../services/twilio');
 const { sendEmail } = require('../services/email');
+const { normalizePhone } = require('../utils/phone');
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // All message routes require authentication and admin/staff role
 router.use(authenticate);
@@ -80,6 +83,11 @@ router.post('/', validateBody(MESSAGE_FIELDS), async (req, res) => {
     return res.status(400).json({ error: 'lead_id, channel, and body are required' });
   }
 
+  // FIX 6: Body length limit
+  if (body.length > 5000) {
+    return res.status(400).json({ error: 'Message too long. Maximum 5000 characters.' });
+  }
+
   const validChannels = ['sms', 'email', 'note'];
   if (!validChannels.includes(channel)) {
     return res.status(400).json({ error: `Invalid channel. Must be one of: ${validChannels.join(', ')}` });
@@ -91,6 +99,21 @@ router.post('/', validateBody(MESSAGE_FIELDS), async (req, res) => {
   }
 
   try {
+    // FIX 5: Rate limit — max 10 outbound SMS/email per lead per hour
+    if (channel === 'sms' || channel === 'email') {
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+      const { count } = await supabase
+        .from('messages')
+        .select('id', { count: 'exact', head: true })
+        .eq('lead_id', lead_id)
+        .eq('channel', channel)
+        .eq('direction', 'outbound')
+        .gte('created_at', oneHourAgo);
+
+      if (count >= 10) {
+        return res.status(429).json({ error: `Too many ${channel} messages to this lead. Max 10 per hour.` });
+      }
+    }
     // Look up the lead to get their phone number and verify firm ownership
     let leadQuery = supabase
       .from('leads')
@@ -118,6 +141,12 @@ router.post('/', validateBody(MESSAGE_FIELDS), async (req, res) => {
         return res.status(400).json({ error: 'Lead has no phone number on file' });
       }
 
+      // FIX 1: Normalize phone number to E.164 format
+      const normalizedPhone = normalizePhone(lead.caller_phone);
+      if (!normalizedPhone) {
+        return res.status(400).json({ error: 'Lead has an invalid phone number' });
+      }
+
       // Get the firm's phone number to send from
       const { data: firm } = await supabase
         .from('firms')
@@ -128,7 +157,7 @@ router.post('/', validateBody(MESSAGE_FIELDS), async (req, res) => {
       const fromNumber = firm?.retell_phone_number || null;
 
       try {
-        const sid = await sendSMS(lead.caller_phone, body, fromNumber);
+        const sid = await sendSMS(normalizedPhone, body, fromNumber);
         externalId = sid;
         status = 'sent';
 
@@ -156,6 +185,11 @@ router.post('/', validateBody(MESSAGE_FIELDS), async (req, res) => {
     if (channel === 'email') {
       if (!lead.caller_email) {
         return res.status(400).json({ error: 'Lead has no email address on file' });
+      }
+
+      // FIX 2: Validate email format before sending
+      if (!EMAIL_REGEX.test(lead.caller_email)) {
+        return res.status(400).json({ error: 'Lead has no valid email address' });
       }
 
       try {

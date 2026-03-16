@@ -19,7 +19,13 @@ router.get('/', async (req, res) => {
     .select('*')
     .order('industry', { ascending: true });
 
-  if (error) return res.status(500).json({ error: error.message });
+  if (error) {
+    logger.error('database', `Failed to fetch templates: ${error.message}`, {
+      userId: req.user?.id,
+      source: 'routes.templates.getAll',
+    });
+    return res.status(500).json({ error: 'Failed to fetch data. Please try again.' });
+  }
 
   logger.info('admin', `Fetched ${data?.length || 0} templates`, {
     userId: req.user?.id,
@@ -71,7 +77,13 @@ router.post('/', async (req, res) => {
     .select()
     .single();
 
-  if (error) return res.status(500).json({ error: error.message });
+  if (error) {
+    logger.error('database', `Failed to create template: ${error.message}`, {
+      userId: req.user.id,
+      source: 'routes.templates.create',
+    });
+    return res.status(500).json({ error: 'Failed to create template. Please try again.' });
+  }
 
   logger.info('admin', `Template created: ${name} (${industry})`, {
     userId: req.user.id,
@@ -107,7 +119,13 @@ router.patch('/:id', async (req, res) => {
     .select()
     .single();
 
-  if (error) return res.status(500).json({ error: error.message });
+  if (error) {
+    logger.error('database', `Failed to update template: ${error.message}`, {
+      userId: req.user.id,
+      source: 'routes.templates.patch',
+    });
+    return res.status(500).json({ error: 'Failed to update template. Please try again.' });
+  }
   if (!data) return res.status(404).json({ error: 'Template not found' });
 
   logger.info('admin', `Template updated: ${data.name}`, {
@@ -128,7 +146,13 @@ router.delete('/:id', async (req, res) => {
     .delete()
     .eq('id', req.params.id);
 
-  if (error) return res.status(500).json({ error: error.message });
+  if (error) {
+    logger.error('database', `Failed to delete template: ${error.message}`, {
+      userId: req.user?.id,
+      source: 'routes.templates.delete',
+    });
+    return res.status(500).json({ error: 'Failed to delete template. Please try again.' });
+  }
 
   logger.info('admin', `Template deleted: ${req.params.id}`, {
     userId: req.user?.id,

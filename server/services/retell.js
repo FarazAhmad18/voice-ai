@@ -16,10 +16,15 @@ async function retellFetch(path, options = {}) {
     source: 'retell.retellFetch',
   });
 
+  // FIX 7: AbortController with 15-second timeout
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
+
   let res;
   try {
     res = await fetch(`${RETELL_API_BASE}${path}`, {
       ...options,
+      signal: controller.signal,
       headers: {
         Authorization: `Bearer ${RETELL_API_KEY}`,
         'Content-Type': 'application/json',
@@ -28,12 +33,18 @@ async function retellFetch(path, options = {}) {
     });
   } catch (networkErr) {
     const duration = Date.now() - start;
-    logger.error('retell_api', `API network error: ${method} ${path} - ${networkErr.message}`, {
-      details: { method, path, error: networkErr.message, duration },
+    const isTimeout = networkErr.name === 'AbortError';
+    logger.error('retell_api', `API ${isTimeout ? 'timeout' : 'network error'}: ${method} ${path} - ${networkErr.message}`, {
+      details: { method, path, error: networkErr.message, duration, isTimeout },
       durationMs: duration,
       source: 'retell.retellFetch',
     });
+    if (isTimeout) {
+      throw new Error(`Retell API timeout after 15s: ${method} ${path}`);
+    }
     throw networkErr;
+  } finally {
+    clearTimeout(timeout);
   }
 
   const duration = Date.now() - start;

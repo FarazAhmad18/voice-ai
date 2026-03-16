@@ -22,7 +22,13 @@ router.get('/', async (req, res) => {
     .eq('firm_id', req.firm.id)
     .order('name');
 
-  if (error) return res.status(500).json({ error: error.message });
+  if (error) {
+    logger.error('database', `Failed to fetch staff: ${error.message}`, {
+      firmId: req.firm?.id,
+      source: 'routes.staff.getAll',
+    });
+    return res.status(500).json({ error: 'Failed to fetch data. Please try again.' });
+  }
 
   logger.info('staff', `Fetched ${data?.length || 0} staff members`, {
     firmId: req.firm?.id,
@@ -66,7 +72,13 @@ router.post('/', requireRole('admin', 'super_admin'), async (req, res) => {
     .select()
     .single();
 
-  if (error) return res.status(500).json({ error: error.message });
+  if (error) {
+    logger.error('database', `Failed to create staff: ${error.message}`, {
+      firmId: req.firm.id,
+      source: 'routes.staff.create',
+    });
+    return res.status(500).json({ error: 'Failed to add staff member. Please try again.' });
+  }
 
   logger.info('staff', `Staff added: ${name} to ${req.firm.name}`, {
     firmId: req.firm.id,
@@ -108,7 +120,13 @@ router.patch('/:id', requireRole('admin', 'super_admin'), async (req, res) => {
     .select()
     .single();
 
-  if (error) return res.status(500).json({ error: error.message });
+  if (error) {
+    logger.error('database', `Failed to update staff: ${error.message}`, {
+      firmId: req.firm.id,
+      source: 'routes.staff.patch',
+    });
+    return res.status(500).json({ error: 'Failed to update staff member. Please try again.' });
+  }
   if (!data) return res.status(404).json({ error: 'Staff member not found' });
 
   logger.info('staff', `Staff updated: ${data.name}`, {
@@ -136,7 +154,13 @@ router.delete('/:id', requireRole('admin', 'super_admin'), async (req, res) => {
     .select()
     .single();
 
-  if (error) return res.status(500).json({ error: error.message });
+  if (error) {
+    logger.error('database', `Failed to deactivate staff: ${error.message}`, {
+      firmId: req.firm.id,
+      source: 'routes.staff.delete',
+    });
+    return res.status(500).json({ error: 'Failed to remove staff member. Please try again.' });
+  }
   if (!data) return res.status(404).json({ error: 'Staff member not found' });
 
   // Clear assigned_staff_id on any leads referencing this staff member
