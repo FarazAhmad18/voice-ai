@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { fetchLogs } from '../../services/api';
+import { fetchLogs, fetchFirms } from '../../services/api';
 import {
   AlertTriangle, Info, AlertCircle, Bug, RefreshCw, Play, Pause,
   Download, Trash2, Search, ChevronDown, ChevronUp, Wifi, WifiOff,
@@ -64,13 +64,21 @@ export default function Logs() {
   const [timeRange, setTimeRange] = useState('24h');
   const [search, setSearch] = useState(searchParams.get('search') || '');
   const [debouncedSearch, setDebouncedSearch] = useState(search);
+  const [firmId, setFirmId] = useState('all');
+  const [firms, setFirms] = useState([]);
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [levelOpen, setLevelOpen] = useState(false);
   const [timeOpen, setTimeOpen] = useState(false);
+  const [clientOpen, setClientOpen] = useState(false);
   const logContainerRef = useRef(null);
   const categoryRef = useRef(null);
   const levelRef = useRef(null);
   const timeRef = useRef(null);
+  const clientRef = useRef(null);
+
+  useEffect(() => {
+    fetchFirms().then(data => setFirms(Array.isArray(data) ? data : [])).catch(() => {});
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 300);
@@ -83,6 +91,7 @@ export default function Logs() {
       if (categoryRef.current && !categoryRef.current.contains(e.target)) setCategoryOpen(false);
       if (levelRef.current && !levelRef.current.contains(e.target)) setLevelOpen(false);
       if (timeRef.current && !timeRef.current.contains(e.target)) setTimeOpen(false);
+      if (clientRef.current && !clientRef.current.contains(e.target)) setClientOpen(false);
     }
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
@@ -93,6 +102,7 @@ export default function Logs() {
       const params = { limit: 100 };
       if (level !== 'all') params.level = level;
       if (category !== 'all') params.category = category;
+      if (firmId !== 'all') params.firm_id = firmId;
       if (debouncedSearch) params.search = debouncedSearch;
       const data = await fetchLogs(params);
       setLogs(data.logs || []);
@@ -103,7 +113,7 @@ export default function Logs() {
     } finally {
       setLoading(false);
     }
-  }, [level, category, debouncedSearch]);
+  }, [level, category, firmId, debouncedSearch]);
 
   useEffect(() => {
     setLoading(true);
@@ -228,6 +238,47 @@ export default function Logs() {
                         </button>
                       ))}
                     </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Client dropdown */}
+            <div className="relative" ref={clientRef}>
+              <button
+                onClick={() => { setClientOpen(!clientOpen); setCategoryOpen(false); setLevelOpen(false); setTimeOpen(false); }}
+                className="flex items-center gap-2 px-3 py-1.5 bg-[#21262d] border border-[#30363d] rounded-lg text-xs font-medium text-slate-300 hover:border-[#484f58] transition-colors min-w-[140px]"
+              >
+                {firmId === 'all' ? (
+                  <span className="w-2 h-2 rounded-full bg-slate-500 flex-shrink-0" />
+                ) : (
+                  <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: firms.find(f => f.id === firmId)?.brand_color || '#6b7280' }} />
+                )}
+                <span className="truncate">{firmId === 'all' ? 'All Clients' : (firms.find(f => f.id === firmId)?.name || 'Client')}</span>
+                <ChevronDown size={12} className="text-slate-500 ml-auto" />
+              </button>
+              {clientOpen && (
+                <div className="absolute top-full left-0 mt-1 w-56 bg-[#1c2128] border border-[#30363d] rounded-xl shadow-2xl z-50 overflow-hidden max-h-64 overflow-y-auto">
+                  <button
+                    onClick={() => { setFirmId('all'); setClientOpen(false); }}
+                    className={`w-full text-left px-3 py-2 text-xs font-medium transition-colors ${
+                      firmId === 'all' ? 'bg-blue-500/15 text-blue-400' : 'text-slate-300 hover:bg-[#21262d]'
+                    }`}
+                  >
+                    All Clients
+                  </button>
+                  {firms.map(f => (
+                    <button
+                      key={f.id}
+                      onClick={() => { setFirmId(f.id); setClientOpen(false); }}
+                      className={`w-full text-left px-3 py-2 text-xs transition-colors flex items-center gap-2 ${
+                        firmId === f.id ? 'bg-blue-500/15 text-blue-400' : 'text-slate-400 hover:bg-[#21262d] hover:text-slate-300'
+                      }`}
+                    >
+                      <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: f.brand_color || '#6b7280' }} />
+                      <span className="truncate">{f.name}</span>
+                      <span className="text-[10px] text-slate-600 ml-auto capitalize">{f.industry}</span>
+                    </button>
                   ))}
                 </div>
               )}
@@ -380,6 +431,21 @@ export default function Logs() {
                       >
                         {log.category}
                       </span>
+
+                      {/* Client name (when viewing all) */}
+                      {firmId === 'all' && log.firm_id && (() => {
+                        const f = firms.find(fi => fi.id === log.firm_id);
+                        return f ? (
+                          <span
+                            className="inline-block px-1.5 py-[1px] rounded text-[10px] font-semibold mr-2 flex-shrink-0 cursor-pointer"
+                            style={{ backgroundColor: (f.brand_color || '#6b7280') + '20', color: f.brand_color || '#6b7280' }}
+                            onClick={(e) => { e.stopPropagation(); setFirmId(f.id); }}
+                            title={`Filter by ${f.name}`}
+                          >
+                            {f.name}
+                          </span>
+                        ) : null;
+                      })()}
 
                       {/* Message */}
                       <span className="text-slate-300 flex-1 min-w-0 break-words">
