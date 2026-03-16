@@ -48,7 +48,9 @@ async function apiFetch(path, options = {}) {
 // ── Leads ──────────────────────────────────────────────
 
 export async function fetchLeads() {
-  return apiFetch('/leads');
+  const res = await apiFetch('/leads');
+  // Backend returns { data, total } with pagination — unwrap for compatibility
+  return Array.isArray(res) ? res : (res.data || []);
 }
 
 export async function fetchLead(id) {
@@ -72,7 +74,8 @@ export async function addCallNote(leadId, text) {
 // ── Appointments ───────────────────────────────────────
 
 export async function fetchAppointments() {
-  return apiFetch('/appointments');
+  const res = await apiFetch('/appointments');
+  return Array.isArray(res) ? res : (res.data || []);
 }
 
 export async function updateAppointment(id, updates) {
