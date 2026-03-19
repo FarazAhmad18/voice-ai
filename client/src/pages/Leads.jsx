@@ -50,8 +50,16 @@ function exportToCSV(leads) {
     l.score, l.score_label, l.status, l.urgency,
     new Date(l.created_at).toLocaleDateString(),
   ]);
-  const csv = [headers, ...rows].map((r) => r.map((v) => `"${v}"`).join(',')).join('\n');
-  const blob = new Blob([csv], { type: 'text/csv' });
+  const escapeCSV = (val) => {
+    let s = String(val ?? '');
+    // Escape double quotes by doubling them
+    s = s.replace(/"/g, '""');
+    // Prevent CSV formula injection
+    if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+    return `"${s}"`;
+  };
+  const csv = '\uFEFF' + [headers, ...rows].map((r) => r.map(escapeCSV).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -176,20 +184,25 @@ export default function Leads() {
     loadLeads();
   }, []);
 
-  // Supabase Realtime: listen for new and updated leads
+  // Supabase Realtime: listen for new and updated leads (firm-scoped)
   useEffect(() => {
+    const firmId = window.__FIRM_ID__;  // Set from context below
+    const filter = firmId ? `firm_id=eq.${firmId}` : undefined;
     const channel = supabase
       .channel('leads-changes')
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'leads' },
+        { event: 'INSERT', schema: 'public', table: 'leads', filter },
         (payload) => {
-          setLeads((prev) => [payload.new, ...prev]);
+          setLeads((prev) => {
+            if (prev.some(l => l.id === payload.new.id)) return prev;
+            return [payload.new, ...prev];
+          });
         }
       )
       .on(
         'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'leads' },
+        { event: 'UPDATE', schema: 'public', table: 'leads', filter },
         (payload) => {
           setLeads((prev) =>
             prev.map((lead) =>

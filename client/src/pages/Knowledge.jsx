@@ -511,7 +511,11 @@ export default function Knowledge() {
                           <Edit3 size={14} />
                         </button>
                         <button
-                          onClick={() => handleDelete(entry.id)}
+                          onClick={() => {
+                            if (confirm('Are you sure you want to delete this entry?')) {
+                              handleDelete(entry.id);
+                            }
+                          }}
                           disabled={deletingId === entry.id}
                           className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all disabled:opacity-50"
                           title="Delete"

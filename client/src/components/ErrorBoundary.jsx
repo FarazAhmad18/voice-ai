@@ -11,7 +11,10 @@ export default class ErrorBoundary extends Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    // Errors are intentionally not logged to console to avoid leaking info in devtools
+    // Log to console in development only for debugging
+    if (import.meta.env.DEV) {
+      console.error('[ErrorBoundary]', error, errorInfo);
+    }
   }
 
   handleReload = () => {

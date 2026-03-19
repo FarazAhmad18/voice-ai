@@ -10,7 +10,8 @@ function normalizePhone(phone) {
   const digits = cleaned.replace(/\D/g, '');
   if (digits.length === 10) return '+1' + digits;
   if (digits.length === 11 && digits.startsWith('1')) return '+' + digits;
-  return phone; // return as-is if can't normalize
+  // Cannot normalize to valid E.164 — return null to prevent sending to invalid numbers
+  return null;
 }
 
 module.exports = { normalizePhone };

@@ -116,7 +116,10 @@ export default function Navbar() {
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'leads' },
         (payload) => {
-          setNotifications((prev) => [payload.new, ...prev]);
+          setNotifications((prev) => {
+            if (prev.some(n => n.id === payload.new.id)) return prev;
+            return [payload.new, ...prev];
+          });
         }
       )
       .subscribe();

@@ -105,17 +105,18 @@ export default function Appointments() {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     filtered = filtered.filter((a) => {
-      const created = new Date(a.created_at);
-      if (dateRange === 'today') return created >= today;
+      // Filter by appointment_date, not created_at
+      const aptDate = a.appointment_date ? new Date(a.appointment_date + 'T00:00:00') : new Date(a.created_at);
+      if (dateRange === 'today') return aptDate >= today && aptDate < new Date(today.getTime() + 86400000);
       if (dateRange === 'week') {
         const weekAgo = new Date(today);
         weekAgo.setDate(weekAgo.getDate() - 7);
-        return created >= weekAgo;
+        return aptDate >= weekAgo;
       }
       if (dateRange === 'month') {
         const monthAgo = new Date(today);
         monthAgo.setMonth(monthAgo.getMonth() - 1);
-        return created >= monthAgo;
+        return aptDate >= monthAgo;
       }
       return true;
     });
@@ -274,9 +275,19 @@ export default function Appointments() {
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-sm font-semibold text-slate-900">{apt.caller_name}</p>
                       <StatusBadge status={apt.status} />
+                      {apt.rescheduled_from_id && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-purple-600 bg-purple-50 border border-purple-100 px-2 py-0.5 rounded-full">
+                          ↻ Rescheduled
+                        </span>
+                      )}
+                      {apt.status === 'cancelled' && apt.notes?.startsWith('Rescheduled') && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-400 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded-full">
+                          ↳ Moved
+                        </span>
+                      )}
                     </div>
                     <div className="flex items-center gap-3 mt-1.5 text-xs text-slate-400 flex-wrap">
                       <span className="capitalize font-medium text-slate-500">{apt.case_type}</span>

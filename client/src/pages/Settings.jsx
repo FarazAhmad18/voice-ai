@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useFirm } from '../context/FirmContext';
-import { updateSettings, fetchStaff, fetchKnowledge } from '../services/api';
+import { updateSettings, syncAgent, fetchStaff, fetchKnowledge } from '../services/api';
 import { toast } from 'sonner';
 import {
   Webhook, Eye, EyeOff, Loader2, Building2, Bot, Users,
-  CreditCard, User, CheckCircle, Shield, Sparkles,
-  Globe, Clock, MapPin, Mail, Phone, ExternalLink, Brain, ArrowRight,
+  CreditCard, User, CheckCircle, Shield,
+  Globe, Clock, MapPin, Mail, Phone, ExternalLink, Brain, ArrowRight, RefreshCw,
 } from 'lucide-react';
 
 /* ─── Inject keyframe styles once ─── */
@@ -56,6 +56,10 @@ export default function Settings() {
   const [showApiKey, setShowApiKey] = useState(false);
   const [testingWebhook, setTestingWebhook] = useState(false);
   const [webhookTestResult, setWebhookTestResult] = useState(null);
+  const [syncAgentId, setSyncAgentId] = useState('');
+  const [syncLlmId, setSyncLlmId] = useState('');
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState(null); // { success, promptLength, error }
 
   const [form, setForm] = useState({
     name: '',
@@ -84,6 +88,9 @@ export default function Settings() {
         crm_webhook_url: firm.crm_webhook_url || '',
         crm_api_key: firm.crm_api_key || '',
       });
+      // Pre-fill sync fields from stored IDs
+      setSyncAgentId(firm.retell_agent_id || '');
+      setSyncLlmId(firm.retell_llm_id || '');
     }
     fetchStaff().then(setStaff).catch(() => {});
     fetchKnowledge().then(data => {
@@ -328,6 +335,90 @@ export default function Settings() {
         </div>
       </div>
 
+      {/* Sync Agent */}
+      {(user?.role === 'admin' || user?.role === 'super_admin') && (
+        <div className="settings-fade-in-up bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden" style={{ animationDelay: '120ms' }}>
+          <div className="bg-gradient-to-r from-indigo-500 to-violet-600 px-6 py-4 flex items-center gap-3">
+            <div className="w-8 h-8 bg-white/15 rounded-lg flex items-center justify-center">
+              <RefreshCw size={16} className="text-white/90" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-white">Sync AI Agent</h3>
+              <p className="text-xs text-white/50">Push staff & knowledge to your Retell agent</p>
+            </div>
+          </div>
+          <div className="p-6 space-y-4">
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Paste your Retell Agent ID and LLM ID below. Clicking <strong>Sync Now</strong> will push your current staff list and knowledge base into the AI agent's prompt.
+            </p>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Agent ID</label>
+                <input
+                  type="text"
+                  value={syncAgentId || firm?.retell_agent_id || ''}
+                  onChange={(e) => setSyncAgentId(e.target.value)}
+                  placeholder="agent_xxxxxxxxxxxxxxxx"
+                  className="w-full px-3 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 font-mono placeholder:text-slate-300 transition-all"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">LLM ID</label>
+                <input
+                  type="text"
+                  value={syncLlmId || firm?.retell_llm_id || ''}
+                  onChange={(e) => setSyncLlmId(e.target.value)}
+                  placeholder="llm_xxxxxxxxxxxxxxxx"
+                  className="w-full px-3 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 font-mono placeholder:text-slate-300 transition-all"
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={async () => {
+                  setSyncing(true);
+                  setSyncResult(null);
+                  try {
+                    const agentId = syncAgentId.trim() || firm?.retell_agent_id || '';
+                    const llmId = syncLlmId.trim() || firm?.retell_llm_id || '';
+                    const result = await syncAgent(agentId || undefined, llmId || undefined);
+                    setSyncResult({ success: true, promptLength: result.promptLength });
+                    toast.success('Agent synced — staff & knowledge pushed to Retell');
+                    await refreshProfile();
+                  } catch (err) {
+                    setSyncResult({ success: false, error: err.message });
+                    toast.error(`Sync failed: ${err.message}`);
+                  } finally {
+                    setSyncing(false);
+                    setTimeout(() => setSyncResult(null), 6000);
+                  }
+                }}
+                disabled={syncing}
+                className={`inline-flex items-center gap-2 px-5 py-2.5 text-xs font-semibold rounded-xl transition-all disabled:opacity-40 shadow-sm ${
+                  syncResult?.success
+                    ? 'bg-emerald-500 text-white shadow-emerald-200/50'
+                    : syncResult?.error
+                    ? 'bg-red-500 text-white shadow-red-200/50'
+                    : 'bg-gradient-to-r from-indigo-500 to-violet-600 text-white hover:from-indigo-600 hover:to-violet-700 shadow-violet-200/50'
+                }`}
+              >
+                {syncing ? (
+                  <Loader2 size={13} className="animate-spin" />
+                ) : syncResult?.success ? (
+                  <CheckCircle size={13} />
+                ) : (
+                  <RefreshCw size={13} />
+                )}
+                {syncing ? 'Syncing...' : syncResult?.success ? `Synced${syncResult.promptLength ? ` (${syncResult.promptLength} chars)` : ''}` : syncResult?.error ? 'Sync Failed' : 'Sync Now'}
+              </button>
+              {syncResult?.error && (
+                <p className="text-xs text-red-500">{syncResult.error}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* AI Knowledge Preview */}
       <div className="settings-fade-in-up bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden" style={{ animationDelay: '150ms' }}>
         <div className="bg-gradient-to-r from-violet-500 to-purple-500 px-6 py-4 flex items-center gap-3">
@@ -493,34 +584,17 @@ export default function Settings() {
                       setTestingWebhook(true);
                       setWebhookTestResult(null);
                       try {
-                        const testPayload = {
-                          event: 'test',
-                          timestamp: new Date().toISOString(),
-                          firm: { id: firm.id, name: firm.name },
-                          lead: {
-                            id: 'test_lead_001',
-                            name: 'Test Lead',
-                            phone: '+10000000000',
-                            email: 'test@example.com',
-                            service_type: 'other',
-                            urgency: 'low',
-                            score: 50,
-                            score_label: 'warm',
-                            summary: 'This is a test webhook payload from VoibixAI.',
-                            recording_url: null,
-                          },
-                          appointment: null,
-                        };
-
-                        const headers = { 'Content-Type': 'application/json' };
-                        if (form.crm_api_key) {
-                          headers['Authorization'] = `Bearer ${form.crm_api_key}`;
-                        }
-
-                        const res = await fetch(form.crm_webhook_url, {
+                        // Test via server-side endpoint to avoid SSRF and credential exposure
+                        const API_BASE = import.meta.env.VITE_API_URL || '/api';
+                        const token = localStorage.getItem('sb-' + new URL(import.meta.env.VITE_SUPABASE_URL).hostname.split('.')[0] + '-auth-token');
+                        const accessToken = token ? JSON.parse(token)?.access_token : null;
+                        const res = await fetch(`${API_BASE}/settings/test-webhook`, {
                           method: 'POST',
-                          headers,
-                          body: JSON.stringify(testPayload),
+                          headers: {
+                            'Content-Type': 'application/json',
+                            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+                          },
+                          body: JSON.stringify({ webhook_url: form.crm_webhook_url }),
                         });
 
                         if (res.ok) {

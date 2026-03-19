@@ -100,6 +100,20 @@ function renderPrompt(template, firm, activeStaff = [], knowledgeEntries = []) {
     prompt = prompt.replaceAll(key, value);
   }
 
+  // Detect unresolved {{variables}} and replace with safe defaults
+  const unresolvedVars = prompt.match(/\{\{[^}]+\}\}/g);
+  if (unresolvedVars) {
+    logger.warn('prompt', `Unresolved variables in prompt: ${unresolvedVars.join(', ')}`, {
+      firmId: firm?.id,
+      details: { unresolved: unresolvedVars },
+      source: 'promptRenderer.renderPrompt',
+    });
+    // Remove unresolved variables to prevent AI from saying them
+    for (const v of unresolvedVars) {
+      prompt = prompt.replaceAll(v, '');
+    }
+  }
+
   // Append knowledge base FAQ section if there are active entries
   if (knowledgeEntries.length > 0) {
     const faqLines = knowledgeEntries.map(entry => {

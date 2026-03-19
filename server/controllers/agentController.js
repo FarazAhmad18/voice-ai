@@ -192,7 +192,8 @@ async function updateFirmAgent(firmId) {
   }
 
   // Re-render prompt (includes staff names + knowledge base FAQ)
-  const renderedPrompt = await reRenderFirmPrompt(firmId);
+  // Falls back to existing rendered_prompt if no template is set
+  const renderedPrompt = await reRenderFirmPrompt(firmId) || firm.rendered_prompt;
 
   try {
     // Update agent name/voice
@@ -206,7 +207,7 @@ async function updateFirmAgent(firmId) {
     // Push the rendered prompt to the Retell LLM
     const llmId = firm.retell_llm_id || process.env.RETELL_LLM_ID;
 
-    if (llmId) {
+    if (llmId && renderedPrompt) {
       await updateLLM(llmId, {
         general_prompt: renderedPrompt,
         begin_message: `Hello, thank you for calling ${firm.name}. My name is ${firm.agent_name || 'the AI assistant'}. How can I help you today?`,

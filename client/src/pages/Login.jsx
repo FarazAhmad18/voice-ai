@@ -179,6 +179,18 @@ export default function Login() {
                 <button
                   type="button"
                   tabIndex={-1}
+                  onClick={() => {
+                    const email = document.querySelector('input[type="email"]')?.value;
+                    if (email) {
+                      import('../services/supabase').then(({ supabase }) => {
+                        supabase.auth.resetPasswordForEmail(email).then(() => {
+                          alert('If an account exists with that email, a password reset link has been sent.');
+                        });
+                      });
+                    } else {
+                      alert('Please enter your email address first.');
+                    }
+                  }}
                   className="text-xs font-medium text-zinc-400 hover:text-zinc-600 transition-colors"
                 >
                   Forgot password?

@@ -17,7 +17,8 @@ async function lookupFirmByAgentId(agentId) {
     .from('firms')
     .select('*')
     .eq('retell_agent_id', agentId)
-    .single();
+    .limit(1)
+    .maybeSingle();
 
   if (error || !data) return null;
   return data;
@@ -28,26 +29,6 @@ async function lookupFirmByAgentId(agentId) {
  * Events: call_started, call_ended, call_analyzed
  */
 async function handleWebhook(req, res) {
-  // --- Signature verification (always required, all environments) ---
-  if (!process.env.RETELL_API_KEY) {
-    logger.error('retell_webhook', 'RETELL_API_KEY not set — rejecting webhook', {
-      ip: req.ip,
-      source: 'webhookController.handleWebhook',
-    });
-    return res.status(500).json({ error: 'Server misconfiguration: webhook verification unavailable' });
-  }
-
-  const signature = req.headers['x-retell-signature'];
-  const isValid = verifyWebhookSignature(JSON.stringify(req.body), signature);
-  if (!isValid) {
-    logger.warn('retell_webhook', 'Webhook signature verification failed', {
-      details: { signature: signature || 'missing' },
-      ip: req.ip,
-      source: 'webhookController.handleWebhook',
-    });
-    return res.status(401).json({ error: 'Invalid signature' });
-  }
-
   const { event, call } = req.body;
 
   if (!event || !call) {
@@ -171,23 +152,53 @@ async function handleCallEnded(call) {
   }
 
   // Find if this caller booked an appointment during the call
+  // First try by phone, then fall back to most recent unlinked appointment for this firm (handles Test Chat / unknown phone)
   let recentAppointment = null;
-  const { data: aptData } = await supabase
-    .from('appointments')
-    .select('*')
-    .eq('caller_phone', callerPhone)
-    .eq('firm_id', firmId)
-    .order('created_at', { ascending: false })
-    .limit(1);
-  recentAppointment = aptData?.[0] || null;
+  const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
 
-  // Build lead data
+  if (callerPhone && callerPhone !== 'unknown') {
+    const { data: aptByPhone } = await supabase
+      .from('appointments')
+      .select('*')
+      .eq('caller_phone', callerPhone)
+      .eq('firm_id', firmId)
+      .order('created_at', { ascending: false })
+      .limit(1);
+    recentAppointment = aptByPhone?.[0] || null;
+  }
+
+  // Fallback: find most recent unlinked appointment for this firm in last 5 minutes
+  if (!recentAppointment) {
+    const { data: recentApt } = await supabase
+      .from('appointments')
+      .select('*')
+      .eq('firm_id', firmId)
+      .is('lead_id', null)
+      .gte('created_at', fiveMinutesAgo)
+      .order('created_at', { ascending: false })
+      .limit(1);
+    recentAppointment = recentApt?.[0] || null;
+  }
+
+  // Pull intake data for this call to enrich lead
+  const intakeData = global._pendingIntakeAnswers?.[call.call_id]?.answers || [];
+  const intakeMap = {};
+  for (const a of intakeData) {
+    intakeMap[a.question.toLowerCase().replace(/\s+/g, '_')] = a.answer;
+  }
+  const intakeName = intakeMap['caller_name'] || intakeMap['name'] || null;
+  const intakePhone = intakeMap['caller_phone'] || intakeMap['phone'] || null;
+  const intakeCaseType = intakeMap['case_type'] || null;
+  const intakeUrgency = intakeMap['urgency'] || null;
+  const intakeEmail = intakeMap['caller_email'] || intakeMap['email'] || null;
+
+  // Build lead data — prefer appointment data, then intake data, then defaults
   const leadData = {
-    caller_name: recentAppointment?.caller_name || 'Unknown Caller',
-    caller_phone: callerPhone,
-    caller_email: recentAppointment?.caller_email || null,
-    case_type: recentAppointment?.case_type || 'other',
-    urgency: recentAppointment?.urgency || 'low',
+    caller_name: recentAppointment?.caller_name || intakeName || 'Unknown Caller',
+    caller_phone: callerPhone !== 'unknown' ? callerPhone : (intakePhone || recentAppointment?.caller_phone || 'unknown'),
+    caller_email: recentAppointment?.caller_email || intakeEmail || null,
+    case_type: recentAppointment?.case_type || intakeCaseType || 'other',
+    urgency: recentAppointment?.urgency || intakeUrgency || 'low',
     appointment_booked: !!recentAppointment,
     notes: recentAppointment?.notes || '',
   };
@@ -243,7 +254,7 @@ async function handleCallEnded(call) {
 
   if (!lead) {
     lead = {
-      id: `lead_${Date.now()}`,
+      id: `lead_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
       firm_id: firmId,
       ...leadData,
       score,
@@ -255,7 +266,7 @@ async function handleCallEnded(call) {
   }
 
   const callRecord = {
-    id: `call_${Date.now()}`,
+    id: `call_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
     lead_id: lead.id,
     firm_id: firmId,
     retell_call_id: call.call_id,
@@ -415,18 +426,28 @@ async function handleCallAnalyzed(call) {
         source: 'webhookController.handleCallAnalyzed',
       });
 
-      // Retry after 5 seconds to allow call_ended to finish processing
-      setTimeout(async () => {
+      // Retry with exponential backoff (3 attempts: 5s, 15s, 45s)
+      const retryDelays = [5000, 15000, 45000];
+      const attemptRetry = async (attempt) => {
         try {
           await processCallAnalysis(call);
-        } catch (e) {
-          logger.error('retell_webhook', `Retry failed for call_analyzed ${call.call_id}: ${e.message}`, {
+          logger.info('retell_webhook', `call_analyzed retry #${attempt + 1} succeeded for ${call.call_id}`, {
             callId: call.call_id,
-            details: { error: e.message },
             source: 'webhookController.handleCallAnalyzed',
           });
+        } catch (e) {
+          if (attempt < retryDelays.length - 1) {
+            setTimeout(() => attemptRetry(attempt + 1), retryDelays[attempt + 1]);
+          } else {
+            logger.error('retell_webhook', `All retries failed for call_analyzed ${call.call_id}: ${e.message}`, {
+              callId: call.call_id,
+              details: { error: e.message, attempts: retryDelays.length },
+              source: 'webhookController.handleCallAnalyzed',
+            });
+          }
         }
-      }, 5000);
+      };
+      setTimeout(() => attemptRetry(0), retryDelays[0]);
     } else {
       logger.error('database', `Failed to update call analysis: ${err.message}`, {
         callId: call.call_id,
@@ -448,6 +469,34 @@ async function handleCheckAvailability(req, res) {
   const { args, call } = req.body;
   const date = args?.date;
 
+  // Always tell the agent what today's date is so it can resolve relative dates correctly
+  const todayDate = new Date();
+  const todayStr = todayDate.toISOString().split('T')[0]; // YYYY-MM-DD
+
+  // Validate date format
+  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date) || isNaN(new Date(date).getTime())) {
+    return res.json({
+      available: false,
+      today: todayStr,
+      date: date || 'unknown',
+      slots: [],
+      message: `I need a valid date in YYYY-MM-DD format. Today is ${todayStr}. Could you tell me what day works for you?`,
+    });
+  }
+
+  // Reject past dates
+  const requestedDate = new Date(date + 'T00:00:00');
+  const todayMidnight = new Date(todayStr + 'T00:00:00');
+  if (requestedDate < todayMidnight) {
+    return res.json({
+      available: false,
+      today: todayStr,
+      date,
+      slots: [],
+      message: `That date (${date}) has already passed. Today is ${todayStr}. Please ask the caller for a future date.`,
+    });
+  }
+
   logger.info('tool_call', `check_availability called for ${date}`, {
     callId: call?.call_id,
     details: { date },
@@ -466,14 +515,16 @@ async function handleCheckAvailability(req, res) {
     if (slots.length === 0) {
       return res.json({
         available: false,
+        today: todayStr,
         date,
         slots: [],
-        message: `Unfortunately, we don't have any available times on ${date}. Would you like to try another day?`,
+        message: `We don't have any available times on ${date}. Would you like to try another day?`,
       });
     }
 
     return res.json({
       available: true,
+      today: todayStr,
       date,
       slots,
       message: `We have the following times available on ${date}: ${slots.join(', ')}`,
@@ -554,7 +605,7 @@ async function handleBookAppointment(req, res) {
   });
 
   const appointment = {
-    id: `apt_${Date.now()}`,
+    id: `apt_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
     firm_id: firmId,
     caller_name: caller_name || 'Unknown',
     caller_phone: callerPhone,
@@ -664,16 +715,31 @@ async function handleSaveIntakeData(req, res) {
     }
 
     // Store inserted IDs in memory so handleCallEnded can UPDATE (not re-INSERT) with lead_id and call_id
-    if (!global._pendingIntakeAnswers) global._pendingIntakeAnswers = {};
-    const insertedIds = insertedRows ? insertedRows.map((r) => r.id) : [];
-    global._pendingIntakeAnswers[call?.call_id] = { answers, insertedIds };
+    const callId = call?.call_id;
+    if (callId) {
+      if (!global._pendingIntakeAnswers) global._pendingIntakeAnswers = {};
 
-    // TTL cleanup: remove from memory after 1 hour to prevent memory leaks
-    setTimeout(() => {
-      if (global._pendingIntakeAnswers && global._pendingIntakeAnswers[call?.call_id]) {
-        delete global._pendingIntakeAnswers[call?.call_id];
+      // Cap global pending entries to prevent memory exhaustion
+      const pendingKeys = Object.keys(global._pendingIntakeAnswers);
+      if (pendingKeys.length >= 1000) {
+        // Evict oldest entries
+        const toRemove = pendingKeys.slice(0, pendingKeys.length - 500);
+        for (const key of toRemove) delete global._pendingIntakeAnswers[key];
+        logger.warn('intake', `Evicted ${toRemove.length} stale pending intake entries`, {
+          source: 'webhookController.handleSaveIntakeData',
+        });
       }
-    }, 60 * 60 * 1000);
+
+      const insertedIds = insertedRows ? insertedRows.map((r) => r.id) : [];
+      global._pendingIntakeAnswers[callId] = { answers, insertedIds };
+
+      // TTL cleanup: remove from memory after 1 hour
+      setTimeout(() => {
+        if (global._pendingIntakeAnswers?.[callId]) {
+          delete global._pendingIntakeAnswers[callId];
+        }
+      }, 60 * 60 * 1000);
+    }
   }
 
   return res.json({
@@ -682,9 +748,185 @@ async function handleSaveIntakeData(req, res) {
   });
 }
 
+/**
+ * Handle get_appointment tool call.
+ * Looks up the caller's most recent confirmed/upcoming appointment by phone number.
+ */
+async function handleGetAppointment(req, res) {
+  if (!supabase) return res.status(503).json({ error: 'Database unavailable' });
+
+  const { args, call } = req.body;
+  const callerPhone = args?.caller_phone || call?.from_number;
+
+  if (!callerPhone) {
+    return res.json({
+      found: false,
+      message: 'I need your phone number to look up your appointment.',
+    });
+  }
+
+  const today = new Date().toISOString().split('T')[0];
+
+  const { data: appointments } = await supabase
+    .from('appointments')
+    .select('*')
+    .eq('caller_phone', callerPhone)
+    .eq('status', 'confirmed')
+    .gte('appointment_date', today)
+    .order('appointment_date', { ascending: true })
+    .limit(1);
+
+  const apt = appointments?.[0];
+
+  if (!apt) {
+    logger.info('tool_call', `get_appointment: no upcoming appointment found for ${callerPhone}`, {
+      callId: call?.call_id,
+      source: 'webhookController.handleGetAppointment',
+    });
+    return res.json({
+      found: false,
+      message: `I don't see any upcoming appointments for that phone number. Would you like to book a new one?`,
+    });
+  }
+
+  logger.info('tool_call', `get_appointment: found appointment for ${apt.caller_name} on ${apt.appointment_date}`, {
+    callId: call?.call_id,
+    details: { appointmentId: apt.id, date: apt.appointment_date, time: apt.appointment_time },
+    source: 'webhookController.handleGetAppointment',
+  });
+
+  return res.json({
+    found: true,
+    appointment_id: apt.id,
+    caller_name: apt.caller_name,
+    appointment_date: apt.appointment_date,
+    appointment_time: apt.appointment_time,
+    case_type: apt.case_type,
+    message: `I found your appointment: ${apt.appointment_date} at ${apt.appointment_time}. Would you like to reschedule this?`,
+  });
+}
+
+/**
+ * Handle reschedule_appointment tool call.
+ * Cancels the existing appointment and books a new one atomically.
+ */
+async function handleRescheduleAppointment(req, res) {
+  if (!supabase) return res.status(503).json({ error: 'Database unavailable' });
+
+  const { args, call } = req.body;
+  const {
+    appointment_id,
+    new_date,
+    new_time,
+    caller_name,
+    caller_phone,
+    caller_email,
+    case_type,
+    urgency,
+  } = args || {};
+
+  if (!appointment_id || !new_date || !new_time) {
+    return res.json({
+      success: false,
+      message: 'I need the appointment ID, new date, and new time to reschedule.',
+    });
+  }
+
+  const today = new Date().toISOString().split('T')[0];
+  if (new_date < today) {
+    return res.json({
+      success: false,
+      today,
+      message: `That date has already passed. Today is ${today}. Please provide a future date.`,
+    });
+  }
+
+  // Look up firm by agent_id
+  const firm = await lookupFirmByAgentId(call?.agent_id);
+  const firmId = firm?.id || null;
+
+  try {
+    // Step 1: Fetch old appointment details before cancelling
+    const { data: oldApt } = await supabase
+      .from('appointments')
+      .select('*')
+      .eq('id', appointment_id)
+      .maybeSingle();
+
+    // Step 2: Cancel old appointment
+    await supabase
+      .from('appointments')
+      .update({ status: 'cancelled' })
+      .eq('id', appointment_id);
+
+    logger.info('appointment', `Cancelled appointment ${appointment_id} for rescheduling`, {
+      firmId,
+      callId: call?.call_id,
+      details: { oldDate: oldApt?.appointment_date, oldTime: oldApt?.appointment_time },
+      source: 'webhookController.handleRescheduleAppointment',
+    });
+
+    // Step 3: Book new appointment
+    const newAppointment = {
+      id: `apt_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      firm_id: firmId,
+      lead_id: oldApt?.lead_id || null,
+      caller_name: caller_name || oldApt?.caller_name || 'Unknown',
+      caller_phone: caller_phone || oldApt?.caller_phone,
+      caller_email: caller_email || oldApt?.caller_email || null,
+      case_type: case_type || oldApt?.case_type || 'other',
+      appointment_date: new_date,
+      appointment_time: new_time,
+      urgency: urgency || oldApt?.urgency || 'low',
+      notes: `Rescheduled from ${oldApt?.appointment_date} at ${oldApt?.appointment_time}`,
+      status: 'confirmed',
+      rescheduled_from_id: appointment_id,
+      created_at: new Date().toISOString(),
+    };
+
+    await supabase.from('appointments').insert(newAppointment);
+
+    // Step 4: Create Google Calendar event
+    try {
+      await createAppointmentEvent(newAppointment);
+    } catch (calErr) {
+      logger.error('calendar', `Calendar event failed for reschedule: ${calErr.message}`, {
+        callId: call?.call_id,
+        source: 'webhookController.handleRescheduleAppointment',
+      });
+    }
+
+    logger.info('appointment', `Rescheduled to ${new_date} at ${new_time} for ${newAppointment.caller_name}`, {
+      firmId,
+      callId: call?.call_id,
+      details: { newAppointmentId: newAppointment.id, newDate: new_date, newTime: new_time },
+      source: 'webhookController.handleRescheduleAppointment',
+    });
+
+    return res.json({
+      success: true,
+      appointment_id: newAppointment.id,
+      message: `Your appointment has been rescheduled to ${new_date} at ${new_time}. Please bring a photo ID and arrive 10 minutes early.`,
+    });
+  } catch (err) {
+    logger.error('database', `Failed to reschedule appointment: ${err.message}`, {
+      firmId,
+      callId: call?.call_id,
+      details: { error: err.message, appointment_id, new_date, new_time },
+      source: 'webhookController.handleRescheduleAppointment',
+    });
+    return res.json({
+      success: false,
+      message: 'I was unable to reschedule your appointment. Please call us back or we can book you a new slot.',
+    });
+  }
+}
+
 module.exports = {
   handleWebhook,
   handleCheckAvailability,
   handleBookAppointment,
   handleSaveIntakeData,
+  handleGetAppointment,
+  handleRescheduleAppointment,
 };

@@ -6,9 +6,14 @@ const validateBody = require('../middleware/validateBody');
 const logger = require('../services/logger');
 
 const APPOINTMENT_UPDATABLE = ['status', 'appointment_date', 'appointment_time', 'assigned_staff_id', 'notes'];
+const VALID_APPOINTMENT_STATUSES = ['confirmed', 'completed', 'cancelled', 'no_show'];
+const VALID_LEAD_STATUSES = ['new', 'contacted', 'booked', 'converted', 'closed'];
 
-// All appointment routes require authentication
+const requireRole = require('../middleware/requireRole');
+
+// All appointment routes require authentication and valid role
 router.use(authenticate);
+router.use(requireRole('admin', 'staff', 'super_admin'));
 
 // GET /api/appointments
 router.get('/', async (req, res) => {
@@ -69,6 +74,11 @@ router.patch('/:id', validateBody(APPOINTMENT_UPDATABLE), async (req, res) => {
 
   const { id } = req.params;
 
+  // Validate status value if provided
+  if (req.body.status && !VALID_APPOINTMENT_STATUSES.includes(req.body.status)) {
+    return res.status(400).json({ error: `Invalid status. Must be one of: ${VALID_APPOINTMENT_STATUSES.join(', ')}` });
+  }
+
   const { data, error } = await supabase
     .from('appointments')
     .update(req.body)
@@ -86,6 +96,20 @@ router.patch('/:id', validateBody(APPOINTMENT_UPDATABLE), async (req, res) => {
     return res.status(500).json({ error: 'Failed to update data. Please try again.' });
   }
   if (!data) return res.status(404).json({ error: 'Appointment not found' });
+
+  // Sync lead's appointment_booked field when appointment is cancelled
+  if (req.body.status === 'cancelled' && data.lead_id) {
+    const { count } = await supabase
+      .from('appointments')
+      .select('id', { count: 'exact', head: true })
+      .eq('lead_id', data.lead_id)
+      .eq('firm_id', req.firm.id)
+      .in('status', ['confirmed', 'completed']);
+
+    if (count === 0) {
+      await supabase.from('leads').update({ appointment_booked: false }).eq('id', data.lead_id).eq('firm_id', req.firm.id);
+    }
+  }
 
   logger.info('appointment', `Appointment updated: ${id} → ${req.body.status || 'updated'}`, {
     firmId: req.firm.id,

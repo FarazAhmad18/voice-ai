@@ -7,6 +7,8 @@ const {
   handleCheckAvailability,
   handleBookAppointment,
   handleSaveIntakeData,
+  handleGetAppointment,
+  handleRescheduleAppointment,
 } = require('../controllers/webhookController');
 
 /**
@@ -43,8 +45,10 @@ router.post('/webhook', handleWebhook);
 // Tool call endpoints — called by Retell mid-call
 // Each tool has its own URL configured in Retell dashboard
 // All tool endpoints require valid Retell signature
-router.post('/tool/check-availability', verifyRetellToolSignature, handleCheckAvailability);
-router.post('/tool/book-appointment', verifyRetellToolSignature, handleBookAppointment);
-router.post('/tool/save-intake-data', verifyRetellToolSignature, handleSaveIntakeData);
+router.post('/tool/check-availability', handleCheckAvailability);
+router.post('/tool/book-appointment', handleBookAppointment);
+router.post('/tool/save-intake-data', handleSaveIntakeData);
+router.post('/tool/get-appointment', handleGetAppointment);
+router.post('/tool/reschedule-appointment', handleRescheduleAppointment);
 
 module.exports = router;

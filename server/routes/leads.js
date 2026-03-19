@@ -6,9 +6,12 @@ const validateBody = require('../middleware/validateBody');
 const logger = require('../services/logger');
 
 const LEAD_UPDATABLE = ['status', 'assigned_staff_id', 'follow_up_date', 'notes'];
+const VALID_LEAD_STATUSES = ['new', 'contacted', 'booked', 'converted', 'closed'];
+const requireRole = require('../middleware/requireRole');
 
-// All lead routes require authentication
+// All lead routes require authentication and valid role
 router.use(authenticate);
+router.use(requireRole('admin', 'staff', 'super_admin'));
 
 // GET /api/leads
 router.get('/', async (req, res) => {
@@ -88,7 +91,9 @@ router.get('/:id', async (req, res) => {
     .from('calls')
     .select('*')
     .eq('lead_id', id)
-    .order('created_at', { ascending: false });
+    .eq('firm_id', lead.firm_id)
+    .order('created_at', { ascending: false })
+    .limit(50);
 
   logger.info('lead', `Fetched lead detail: ${id}`, {
     firmId: req.firm?.id,
@@ -108,6 +113,11 @@ router.patch('/:id', validateBody(LEAD_UPDATABLE), async (req, res) => {
   if (!req.firm) return res.status(400).json({ error: 'No firm associated with user' });
 
   const { id } = req.params;
+
+  // Validate status value if provided
+  if (req.body.status && !VALID_LEAD_STATUSES.includes(req.body.status)) {
+    return res.status(400).json({ error: `Invalid status. Must be one of: ${VALID_LEAD_STATUSES.join(', ')}` });
+  }
 
   // First check the lead exists to avoid cryptic Supabase errors on missing rows
   const { data: existing, error: checkErr } = await supabase
@@ -186,6 +196,7 @@ router.post('/:id/notes', async (req, res) => {
     .from('leads')
     .update({ call_notes: updatedNotes })
     .eq('id', id)
+    .eq('firm_id', req.firm.id)
     .select()
     .single();
 

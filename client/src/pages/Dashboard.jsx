@@ -196,20 +196,29 @@ export default function Dashboard() {
 
   // Supabase Realtime: listen for new leads and appointments
   useEffect(() => {
+    const firmId = firm?.id;
+    const leadsFilter = firmId ? `firm_id=eq.${firmId}` : undefined;
     const channel = supabase
       .channel('dashboard-changes')
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'leads' },
+        { event: 'INSERT', schema: 'public', table: 'leads', filter: leadsFilter },
         (payload) => {
-          setLeads((prev) => [payload.new, ...prev]);
+          setLeads((prev) => {
+            // Deduplicate — skip if already present
+            if (prev.some(l => l.id === payload.new.id)) return prev;
+            return [payload.new, ...prev];
+          });
         }
       )
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'appointments' },
+        { event: 'INSERT', schema: 'public', table: 'appointments', filter: leadsFilter },
         (payload) => {
-          setAppointments((prev) => [payload.new, ...prev]);
+          setAppointments((prev) => {
+            if (prev.some(a => a.id === payload.new.id)) return prev;
+            return [payload.new, ...prev];
+          });
         }
       )
       .subscribe();

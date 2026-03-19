@@ -1,7 +1,7 @@
 const logger = require('./logger');
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
-const FROM_EMAIL = process.env.FROM_EMAIL || 'noreply@leapingai.com';
+const FROM_EMAIL = process.env.FROM_EMAIL || 'noreply@voibixai.com';
 
 let resendClient = null;
 
@@ -38,7 +38,8 @@ async function sendEmail(to, subject, body) {
       from: FROM_EMAIL,
       to,
       subject,
-      html: body,
+      text: body.replace(/<[^>]*>/g, ''),
+      html: body.replace(/<script[\s\S]*?<\/script>/gi, '').replace(/on\w+\s*=/gi, ''),
     });
 
     if (error) {

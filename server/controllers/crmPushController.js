@@ -24,9 +24,15 @@ function validateWebhookUrl(urlString) {
 
   const hostname = parsed.hostname.toLowerCase();
 
-  // Block localhost variants
-  if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname === '[::1]') {
-    return { valid: false, reason: 'Localhost not allowed' };
+  // Block localhost variants (including IPv6)
+  const localhostPatterns = ['localhost', '127.0.0.1', '::1', '[::1]', '0.0.0.0', '[::ffff:127.0.0.1]'];
+  if (localhostPatterns.includes(hostname) || hostname.endsWith('.local') || hostname.endsWith('.internal')) {
+    return { valid: false, reason: 'Localhost/internal not allowed' };
+  }
+
+  // Block IPv6 addresses (could be used to bypass IPv4 checks)
+  if (hostname.startsWith('[') || hostname.includes(':')) {
+    return { valid: false, reason: 'IPv6 addresses not allowed in webhook URLs' };
   }
 
   // Block private/reserved IP ranges

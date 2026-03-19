@@ -104,6 +104,14 @@ export default function Logs() {
       if (category !== 'all') params.category = category;
       if (firmId !== 'all') params.firm_id = firmId;
       if (debouncedSearch) params.search = debouncedSearch;
+      // Apply time range filter
+      if (timeRange && timeRange !== 'all') {
+        const now = new Date();
+        if (timeRange === '1h') params.date_from = new Date(now - 3600000).toISOString();
+        else if (timeRange === '24h') params.date_from = new Date(now - 86400000).toISOString();
+        else if (timeRange === '7d') params.date_from = new Date(now - 7 * 86400000).toISOString();
+        else if (timeRange === '30d') params.date_from = new Date(now - 30 * 86400000).toISOString();
+      }
       const data = await fetchLogs(params);
       setLogs(data.logs || []);
       setTotal(data.total || 0);
@@ -113,7 +121,7 @@ export default function Logs() {
     } finally {
       setLoading(false);
     }
-  }, [level, category, firmId, debouncedSearch]);
+  }, [level, category, firmId, debouncedSearch, timeRange]);
 
   useEffect(() => {
     setLoading(true);

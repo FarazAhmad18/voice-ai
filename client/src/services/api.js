@@ -9,7 +9,20 @@ function getToken() {
     const raw = localStorage.getItem(`sb-${hostname}-auth-token`);
     if (!raw) return null;
     const session = JSON.parse(raw);
-    return session?.access_token || null;
+    const token = session?.access_token;
+    if (!token) return null;
+
+    // Check token expiry — reject tokens expiring within 60 seconds
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      if (payload.exp && payload.exp * 1000 < Date.now() + 60000) {
+        return null; // Token expired or about to expire — let Supabase auto-refresh handle it
+      }
+    } catch {
+      // If we can't parse the token, use it anyway
+    }
+
+    return token;
   } catch {
     return null;
   }
@@ -91,6 +104,13 @@ export async function updateSettings(updates) {
   return apiFetch('/settings', { method: 'PATCH', body: JSON.stringify(updates) });
 }
 
+export async function syncAgent(agentId, llmId) {
+  return apiFetch('/settings/sync-agent', {
+    method: 'POST',
+    body: JSON.stringify({ agent_id: agentId, llm_id: llmId }),
+  });
+}
+
 // ── Staff ──────────────────────────────────────────────
 
 export async function fetchStaff() {
@@ -152,7 +172,7 @@ export async function deleteTemplate(id) {
 // ── Messages ─────────────────────────────────────────────
 
 export async function fetchMessages(leadId) {
-  return apiFetch(`/messages?lead_id=${leadId}`);
+  return apiFetch(`/messages?lead_id=${encodeURIComponent(leadId)}`);
 }
 
 export async function sendMessage(data) {

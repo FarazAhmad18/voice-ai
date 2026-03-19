@@ -163,17 +163,23 @@ router.delete('/:id', requireRole('admin', 'super_admin'), async (req, res) => {
   }
   if (!data) return res.status(404).json({ error: 'Staff member not found' });
 
-  // Clear assigned_staff_id on any leads referencing this staff member
-  const { error: clearErr } = await supabase
-    .from('leads')
-    .update({ assigned_staff_id: null })
-    .eq('assigned_staff_id', req.params.id)
-    .eq('firm_id', req.firm.id);
+  // Clear assigned_staff_id on leads AND appointments referencing this staff member
+  const [leadClear, aptClear] = await Promise.all([
+    supabase.from('leads').update({ assigned_staff_id: null }).eq('assigned_staff_id', req.params.id).eq('firm_id', req.firm.id),
+    supabase.from('appointments').update({ assigned_staff_id: null }).eq('assigned_staff_id', req.params.id).eq('firm_id', req.firm.id),
+  ]);
 
-  if (clearErr) {
-    logger.warn('staff', `Failed to clear assigned_staff_id for deactivated staff ${data.name}: ${clearErr.message}`, {
+  if (leadClear.error) {
+    logger.warn('staff', `Failed to clear lead assignments for deactivated staff ${data.name}: ${leadClear.error.message}`, {
       firmId: req.firm.id,
-      details: { staffId: req.params.id, error: clearErr.message },
+      details: { staffId: req.params.id, error: leadClear.error.message },
+      source: 'routes.staff.delete',
+    });
+  }
+  if (aptClear.error) {
+    logger.warn('staff', `Failed to clear appointment assignments for deactivated staff ${data.name}: ${aptClear.error.message}`, {
+      firmId: req.firm.id,
+      details: { staffId: req.params.id, error: aptClear.error.message },
       source: 'routes.staff.delete',
     });
   }
@@ -184,8 +190,8 @@ router.delete('/:id', requireRole('admin', 'super_admin'), async (req, res) => {
     source: 'routes.staff.delete',
   });
 
-  // Re-render prompt + update agent
-  await reRenderAndSync(req.firm.id);
+  // Re-render prompt + update agent (fire-and-forget — don't block the response)
+  reRenderAndSync(req.firm.id).catch(() => {});
 
   res.json(data);
 });

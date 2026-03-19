@@ -165,13 +165,13 @@ export default function Staff() {
   }
 
   async function handleDelete(member) {
-    if (!confirm(`Remove ${member.name}? This will deactivate them.`)) return;
+    if (!window.confirm(`Remove ${member.name} from the team?`)) return;
     try {
       await deleteStaff(member.id);
-      setStaff(prev => prev.map(s => s.id === member.id ? { ...s, is_active: false } : s));
+      setStaff(prev => prev.filter(s => s.id !== member.id));
       toast.success(`${member.name} removed`);
     } catch (err) {
-      toast.error('Failed to remove staff member');
+      toast.error(err.message || 'Failed to remove staff member');
     }
   }
 

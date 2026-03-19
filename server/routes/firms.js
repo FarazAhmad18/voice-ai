@@ -37,25 +37,26 @@ router.get('/', async (req, res) => {
     return res.status(500).json({ error: 'Failed to fetch clients. Please try again.' });
   }
 
-  // Get counts for each firm
-  const firmsWithCounts = await Promise.all(
-    firms.map(async (firm) => {
-      const [leadCount, aptCount, staffCount] = await Promise.all([
-        supabase.from('leads').select('id', { count: 'exact', head: true }).eq('firm_id', firm.id),
-        supabase.from('appointments').select('id', { count: 'exact', head: true }).eq('firm_id', firm.id),
-        supabase.from('staff').select('id', { count: 'exact', head: true }).eq('firm_id', firm.id),
-      ]);
+  // Get counts using batch queries instead of N+1 per firm
+  const firmIds = firms.map(f => f.id);
 
-      return {
-        ...firm,
-        _counts: {
-          leads: leadCount.count || 0,
-          appointments: aptCount.count || 0,
-          staff: staffCount.count || 0,
-        },
-      };
-    })
-  );
+  const [leadCounts, aptCounts, staffCounts] = await Promise.all([
+    supabase.from('leads').select('firm_id', { count: 'exact', head: false }).in('firm_id', firmIds),
+    supabase.from('appointments').select('firm_id', { count: 'exact', head: false }).in('firm_id', firmIds),
+    supabase.from('staff').select('firm_id', { count: 'exact', head: false }).in('firm_id', firmIds),
+  ]);
+
+  // Aggregate counts per firm
+  const countMap = {};
+  for (const id of firmIds) countMap[id] = { leads: 0, appointments: 0, staff: 0 };
+  (leadCounts.data || []).forEach(r => { if (countMap[r.firm_id]) countMap[r.firm_id].leads++; });
+  (aptCounts.data || []).forEach(r => { if (countMap[r.firm_id]) countMap[r.firm_id].appointments++; });
+  (staffCounts.data || []).forEach(r => { if (countMap[r.firm_id]) countMap[r.firm_id].staff++; });
+
+  const firmsWithCounts = firms.map(firm => ({
+    ...firm,
+    _counts: countMap[firm.id] || { leads: 0, appointments: 0, staff: 0 },
+  }));
 
   logger.info('admin', `Fetched ${firmsWithCounts.length} firms`, {
     userId: req.user?.id,

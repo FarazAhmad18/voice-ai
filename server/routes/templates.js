@@ -141,6 +141,16 @@ router.patch('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   if (!supabase) return res.status(500).json({ error: 'Database not configured' });
 
+  // Check if any firms are using this template
+  const { count } = await supabase
+    .from('firms')
+    .select('id', { count: 'exact', head: true })
+    .eq('prompt_template_id', req.params.id);
+
+  if (count > 0) {
+    return res.status(409).json({ error: `Cannot delete: ${count} firm(s) are using this template. Reassign them first.` });
+  }
+
   const { error } = await supabase
     .from('prompt_templates')
     .delete()

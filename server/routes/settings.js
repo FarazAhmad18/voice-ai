@@ -6,6 +6,7 @@ const requireRole = require('../middleware/requireRole');
 const validateBody = require('../middleware/validateBody');
 const logger = require('../services/logger');
 const { sanitizeText } = require('../utils/sanitize');
+const { updateFirmAgent } = require('../controllers/agentController');
 
 // Client-facing settings — admin can update their own firm
 const CLIENT_UPDATABLE = ['name', 'email', 'phone', 'address', 'website', 'business_hours', 'crm_mode', 'crm_type', 'crm_webhook_url', 'crm_api_key'];
@@ -87,6 +88,98 @@ router.patch('/', validateBody(CLIENT_UPDATABLE), async (req, res) => {
   });
 
   res.json(data);
+});
+
+// POST /api/settings/test-webhook — test webhook URL server-side (prevents SSRF from browser)
+router.post('/test-webhook', async (req, res) => {
+  const { webhook_url } = req.body;
+  if (!webhook_url) {
+    return res.status(400).json({ error: 'webhook_url is required' });
+  }
+
+  if (isPrivateUrl(webhook_url)) {
+    return res.status(400).json({ error: 'Webhook URL cannot target private or internal addresses' });
+  }
+
+  const testPayload = {
+    event: 'test',
+    timestamp: new Date().toISOString(),
+    firm: { id: req.firm?.id || 'test', name: req.firm?.name || 'Test Firm' },
+    lead: {
+      id: 'test_lead',
+      name: 'Test Lead',
+      phone: '+10000000000',
+      service_type: 'other',
+      urgency: 'low',
+      score: 50,
+      score_label: 'warm',
+      summary: 'This is a test webhook payload from VoibixAI.',
+    },
+    appointment: null,
+  };
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5000);
+
+  try {
+    const headers = { 'Content-Type': 'application/json', 'User-Agent': 'VoibixAI/1.0' };
+    if (req.firm?.crm_api_key) {
+      headers['Authorization'] = `Bearer ${req.firm.crm_api_key}`;
+    }
+
+    const response = await fetch(webhook_url, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(testPayload),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeout);
+
+    if (response.ok) {
+      res.json({ success: true, status: response.status });
+    } else {
+      res.status(response.status).json({ success: false, status: response.status });
+    }
+  } catch (err) {
+    clearTimeout(timeout);
+    const isTimeout = err.name === 'AbortError';
+    res.status(502).json({ error: isTimeout ? 'Webhook timed out after 5s' : err.message });
+  }
+});
+
+// POST /api/settings/sync-agent — save Retell IDs and push rendered prompt to Retell LLM
+router.post('/sync-agent', requireRole('admin', 'super_admin'), async (req, res) => {
+  if (!supabase || !req.firm) return res.status(400).json({ error: 'No firm associated' });
+
+  const { agent_id, llm_id } = req.body;
+
+  // Update stored IDs if provided
+  const updates = {};
+  if (agent_id && typeof agent_id === 'string') updates.retell_agent_id = agent_id.trim();
+  if (llm_id && typeof llm_id === 'string') updates.retell_llm_id = llm_id.trim();
+
+  if (Object.keys(updates).length > 0) {
+    const { error } = await supabase.from('firms').update(updates).eq('id', req.firm.id);
+    if (error) {
+      logger.error('retell_api', `Failed to save Retell IDs: ${error.message}`, { firmId: req.firm.id });
+      return res.status(500).json({ error: 'Failed to save IDs' });
+    }
+  }
+
+  // Re-render prompt and push to Retell LLM
+  try {
+    const result = await updateFirmAgent(req.firm.id);
+    logger.info('retell_api', `Manual agent sync triggered by ${req.user.email}`, {
+      firmId: req.firm.id,
+      userId: req.user.id,
+      details: { agentId: result?.agentId, llmId: result?.llmId, promptLength: result?.renderedPrompt?.length },
+    });
+    res.json({ success: true, agentId: result?.agentId, llmId: result?.llmId, promptLength: result?.renderedPrompt?.length });
+  } catch (err) {
+    logger.error('retell_api', `Manual agent sync failed: ${err.message}`, { firmId: req.firm.id });
+    res.status(500).json({ error: err.message || 'Sync failed' });
+  }
 });
 
 module.exports = router;

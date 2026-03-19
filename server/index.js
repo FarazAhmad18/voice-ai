@@ -72,6 +72,12 @@ app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  if (isProduction) {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co https://api.retellai.com");
+  }
   next();
 });
 
@@ -105,7 +111,7 @@ const generalApiLimiter = rateLimit({
 
 const webhookLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: 200,
+  max: 1000, // High limit — webhooks are already authenticated via signature verification
   message: { error: 'Too many webhook requests.' },
   standardHeaders: true,
   legacyHeaders: false,
@@ -166,7 +172,7 @@ app.use((err, req, res, next) => {
     }
   }
 
-  app.listen(PORT, () => {
+  server = app.listen(PORT, () => {
     logger.info('system', `Server started on port ${PORT}`);
   });
 })();
@@ -177,3 +183,33 @@ process.on('unhandledRejection', (reason) => {
     details: { error: String(reason), stack: reason?.stack },
   });
 });
+
+// Catch uncaught exceptions
+process.on('uncaughtException', (err) => {
+  logger.error('system', `Uncaught exception: ${err.message}`, {
+    details: { error: err.message, stack: err.stack },
+  });
+  // Give logger time to flush, then exit
+  setTimeout(() => process.exit(1), 1000);
+});
+
+// Graceful shutdown handler
+let server;
+function gracefulShutdown(signal) {
+  logger.info('system', `${signal} received — shutting down gracefully`);
+  if (server) {
+    server.close(() => {
+      logger.info('system', 'All connections closed — exiting');
+      process.exit(0);
+    });
+    // Force exit after 30 seconds if connections don't close
+    setTimeout(() => {
+      logger.warn('system', 'Forced exit after 30s timeout');
+      process.exit(1);
+    }, 30000);
+  } else {
+    process.exit(0);
+  }
+}
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));

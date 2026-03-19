@@ -61,14 +61,21 @@ async function getAvailableSlots(date, firmId) {
     const dayStart = new Date(`${date}T09:00:00`);
     const dayEnd = new Date(`${date}T17:00:00`);
 
-    // Get existing events for that day
-    const response = await calendar.events.list({
-      calendarId: CALENDAR_ID,
-      timeMin: dayStart.toISOString(),
-      timeMax: dayEnd.toISOString(),
-      singleEvents: true,
-      orderBy: 'startTime',
-    });
+    // Get existing events for that day (with 15s timeout)
+    const abortCtrl = new AbortController();
+    const timeoutId = setTimeout(() => abortCtrl.abort(), 15000);
+    let response;
+    try {
+      response = await calendar.events.list({
+        calendarId: CALENDAR_ID,
+        timeMin: dayStart.toISOString(),
+        timeMax: dayEnd.toISOString(),
+        singleEvents: true,
+        orderBy: 'startTime',
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     const busyTimes = (response.data.items || []).map((event) => ({
       start: new Date(event.start.dateTime || event.start.date),
@@ -191,13 +198,37 @@ async function createAppointmentEvent(appointment, firmId) {
  * Parse a date + time string like "2026-03-15" + "2:30 PM" into a Date object
  */
 function parseTime(dateStr, timeStr) {
-  const [timePart, period] = timeStr.split(' ');
-  let [hours, minutes] = timePart.split(':').map(Number);
+  if (!dateStr || !timeStr) {
+    logger.warn('calendar', `Invalid date/time: date=${dateStr}, time=${timeStr}`, {
+      source: 'googleCalendar.parseTime',
+    });
+    return new Date(); // fallback to now rather than crashing
+  }
+
+  // Try to parse "H:MM AM/PM" format
+  const match = timeStr.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (!match) {
+    logger.warn('calendar', `Unparseable time format: "${timeStr}"`, {
+      source: 'googleCalendar.parseTime',
+    });
+    return new Date(`${dateStr}T12:00:00`); // fallback to noon
+  }
+
+  let hours = parseInt(match[1], 10);
+  const minutes = parseInt(match[2], 10);
+  const period = match[3].toUpperCase();
 
   if (period === 'PM' && hours !== 12) hours += 12;
   if (period === 'AM' && hours === 12) hours = 0;
 
-  return new Date(`${dateStr}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`);
+  const result = new Date(`${dateStr}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`);
+  if (isNaN(result.getTime())) {
+    logger.warn('calendar', `Invalid date result: ${dateStr} ${timeStr}`, {
+      source: 'googleCalendar.parseTime',
+    });
+    return new Date();
+  }
+  return result;
 }
 
 module.exports = { getAvailableSlots, createAppointmentEvent };

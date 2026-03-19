@@ -13,6 +13,11 @@ router.post('/signup', authenticate, requireRole('super_admin'), async (req, res
     return res.status(400).json({ error: 'Email, password, and name are required' });
   }
 
+  const VALID_ROLES = ['super_admin', 'admin', 'staff'];
+  if (role && !VALID_ROLES.includes(role)) {
+    return res.status(400).json({ error: `Invalid role. Must be one of: ${VALID_ROLES.join(', ')}` });
+  }
+
   if (!supabase) {
     return res.status(500).json({ error: 'Database not configured' });
   }
