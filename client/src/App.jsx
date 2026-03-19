@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { FirmProvider } from './context/FirmContext';
+import { Toaster } from 'sonner';
+import ErrorBoundary from './components/ErrorBoundary';
 import Navbar from './components/Navbar';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -8,7 +10,9 @@ import Leads from './pages/Leads';
 import LeadDetail from './pages/LeadDetail';
 import FollowUps from './pages/FollowUps';
 import Appointments from './pages/Appointments';
+import Staff from './pages/Staff';
 import Settings from './pages/Settings';
+import Knowledge from './pages/Knowledge';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ClientList from './pages/admin/ClientList';
 import ClientCreate from './pages/admin/ClientCreate';
@@ -59,6 +63,8 @@ function AppLayout() {
           <Route path="/leads/:id" element={<LeadDetail />} />
           <Route path="/follow-ups" element={<FollowUps />} />
           <Route path="/appointments" element={<Appointments />} />
+          <Route path="/staff" element={<Staff />} />
+          <Route path="/knowledge" element={<Knowledge />} />
           <Route path="/settings" element={<Settings />} />
 
           {/* Admin Panel */}
@@ -76,22 +82,25 @@ function AppLayout() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <FirmProvider>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route
-              path="/*"
-              element={
-                <ProtectedRoute>
-                  <AppLayout />
-                </ProtectedRoute>
-              }
-            />
-          </Routes>
-        </FirmProvider>
-      </AuthProvider>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <AuthProvider>
+          <FirmProvider>
+            <Toaster position="top-right" richColors closeButton />
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route
+                path="/*"
+                element={
+                  <ProtectedRoute>
+                    <AppLayout />
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </FirmProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }

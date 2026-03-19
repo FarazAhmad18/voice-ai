@@ -7,6 +7,7 @@ const validateBody = require('../middleware/validateBody');
 const { deployAgent, updateFirmAgent } = require('../controllers/agentController');
 const { reRenderFirmPrompt } = require('../services/promptRenderer');
 const logger = require('../services/logger');
+const { sanitizeText } = require('../utils/sanitize');
 
 const FIRM_UPDATABLE = [
   'name', 'industry', 'email', 'phone', 'address', 'website',
@@ -20,6 +21,7 @@ router.use(authenticate, requireRole('super_admin'));
 
 // GET /api/firms — list all clients
 router.get('/', async (req, res) => {
+  const start = Date.now();
   if (!supabase) return res.status(500).json({ error: 'Database not configured' });
 
   const { data: firms, error } = await supabase
@@ -27,33 +29,48 @@ router.get('/', async (req, res) => {
     .select('*')
     .order('created_at', { ascending: false });
 
-  if (error) return res.status(500).json({ error: error.message });
+  if (error) {
+    logger.error('database', `Failed to fetch firms: ${error.message}`, {
+      userId: req.user?.id,
+      source: 'routes.firms.getAll',
+    });
+    return res.status(500).json({ error: 'Failed to fetch clients. Please try again.' });
+  }
 
-  // Get counts for each firm
-  const firmsWithCounts = await Promise.all(
-    firms.map(async (firm) => {
-      const [leadCount, aptCount, staffCount] = await Promise.all([
-        supabase.from('leads').select('id', { count: 'exact', head: true }).eq('firm_id', firm.id),
-        supabase.from('appointments').select('id', { count: 'exact', head: true }).eq('firm_id', firm.id),
-        supabase.from('staff').select('id', { count: 'exact', head: true }).eq('firm_id', firm.id),
-      ]);
+  // Get counts using batch queries instead of N+1 per firm
+  const firmIds = firms.map(f => f.id);
 
-      return {
-        ...firm,
-        _counts: {
-          leads: leadCount.count || 0,
-          appointments: aptCount.count || 0,
-          staff: staffCount.count || 0,
-        },
-      };
-    })
-  );
+  const [leadCounts, aptCounts, staffCounts] = await Promise.all([
+    supabase.from('leads').select('firm_id', { count: 'exact', head: false }).in('firm_id', firmIds),
+    supabase.from('appointments').select('firm_id', { count: 'exact', head: false }).in('firm_id', firmIds),
+    supabase.from('staff').select('firm_id', { count: 'exact', head: false }).in('firm_id', firmIds),
+  ]);
+
+  // Aggregate counts per firm
+  const countMap = {};
+  for (const id of firmIds) countMap[id] = { leads: 0, appointments: 0, staff: 0 };
+  (leadCounts.data || []).forEach(r => { if (countMap[r.firm_id]) countMap[r.firm_id].leads++; });
+  (aptCounts.data || []).forEach(r => { if (countMap[r.firm_id]) countMap[r.firm_id].appointments++; });
+  (staffCounts.data || []).forEach(r => { if (countMap[r.firm_id]) countMap[r.firm_id].staff++; });
+
+  const firmsWithCounts = firms.map(firm => ({
+    ...firm,
+    _counts: countMap[firm.id] || { leads: 0, appointments: 0, staff: 0 },
+  }));
+
+  logger.info('admin', `Fetched ${firmsWithCounts.length} firms`, {
+    userId: req.user?.id,
+    details: { count: firmsWithCounts.length, duration: Date.now() - start },
+    durationMs: Date.now() - start,
+    source: 'routes.firms.getAll',
+  });
 
   res.json(firmsWithCounts);
 });
 
 // GET /api/firms/:id — single client detail
 router.get('/:id', async (req, res) => {
+  const start = Date.now();
   if (!supabase) return res.status(500).json({ error: 'Database not configured' });
 
   const { data: firm, error } = await supabase
@@ -76,6 +93,15 @@ router.get('/:id', async (req, res) => {
     supabase.from('leads').select('id', { count: 'exact', head: true }).eq('firm_id', firm.id),
     supabase.from('appointments').select('id', { count: 'exact', head: true }).eq('firm_id', firm.id),
   ]);
+
+  const duration = Date.now() - start;
+  logger.info('admin', `Fetched firm detail: ${firm.name}`, {
+    userId: req.user?.id,
+    firmId: firm.id,
+    details: { firmId: firm.id, staffCount: staff?.length || 0, duration },
+    durationMs: duration,
+    source: 'routes.firms.getById',
+  });
 
   res.json({
     ...firm,
@@ -105,16 +131,28 @@ router.post('/', async (req, res) => {
     return res.status(400).json({ error: 'Name and industry are required' });
   }
 
+  // BUG 5: Reject if admin_email is provided but password is too short
+  if (admin_email && (!admin_password || admin_password.length < 6)) {
+    return res.status(400).json({ error: 'Admin password must be at least 6 characters' });
+  }
+
+  // Sanitize text inputs to prevent XSS
+  const safeName = sanitizeText(name, 200);
+  const safeAgentName = agent_name ? sanitizeText(agent_name, 100) : 'AI Assistant';
+  const safeAdminName = admin_name ? sanitizeText(admin_name, 200) : null;
+
   try {
     // 1. Create firm
     const { data: firm, error: firmErr } = await supabase
       .from('firms')
       .insert({
-        name,
+        name: safeName,
         industry: industry || 'other',
-        email, phone, address, website,
+        email, phone,
+        address: address ? sanitizeText(address, 500) : null,
+        website,
         business_hours: business_hours || '9:00 AM - 5:00 PM, Monday - Friday',
-        agent_name: agent_name || 'AI Assistant',
+        agent_name: safeAgentName,
         agent_voice_id: agent_voice_id || null,
         prompt_template_id: prompt_template_id || null,
         brand_color: brand_color || '#6d28d9',
@@ -125,10 +163,15 @@ router.post('/', async (req, res) => {
       .single();
 
     if (firmErr) {
-      return res.status(500).json({ error: firmErr.message });
+      logger.error('database', `Failed to create firm: ${firmErr.message}`, {
+        userId: req.user.id,
+        details: { name: safeName, industry },
+        source: 'routes.firms.create',
+      });
+      return res.status(500).json({ error: 'Failed to create client. Please try again.' });
     }
 
-    logger.info('admin', `Client created: ${name} (${industry})`, {
+    logger.info('admin', `Client created: ${safeName} (${industry})`, {
       firmId: firm.id,
       userId: req.user.id,
       source: 'routes.firms.create',
@@ -138,10 +181,10 @@ router.post('/', async (req, res) => {
     if (staffList && Array.isArray(staffList) && staffList.length > 0) {
       const staffRecords = staffList.map(s => ({
         firm_id: firm.id,
-        name: s.name,
-        role: s.role || null,
-        specialization: s.specialization || null,
-        email: s.email || null,
+        name: sanitizeText(s.name, 100),
+        role: s.role ? sanitizeText(s.role, 50) : null,
+        specialization: s.specialization ? sanitizeText(s.specialization, 100) : null,
+        email: s.email ? sanitizeText(s.email, 200) : null,
         phone: s.phone || null,
         is_active: s.is_active !== false,
       }));
@@ -167,7 +210,7 @@ router.post('/', async (req, res) => {
           await supabase.from('users').insert({
             id: authData.user.id,
             email: admin_email,
-            name: admin_name || name + ' Admin',
+            name: safeAdminName || safeName + ' Admin',
             role: 'admin',
             firm_id: firm.id,
           });
@@ -223,7 +266,7 @@ router.post('/', async (req, res) => {
   } catch (err) {
     logger.error('admin', `Failed to create client: ${err.message}`, {
       userId: req.user.id,
-      details: { error: err.message, name, industry },
+      details: { error: err.message, name: safeName, industry },
       source: 'routes.firms.create',
     });
     res.status(500).json({ error: 'Failed to create client' });
@@ -234,20 +277,40 @@ router.post('/', async (req, res) => {
 router.patch('/:id', validateBody(FIRM_UPDATABLE), async (req, res) => {
   if (!supabase) return res.status(500).json({ error: 'Database not configured' });
 
+  // Sanitize text fields to prevent XSS
+  const sanitizedBody = { ...req.body };
+  if (sanitizedBody.name) sanitizedBody.name = sanitizeText(sanitizedBody.name, 200);
+  if (sanitizedBody.agent_name) sanitizedBody.agent_name = sanitizeText(sanitizedBody.agent_name, 100);
+  if (sanitizedBody.address) sanitizedBody.address = sanitizeText(sanitizedBody.address, 500);
+  if (sanitizedBody.business_hours) sanitizedBody.business_hours = sanitizeText(sanitizedBody.business_hours, 200);
+
   const { data, error } = await supabase
     .from('firms')
-    .update(req.body)
+    .update(sanitizedBody)
     .eq('id', req.params.id)
     .select()
     .single();
 
-  if (error) return res.status(500).json({ error: error.message });
+  if (error) {
+    logger.error('database', `Failed to update firm: ${error.message}`, {
+      firmId: req.params.id,
+      userId: req.user.id,
+      source: 'routes.firms.patch',
+    });
+    return res.status(500).json({ error: 'Failed to update client. Please try again.' });
+  }
   if (!data) return res.status(404).json({ error: 'Firm not found' });
+
+  // FIX 3: Strip sensitive fields before logging
+  const safeDetails = { ...req.body };
+  delete safeDetails.admin_password;
+  delete safeDetails.crm_api_key;
+  delete safeDetails.crm_access_token;
 
   logger.info('admin', `Client updated: ${data.name}`, {
     firmId: data.id,
     userId: req.user.id,
-    details: req.body,
+    details: safeDetails,
     source: 'routes.firms.patch',
   });
 

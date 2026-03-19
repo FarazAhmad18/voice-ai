@@ -6,12 +6,14 @@ const requireRole = require('../middleware/requireRole');
 const { reRenderFirmPrompt } = require('../services/promptRenderer');
 const { updateFirmAgent } = require('../controllers/agentController');
 const logger = require('../services/logger');
+const { sanitizeText } = require('../utils/sanitize');
 
 // All staff routes require authentication
 router.use(authenticate);
 
 // GET /api/staff — list staff for current firm
 router.get('/', async (req, res) => {
+  const start = Date.now();
   if (!supabase || !req.firm) return res.json([]);
 
   const { data, error } = await supabase
@@ -20,7 +22,22 @@ router.get('/', async (req, res) => {
     .eq('firm_id', req.firm.id)
     .order('name');
 
-  if (error) return res.status(500).json({ error: error.message });
+  if (error) {
+    logger.error('database', `Failed to fetch staff: ${error.message}`, {
+      firmId: req.firm?.id,
+      source: 'routes.staff.getAll',
+    });
+    return res.status(500).json({ error: 'Failed to fetch data. Please try again.' });
+  }
+
+  logger.info('staff', `Fetched ${data?.length || 0} staff members`, {
+    firmId: req.firm?.id,
+    userId: req.user?.id,
+    details: { count: data?.length || 0, duration: Date.now() - start },
+    durationMs: Date.now() - start,
+    source: 'routes.staff.getAll',
+  });
+
   res.json(data);
 });
 
@@ -32,14 +49,22 @@ router.post('/', requireRole('admin', 'super_admin'), async (req, res) => {
 
   if (!name) return res.status(400).json({ error: 'Name is required' });
 
+  // Sanitize and enforce max lengths
+  const safeName = sanitizeText(name, 100);
+  const safeRole = role ? sanitizeText(role, 50) : null;
+  const safeSpec = specialization ? sanitizeText(specialization, 100) : null;
+  const safeEmail = email ? sanitizeText(email, 200) : null;
+
+  if (!safeName) return res.status(400).json({ error: 'Name is required (after sanitization)' });
+
   const { data, error } = await supabase
     .from('staff')
     .insert({
       firm_id: req.firm.id,
-      name,
-      role: role || null,
-      specialization: specialization || null,
-      email: email || null,
+      name: safeName,
+      role: safeRole,
+      specialization: safeSpec,
+      email: safeEmail,
       phone: phone || null,
       is_active: is_active !== false,
       calendar_id: calendar_id || null,
@@ -47,7 +72,13 @@ router.post('/', requireRole('admin', 'super_admin'), async (req, res) => {
     .select()
     .single();
 
-  if (error) return res.status(500).json({ error: error.message });
+  if (error) {
+    logger.error('database', `Failed to create staff: ${error.message}`, {
+      firmId: req.firm.id,
+      source: 'routes.staff.create',
+    });
+    return res.status(500).json({ error: 'Failed to add staff member. Please try again.' });
+  }
 
   logger.info('staff', `Staff added: ${name} to ${req.firm.name}`, {
     firmId: req.firm.id,
@@ -71,6 +102,12 @@ router.patch('/:id', requireRole('admin', 'super_admin'), async (req, res) => {
     if (req.body[field] !== undefined) updates[field] = req.body[field];
   }
 
+  // Sanitize and enforce max lengths on text fields
+  if (updates.name !== undefined) updates.name = sanitizeText(updates.name, 100);
+  if (updates.role !== undefined) updates.role = updates.role ? sanitizeText(updates.role, 50) : null;
+  if (updates.specialization !== undefined) updates.specialization = updates.specialization ? sanitizeText(updates.specialization, 100) : null;
+  if (updates.email !== undefined) updates.email = updates.email ? sanitizeText(updates.email, 200) : null;
+
   if (Object.keys(updates).length === 0) {
     return res.status(400).json({ error: 'No valid fields provided' });
   }
@@ -83,7 +120,13 @@ router.patch('/:id', requireRole('admin', 'super_admin'), async (req, res) => {
     .select()
     .single();
 
-  if (error) return res.status(500).json({ error: error.message });
+  if (error) {
+    logger.error('database', `Failed to update staff: ${error.message}`, {
+      firmId: req.firm.id,
+      source: 'routes.staff.patch',
+    });
+    return res.status(500).json({ error: 'Failed to update staff member. Please try again.' });
+  }
   if (!data) return res.status(404).json({ error: 'Staff member not found' });
 
   logger.info('staff', `Staff updated: ${data.name}`, {
@@ -111,8 +154,35 @@ router.delete('/:id', requireRole('admin', 'super_admin'), async (req, res) => {
     .select()
     .single();
 
-  if (error) return res.status(500).json({ error: error.message });
+  if (error) {
+    logger.error('database', `Failed to deactivate staff: ${error.message}`, {
+      firmId: req.firm.id,
+      source: 'routes.staff.delete',
+    });
+    return res.status(500).json({ error: 'Failed to remove staff member. Please try again.' });
+  }
   if (!data) return res.status(404).json({ error: 'Staff member not found' });
+
+  // Clear assigned_staff_id on leads AND appointments referencing this staff member
+  const [leadClear, aptClear] = await Promise.all([
+    supabase.from('leads').update({ assigned_staff_id: null }).eq('assigned_staff_id', req.params.id).eq('firm_id', req.firm.id),
+    supabase.from('appointments').update({ assigned_staff_id: null }).eq('assigned_staff_id', req.params.id).eq('firm_id', req.firm.id),
+  ]);
+
+  if (leadClear.error) {
+    logger.warn('staff', `Failed to clear lead assignments for deactivated staff ${data.name}: ${leadClear.error.message}`, {
+      firmId: req.firm.id,
+      details: { staffId: req.params.id, error: leadClear.error.message },
+      source: 'routes.staff.delete',
+    });
+  }
+  if (aptClear.error) {
+    logger.warn('staff', `Failed to clear appointment assignments for deactivated staff ${data.name}: ${aptClear.error.message}`, {
+      firmId: req.firm.id,
+      details: { staffId: req.params.id, error: aptClear.error.message },
+      source: 'routes.staff.delete',
+    });
+  }
 
   logger.info('staff', `Staff deactivated: ${data.name}`, {
     firmId: req.firm.id,
@@ -120,8 +190,8 @@ router.delete('/:id', requireRole('admin', 'super_admin'), async (req, res) => {
     source: 'routes.staff.delete',
   });
 
-  // Re-render prompt + update agent
-  await reRenderAndSync(req.firm.id);
+  // Re-render prompt + update agent (fire-and-forget — don't block the response)
+  reRenderAndSync(req.firm.id).catch(() => {});
 
   res.json(data);
 });

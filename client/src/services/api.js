@@ -9,7 +9,20 @@ function getToken() {
     const raw = localStorage.getItem(`sb-${hostname}-auth-token`);
     if (!raw) return null;
     const session = JSON.parse(raw);
-    return session?.access_token || null;
+    const token = session?.access_token;
+    if (!token) return null;
+
+    // Check token expiry — reject tokens expiring within 60 seconds
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      if (payload.exp && payload.exp * 1000 < Date.now() + 60000) {
+        return null; // Token expired or about to expire — let Supabase auto-refresh handle it
+      }
+    } catch {
+      // If we can't parse the token, use it anyway
+    }
+
+    return token;
   } catch {
     return null;
   }
@@ -31,7 +44,9 @@ async function apiFetch(path, options = {}) {
   const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
 
   if (res.status === 401) {
-    window.location.href = '/login';
+    const { toast } = await import('sonner');
+    toast.error('Session expired. Redirecting to login...');
+    setTimeout(() => { window.location.href = '/login'; }, 2000);
     throw new Error('Session expired');
   }
 
@@ -46,7 +61,9 @@ async function apiFetch(path, options = {}) {
 // ── Leads ──────────────────────────────────────────────
 
 export async function fetchLeads() {
-  return apiFetch('/leads');
+  const res = await apiFetch('/leads');
+  // Backend returns { data, total } with pagination — unwrap for compatibility
+  return Array.isArray(res) ? res : (res.data || []);
 }
 
 export async function fetchLead(id) {
@@ -70,7 +87,8 @@ export async function addCallNote(leadId, text) {
 // ── Appointments ───────────────────────────────────────
 
 export async function fetchAppointments() {
-  return apiFetch('/appointments');
+  const res = await apiFetch('/appointments');
+  return Array.isArray(res) ? res : (res.data || []);
 }
 
 export async function updateAppointment(id, updates) {
@@ -84,6 +102,13 @@ export async function updateAppointment(id, updates) {
 
 export async function updateSettings(updates) {
   return apiFetch('/settings', { method: 'PATCH', body: JSON.stringify(updates) });
+}
+
+export async function syncAgent(agentId, llmId) {
+  return apiFetch('/settings/sync-agent', {
+    method: 'POST',
+    body: JSON.stringify({ agent_id: agentId, llm_id: llmId }),
+  });
 }
 
 // ── Staff ──────────────────────────────────────────────
@@ -142,6 +167,38 @@ export async function updateTemplate(id, updates) {
 
 export async function deleteTemplate(id) {
   return apiFetch(`/templates/${id}`, { method: 'DELETE' });
+}
+
+// ── Messages ─────────────────────────────────────────────
+
+export async function fetchMessages(leadId) {
+  return apiFetch(`/messages?lead_id=${encodeURIComponent(leadId)}`);
+}
+
+export async function sendMessage(data) {
+  return apiFetch('/messages', { method: 'POST', body: JSON.stringify(data) });
+}
+
+// ── Knowledge Base ───────────────────────────────────────
+
+export async function fetchKnowledge() {
+  return apiFetch('/knowledge');
+}
+
+export async function createKnowledge(data) {
+  return apiFetch('/knowledge', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function updateKnowledge(id, updates) {
+  return apiFetch(`/knowledge/${id}`, { method: 'PATCH', body: JSON.stringify(updates) });
+}
+
+export async function deleteKnowledge(id) {
+  return apiFetch(`/knowledge/${id}`, { method: 'DELETE' });
+}
+
+export async function reorderKnowledge(items) {
+  return apiFetch('/knowledge/reorder', { method: 'PATCH', body: JSON.stringify({ items }) });
 }
 
 // ── Logs (Admin) ───────────────────────────────────────

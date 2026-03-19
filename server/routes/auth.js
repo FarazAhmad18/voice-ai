@@ -2,14 +2,20 @@ const express = require('express');
 const router = express.Router();
 const supabase = require('../services/supabase');
 const authenticate = require('../middleware/auth');
+const requireRole = require('../middleware/requireRole');
 const logger = require('../services/logger');
 
-// POST /api/auth/signup — create a new account (super_admin use only for now)
-router.post('/signup', async (req, res) => {
+// POST /api/auth/signup — create a new account (super_admin only)
+router.post('/signup', authenticate, requireRole('super_admin'), async (req, res) => {
   const { email, password, name, role, firm_id } = req.body;
 
   if (!email || !password || !name) {
     return res.status(400).json({ error: 'Email, password, and name are required' });
+  }
+
+  const VALID_ROLES = ['super_admin', 'admin', 'staff'];
+  if (role && !VALID_ROLES.includes(role)) {
+    return res.status(400).json({ error: `Invalid role. Must be one of: ${VALID_ROLES.join(', ')}` });
   }
 
   if (!supabase) {

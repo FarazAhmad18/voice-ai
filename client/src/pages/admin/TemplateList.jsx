@@ -21,7 +21,7 @@ export default function TemplateList() {
       const data = await fetchTemplates();
       setTemplates(data);
     } catch (err) {
-      console.error('Failed to fetch templates:', err);
+      // error handled by UI state
     } finally {
       setLoading(false);
     }

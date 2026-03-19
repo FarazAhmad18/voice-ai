@@ -1,9 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+import { supabase } from '../services/supabase';
 
 const AuthContext = createContext(null);
 
@@ -45,24 +41,20 @@ export function AuthProvider({ children }) {
     try {
       const API_BASE = import.meta.env.VITE_API_URL || '/api';
       const url = `${API_BASE}/auth/me`;
-      console.log('[Auth] Fetching profile from:', url);
       const res = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log('[Auth] Profile response:', res.status);
       if (res.ok) {
         const data = await res.json();
-        console.log('[Auth] Profile loaded:', data.user?.name, data.user?.role);
         setUser(data.user);
         setFirm(data.firm);
         setIndustryConfig(data.industry_config);
       } else {
-        const errData = await res.json().catch(() => ({}));
-        console.error('[Auth] Profile failed:', res.status, errData);
+        await res.json().catch(() => ({}));
         await supabase.auth.signOut();
       }
     } catch (err) {
-      console.error('[Auth] Failed to fetch profile:', err);
+      // Profile fetch failed silently — user will be redirected to login
     } finally {
       setLoading(false);
     }
@@ -84,6 +76,12 @@ export function AuthProvider({ children }) {
     setSession(null);
   }
 
+  async function refreshProfile() {
+    if (session?.access_token) {
+      await fetchProfile(session.access_token);
+    }
+  }
+
   const value = {
     user,
     firm,
@@ -92,6 +90,7 @@ export function AuthProvider({ children }) {
     loading,
     login,
     logout,
+    refreshProfile,
     isAuthenticated: !!user,
     isSuperAdmin: user?.role === 'super_admin',
     isAdmin: user?.role === 'admin',

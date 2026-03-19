@@ -13,7 +13,16 @@ function validateBody(allowedFields) {
     const filtered = {};
     for (const field of allowedFields) {
       if (req.body[field] !== undefined) {
-        filtered[field] = req.body[field];
+        const val = req.body[field];
+        // Reject non-primitive values (objects, arrays) unless explicitly expected
+        if (val !== null && typeof val === 'object' && !Array.isArray(val)) {
+          continue; // Skip nested objects to prevent type confusion
+        }
+        // Reject empty strings for fields that shouldn't be empty
+        if (typeof val === 'string' && val.trim() === '' && field === 'status') {
+          continue; // Skip empty status
+        }
+        filtered[field] = val;
       }
     }
 
