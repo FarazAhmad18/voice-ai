@@ -328,4 +328,46 @@ router.patch('/:id', validateBody(FIRM_UPDATABLE), async (req, res) => {
   res.json(data);
 });
 
+// POST /api/firms/:id/sync-agent — re-render prompt and push to Retell
+router.post('/:id/sync-agent', async (req, res) => {
+  if (!supabase) return res.status(500).json({ error: 'Database not configured' });
+
+  const { data: firm } = await supabase.from('firms').select('id, name, retell_agent_id').eq('id', req.params.id).single();
+  if (!firm) return res.status(404).json({ error: 'Firm not found' });
+
+  try {
+    const result = await updateFirmAgent(firm.id);
+    logger.info('retell_api', `Manual agent sync by super_admin for ${firm.name}`, {
+      firmId: firm.id, userId: req.user.id, source: 'routes.firms.syncAgent',
+    });
+    res.json({ success: true, agentId: result?.agentId, llmId: result?.llmId, promptLength: result?.renderedPrompt?.length });
+  } catch (err) {
+    logger.error('retell_api', `Agent sync failed for ${firm.name}: ${err.message}`, { firmId: firm.id });
+    res.status(500).json({ error: err.message || 'Sync failed' });
+  }
+});
+
+// POST /api/firms/:id/deploy-agent — deploy a new Retell agent for an existing undeployed firm
+router.post('/:id/deploy-agent', async (req, res) => {
+  if (!supabase) return res.status(500).json({ error: 'Database not configured' });
+
+  const { area_code, voice_id } = req.body;
+  const { data: firm } = await supabase.from('firms').select('id, name').eq('id', req.params.id).single();
+  if (!firm) return res.status(404).json({ error: 'Firm not found' });
+
+  try {
+    const { deployAgent } = require('../controllers/agentController');
+    const result = await deployAgent(firm.id, { areaCode: area_code, voiceId: voice_id });
+    logger.info('retell_api', `Agent deployed by super_admin for ${firm.name}`, {
+      firmId: firm.id, userId: req.user.id,
+      details: { agentId: result.agentId }, source: 'routes.firms.deployAgent',
+    });
+    const { data: updated } = await supabase.from('firms').select('*').eq('id', firm.id).single();
+    res.json({ success: true, ...result, firm: updated });
+  } catch (err) {
+    logger.error('retell_api', `Agent deploy failed for ${firm.name}: ${err.message}`, { firmId: firm.id });
+    res.status(500).json({ error: err.message || 'Deploy failed' });
+  }
+});
+
 module.exports = router;

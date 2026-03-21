@@ -169,6 +169,14 @@ export async function updateFirm(id, updates) {
   return apiFetch(`/firms/${id}`, { method: 'PATCH', body: JSON.stringify(updates) });
 }
 
+export async function syncFirmAgent(id) {
+  return apiFetch(`/firms/${id}/sync-agent`, { method: 'POST' });
+}
+
+export async function deployFirmAgent(id, opts = {}) {
+  return apiFetch(`/firms/${id}/deploy-agent`, { method: 'POST', body: JSON.stringify(opts) });
+}
+
 // ── Templates (Admin) ──────────────────────────────────
 
 export async function fetchTemplates() {
