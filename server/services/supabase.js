@@ -3,13 +3,12 @@ const { createClient } = require('@supabase/supabase-js');
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
 
-let supabase = null;
-
-if (supabaseUrl && supabaseServiceKey && !supabaseUrl.includes('your_')) {
-  supabase = createClient(supabaseUrl, supabaseServiceKey);
-  console.log('Supabase connected');
-} else {
-  console.log('Supabase not configured - using local storage fallback');
+if (!supabaseUrl || !supabaseServiceKey || supabaseUrl.includes('your_')) {
+  console.error('FATAL: SUPABASE_URL and SUPABASE_SERVICE_KEY are required. No local fallback.');
+  process.exit(1);
 }
+
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
+console.log('Supabase connected');
 
 module.exports = supabase;

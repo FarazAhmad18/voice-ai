@@ -6,3 +6,5 @@ dist/
 build/
 .DS_Store
 *.log
+lawvoice-ai-*.json
+logs/

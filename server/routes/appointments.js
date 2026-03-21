@@ -1,49 +1,124 @@
 const express = require('express');
 const router = express.Router();
 const supabase = require('../services/supabase');
-const { getLocalStore } = require('../controllers/webhookController');
+const authenticate = require('../middleware/auth');
+const validateBody = require('../middleware/validateBody');
+const logger = require('../services/logger');
 
-// GET /api/appointments - Get all appointments (for dashboard)
+const APPOINTMENT_UPDATABLE = ['status', 'appointment_date', 'appointment_time', 'assigned_staff_id', 'notes'];
+const VALID_APPOINTMENT_STATUSES = ['confirmed', 'completed', 'cancelled', 'no_show'];
+const VALID_LEAD_STATUSES = ['new', 'contacted', 'booked', 'converted', 'closed'];
+
+const requireRole = require('../middleware/requireRole');
+
+// All appointment routes require authentication and valid role
+router.use(authenticate);
+router.use(requireRole('admin', 'staff', 'super_admin'));
+
+// GET /api/appointments
 router.get('/', async (req, res) => {
-  if (supabase) {
-    const { data, error } = await supabase
-      .from('appointments')
-      .select('*')
-      .order('appointment_date', { ascending: true });
+  const start = Date.now();
+  if (!supabase) return res.status(503).json({ error: 'Database unavailable' });
 
-    if (error) return res.status(500).json({ error: error.message });
-    return res.json(data);
+  const limit = Math.min(Math.max(parseInt(req.query.limit) || 100, 1), 500);
+  const offset = Math.max(parseInt(req.query.offset) || 0, 0);
+
+  // Super admins with no firm can query all appointments or filter by firm_id query param
+  let firmId;
+  if (req.user.role === 'super_admin' && !req.firm) {
+    firmId = req.query.firm_id || null;
+  } else if (req.firm) {
+    firmId = req.firm.id;
+  } else {
+    return res.status(400).json({ error: 'No firm associated with user' });
   }
 
-  // Fallback: local store
-  const store = getLocalStore();
-  res.json(store.appointments.sort((a, b) => new Date(a.appointment_date) - new Date(b.appointment_date)));
+  let query = supabase
+    .from('appointments')
+    .select('*', { count: 'exact' });
+
+  if (firmId) {
+    query = query.eq('firm_id', firmId);
+  }
+
+  query = query
+    .order('appointment_date', { ascending: true })
+    .range(offset, offset + limit - 1);
+
+  const { data, error, count } = await query;
+
+  if (error) {
+    logger.error('database', `Failed to fetch appointments: ${error.message}`, {
+      firmId: req.firm?.id,
+      userId: req.user?.id,
+      source: 'routes.appointments.getAll',
+    });
+    return res.status(500).json({ error: 'Failed to fetch data. Please try again.' });
+  }
+
+  logger.info('appointment', `Fetched ${data?.length || 0} appointments (total: ${count})`, {
+    firmId: req.firm?.id,
+    userId: req.user?.id,
+    details: { count: data?.length || 0, total: count, duration: Date.now() - start },
+    durationMs: Date.now() - start,
+    source: 'routes.appointments.getAll',
+  });
+
+  return res.json({ data, total: count });
 });
 
-// PATCH /api/appointments/:id - Update appointment status
-router.patch('/:id', async (req, res) => {
+// PATCH /api/appointments/:id
+router.patch('/:id', validateBody(APPOINTMENT_UPDATABLE), async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: 'Database unavailable' });
+  if (!req.firm) return res.status(400).json({ error: 'No firm associated with user' });
+
   const { id } = req.params;
-  const updates = req.body;
 
-  if (supabase) {
-    const { data, error } = await supabase
-      .from('appointments')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) return res.status(500).json({ error: error.message });
-    return res.json(data);
+  // Validate status value if provided
+  if (req.body.status && !VALID_APPOINTMENT_STATUSES.includes(req.body.status)) {
+    return res.status(400).json({ error: `Invalid status. Must be one of: ${VALID_APPOINTMENT_STATUSES.join(', ')}` });
   }
 
-  // Fallback: local store
-  const store = getLocalStore();
-  const apt = store.appointments.find((a) => a.id === id);
-  if (!apt) return res.status(404).json({ error: 'Appointment not found' });
+  const { data, error } = await supabase
+    .from('appointments')
+    .update(req.body)
+    .eq('id', id)
+    .eq('firm_id', req.firm.id)
+    .select()
+    .single();
 
-  Object.assign(apt, updates);
-  res.json(apt);
+  if (error) {
+    logger.error('database', `Failed to update appointment: ${error.message}`, {
+      firmId: req.firm.id,
+      userId: req.user.id,
+      source: 'routes.appointments.patch',
+    });
+    return res.status(500).json({ error: 'Failed to update data. Please try again.' });
+  }
+  if (!data) return res.status(404).json({ error: 'Appointment not found' });
+
+  // Sync lead's appointment_booked field when appointment is cancelled
+  if (req.body.status === 'cancelled' && data.lead_id) {
+    const { count } = await supabase
+      .from('appointments')
+      .select('id', { count: 'exact', head: true })
+      .eq('lead_id', data.lead_id)
+      .eq('firm_id', req.firm.id)
+      .in('status', ['confirmed', 'completed']);
+
+    if (count === 0) {
+      await supabase.from('leads').update({ appointment_booked: false }).eq('id', data.lead_id).eq('firm_id', req.firm.id);
+    }
+  }
+
+  logger.info('appointment', `Appointment updated: ${id} → ${req.body.status || 'updated'}`, {
+    firmId: req.firm.id,
+    userId: req.user.id,
+    details: req.body,
+    source: 'routes.appointments.patch',
+  });
+
+  return res.json(data);
 });
 
 module.exports = router;

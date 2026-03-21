@@ -1,0 +1,2253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>VoibixAI — White-Label AI Voice CRM Platform Plan</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+  :root {
+    --primary: #6d28d9;
+    --primary-light: #8b5cf6;
+    --primary-bg: #f5f3ff;
+    --dark: #0f172a;
+    --gray: #475569;
+    --light-gray: #94a3b8;
+    --border: #e2e8f0;
+    --bg: #ffffff;
+    --code-bg: #f8fafc;
+    --green: #059669;
+    --red: #dc2626;
+    --amber: #d97706;
+    --blue: #2563eb;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  @page {
+    size: A4;
+    margin: 0.8in 0.7in;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    color: var(--dark);
+    background: var(--bg);
+    line-height: 1.6;
+    font-size: 11px;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .cover {
+    page-break-after: always;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 90vh;
+    text-align: center;
+    padding: 2in 1in;
+  }
+
+  .cover-badge {
+    display: inline-block;
+    background: var(--primary);
+    color: white;
+    padding: 6px 18px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 30px;
+  }
+
+  .cover h1 {
+    font-size: 38px;
+    font-weight: 800;
+    color: var(--dark);
+    line-height: 1.15;
+    margin-bottom: 16px;
+  }
+
+  .cover h1 span { color: var(--primary); }
+
+  .cover .subtitle {
+    font-size: 16px;
+    color: var(--gray);
+    max-width: 500px;
+    margin-bottom: 40px;
+  }
+
+  .cover-meta {
+    color: var(--light-gray);
+    font-size: 12px;
+  }
+
+  .cover-meta strong { color: var(--gray); }
+
+  .toc {
+    page-break-after: always;
+    padding: 40px 0;
+  }
+
+  .toc h2 {
+    font-size: 22px;
+    margin-bottom: 24px;
+    color: var(--dark);
+    border: none;
+    display: block;
+  }
+
+  .toc-group {
+    margin-bottom: 18px;
+  }
+
+  .toc-group-title {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--primary);
+    padding: 6px 0;
+    margin-top: 8px;
+  }
+
+  .toc-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    text-decoration: none;
+    color: var(--dark);
+  }
+
+  .toc-item:hover { color: var(--primary); }
+
+  .toc-section {
+    font-weight: 600;
+    font-size: 12px;
+  }
+
+  .toc-page {
+    font-size: 11px;
+    color: var(--light-gray);
+    font-weight: 500;
+  }
+
+  .section {
+    page-break-before: always;
+    padding-top: 20px;
+  }
+
+  .section:first-of-type { page-break-before: avoid; }
+
+  h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--dark);
+    margin-bottom: 6px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--primary);
+    display: inline-block;
+  }
+
+  h2 + .section-desc {
+    color: var(--gray);
+    font-size: 12px;
+    margin-bottom: 20px;
+    margin-top: 4px;
+  }
+
+  h3 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--dark);
+    margin-top: 22px;
+    margin-bottom: 10px;
+  }
+
+  h4 {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gray);
+    margin-top: 16px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  p { margin-bottom: 10px; color: var(--gray); font-size: 11.5px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0 18px;
+    font-size: 11px;
+  }
+
+  thead th {
+    background: var(--dark);
+    color: white;
+    padding: 8px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  thead th:first-child { border-radius: 6px 0 0 0; }
+  thead th:last-child { border-radius: 0 6px 0 0; }
+
+  tbody td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--dark);
+  }
+
+  tbody tr:nth-child(even) { background: #f8fafc; }
+  tbody tr:hover { background: var(--primary-bg); }
+
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 10.5px;
+    line-height: 1.65;
+    margin: 10px 0 16px;
+    color: var(--dark);
+  }
+
+  code {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    background: var(--code-bg);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 10.5px;
+    color: var(--primary);
+  }
+
+  .callout {
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin: 14px 0;
+    font-size: 11.5px;
+  }
+
+  .callout-purple { background: var(--primary-bg); border-left: 3px solid var(--primary); }
+  .callout-green { background: #ecfdf5; border-left: 3px solid var(--green); }
+  .callout-amber { background: #fffbeb; border-left: 3px solid var(--amber); }
+  .callout-blue { background: #eff6ff; border-left: 3px solid var(--blue); }
+  .callout-red { background: #fef2f2; border-left: 3px solid var(--red); }
+
+  .callout strong { display: block; margin-bottom: 4px; color: var(--dark); }
+
+  .diagram {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin: 14px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    line-height: 1.7;
+    white-space: pre;
+    overflow-x: auto;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 600;
+  }
+
+  .badge-green { background: #ecfdf5; color: var(--green); }
+  .badge-red { background: #fef2f2; color: var(--red); }
+  .badge-amber { background: #fffbeb; color: var(--amber); }
+  .badge-purple { background: var(--primary-bg); color: var(--primary); }
+  .badge-blue { background: #eff6ff; color: var(--blue); }
+
+  ul, ol {
+    margin: 8px 0 14px 20px;
+    color: var(--gray);
+    font-size: 11.5px;
+  }
+
+  li { margin-bottom: 5px; }
+  li strong { color: var(--dark); }
+
+  .page-break { page-break-before: always; }
+
+  .part-divider {
+    page-break-before: always;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 50vh;
+    text-align: center;
+    padding: 2in 1in;
+  }
+
+  .part-divider .part-number {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--primary);
+    margin-bottom: 12px;
+  }
+
+  .part-divider h2 {
+    font-size: 30px;
+    border: none;
+    display: block;
+    margin-bottom: 12px;
+  }
+
+  .part-divider p {
+    font-size: 14px;
+    color: var(--gray);
+    max-width: 500px;
+  }
+
+  .footer-note {
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    color: var(--light-gray);
+    font-size: 10px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- COVER PAGE                                                   -->
+<!-- ============================================================ -->
+<div class="cover">
+  <div class="cover-badge">Internal Planning Document</div>
+  <h1>
+    <span>VoibixAI</span><br>
+    White-Label AI Voice<br>CRM Platform
+  </h1>
+  <p class="subtitle">
+    Multi-tenant AI voice agent platform with per-client dashboards,
+    prompt templates, staff management, and CRM integration.
+  </p>
+  <div class="cover-meta">
+    <p>Prepared: March 2026</p>
+    <p>Version 2.1 &mdash; Architecture, Schema Alignment, Messaging &amp; CRM Deep Dive</p>
+    <p style="margin-top: 16px;"><strong>Tech Stack:</strong> React + Express + Supabase + Retell AI</p>
+    <p style="margin-top: 30px; font-size: 11px; color: var(--gray);">
+      This document is organized in three parts:<br>
+      <strong>Part I</strong> &mdash; Platform Plan (what we're building)<br>
+      <strong>Part II</strong> &mdash; Schema Requirements (what the business vision demands)<br>
+      <strong>Part III</strong> &mdash; Combined Roadmap &amp; Cost Model
+    </p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TABLE OF CONTENTS                                            -->
+<!-- ============================================================ -->
+<div class="toc">
+  <h2>Table of Contents</h2>
+
+  <div class="toc-group">
+    <div class="toc-group-title">Part I &mdash; Platform Plan</div>
+    <a class="toc-item" href="#s1"><span class="toc-section">1. Executive Summary</span></a>
+    <a class="toc-item" href="#s2"><span class="toc-section">2. Platform Architecture</span></a>
+    <a class="toc-item" href="#s3"><span class="toc-section">3. Multi-Agent System &mdash; How It Works</span></a>
+    <a class="toc-item" href="#s4"><span class="toc-section">4. Super Admin Panel</span></a>
+    <a class="toc-item" href="#s5"><span class="toc-section">5. Client Dashboard (White-Label)</span></a>
+    <a class="toc-item" href="#s6"><span class="toc-section">6. Prompt Template System</span></a>
+    <a class="toc-item" href="#s7"><span class="toc-section">7. Staff / Attorney Management</span></a>
+    <a class="toc-item" href="#s8"><span class="toc-section">8. CRM Integration Strategy</span></a>
+    <a class="toc-item" href="#s9"><span class="toc-section">9. Agent Delivery &mdash; How Clients Receive the Agent</span></a>
+    <a class="toc-item" href="#s10"><span class="toc-section">10. Messaging &amp; Communication Hub</span></a>
+    <a class="toc-item" href="#s11"><span class="toc-section">11. External CRM Integration &mdash; Technical Deep Dive</span></a>
+    <a class="toc-item" href="#s12"><span class="toc-section">12. Database Schema</span></a>
+  </div>
+
+  <div class="toc-group">
+    <div class="toc-group-title">Part II &mdash; Schema Requirements</div>
+    <a class="toc-item" href="#s13"><span class="toc-section">13. Schema Overview &mdash; The Full Business Vision</span></a>
+    <a class="toc-item" href="#s14"><span class="toc-section">14. A: AI Lead Qualification &amp; Engagement</span></a>
+    <a class="toc-item" href="#s15"><span class="toc-section">15. B: AI Consult Automation</span></a>
+    <a class="toc-item" href="#s16"><span class="toc-section">16. C: Calendar &amp; Workflow Automation</span></a>
+    <a class="toc-item" href="#s17"><span class="toc-section">17. D: AI Case Management &amp; CRM</span></a>
+    <a class="toc-item" href="#s18"><span class="toc-section">18. E: Multichannel Engagement</span></a>
+    <a class="toc-item" href="#s19"><span class="toc-section">19. F: AI Intelligence &amp; Differentiators</span></a>
+    <a class="toc-item" href="#s20"><span class="toc-section">20. G: Post-Consult Automation &amp; Growth</span></a>
+  </div>
+
+  <div class="toc-group">
+    <div class="toc-group-title">Part III &mdash; Roadmap &amp; Costs</div>
+    <a class="toc-item" href="#s21"><span class="toc-section">21. Schema vs Platform &mdash; Coverage Scorecard</span></a>
+    <a class="toc-item" href="#s22"><span class="toc-section">22. VAPI &rarr; Retell Migration</span></a>
+    <a class="toc-item" href="#s23"><span class="toc-section">23. Current Codebase Assessment</span></a>
+    <a class="toc-item" href="#s24"><span class="toc-section">24. Combined Implementation Roadmap</span></a>
+    <a class="toc-item" href="#s25"><span class="toc-section">25. Cost Estimates &amp; Pricing</span></a>
+  </div>
+</div>
+
+
+<!-- ============================================================ -->
+<!--                                                              -->
+<!--  PART I — PLATFORM PLAN                                      -->
+<!--                                                              -->
+<!-- ============================================================ -->
+<div class="part-divider">
+  <div class="part-number">Part I</div>
+  <h2>Platform Plan</h2>
+  <p>What we're building: multi-tenant architecture, admin panel, client dashboards, prompt system, CRM integration.</p>
+</div>
+
+
+<!-- 1. EXECUTIVE SUMMARY -->
+<div class="section" id="s1">
+  <h2>1. Executive Summary</h2>
+  <p class="section-desc">What we're building and why.</p>
+
+  <div class="callout callout-purple">
+    <strong>The Vision</strong>
+    A SaaS platform where you onboard any business (law firm, dental clinic, plumber, etc.),
+    deploy a custom AI voice agent for them in minutes, and give them a branded CRM dashboard &mdash;
+    or integrate into their existing CRM. You manage everything from a single super admin panel.
+  </div>
+
+  <h3>Business Model</h3>
+  <p>You are the platform owner. Your clients are businesses that need AI-powered phone intake. Each client gets:</p>
+  <ul>
+    <li><strong>A dedicated AI voice agent</strong> &mdash; with a prompt tailored to their industry, their staff roster, and their brand</li>
+    <li><strong>A branded dashboard</strong> &mdash; or data pushed to their existing CRM</li>
+    <li><strong>A phone number</strong> &mdash; calls are answered 24/7 by their AI agent</li>
+  </ul>
+
+  <h3>Example Clients</h3>
+  <table>
+    <thead><tr><th>Client</th><th>Industry</th><th>Agent Name</th><th>CRM Mode</th></tr></thead>
+    <tbody>
+      <tr><td>Mitchell Family Law</td><td>Legal</td><td>Sarah</td><td>Built-in dashboard</td></tr>
+      <tr><td>Bright Smile Dental</td><td>Dental</td><td>Amy</td><td>Push to Dentrix + our dashboard</td></tr>
+      <tr><td>ABC Plumbing</td><td>Home Services</td><td>Mike</td><td>Push to HubSpot via webhook</td></tr>
+      <tr><td>Premier Real Estate</td><td>Real Estate</td><td>Lisa</td><td>Push to Salesforce</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Key Differentiators</h3>
+  <ul>
+    <li><strong>Multi-industry</strong> &mdash; not locked to legal. Change the prompt template, the dashboard adapts.</li>
+    <li><strong>White-label</strong> &mdash; each client sees their own brand, not yours.</li>
+    <li><strong>CRM-flexible</strong> &mdash; use our dashboard, their CRM, or both.</li>
+    <li><strong>Admin-controlled</strong> &mdash; you deploy agents, manage prompts, monitor all clients from one place.</li>
+  </ul>
+</div>
+
+
+<!-- 2. PLATFORM ARCHITECTURE -->
+<div class="section" id="s2">
+  <h2>2. Platform Architecture</h2>
+  <p class="section-desc">High-level system design and data flow.</p>
+
+  <h3>System Overview</h3>
+  <div class="diagram">
+┌─────────────────────────────────────────────────────────────────┐
+│                     YOUR SUPER ADMIN PANEL                      │
+│  Create clients . Manage prompts . Deploy agents . Monitor all  │
+└────────────────────────────┬────────────────────────────────────┘
+                             │  Retell API
+                             │  (create/update agents)
+                             ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                        RETELL AI PLATFORM                       │
+│                                                                 │
+│  Agent A (Law)    ←── Phone #A ←── Caller dials                 │
+│  Agent B (Dental) ←── Phone #B ←── Caller dials                 │
+│  Agent C (Plumb)  ←── Phone #C ←── Caller dials                 │
+│                                                                 │
+│  Each agent has its own prompt, voice, and phone number         │
+└────────────────────────────┬────────────────────────────────────┘
+                             │  Webhook (all agents → same URL)
+                             ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                     YOUR EXPRESS BACKEND                         │
+│                                                                 │
+│  POST /api/retell/webhook                                       │
+│    → Receives call data from ALL agents                         │
+│    → Looks up firm by agent_id                                  │
+│    → Saves lead under correct firm_id                           │
+│    → Pushes to external CRM if configured                       │
+└──────────┬───────────────────────────────┬──────────────────────┘
+           │                               │
+           ▼                               ▼
+┌─────────────────────┐       ┌─────────────────────────┐
+│    SUPABASE DB      │       │   EXTERNAL CRMs         │
+│                     │       │                         │
+│  firms              │       │  HubSpot API            │
+│  staff              │       │  Salesforce API         │
+│  leads              │       │  Webhook (Zapier/Make)  │
+│  calls              │       │  Clio, Dentrix, etc.    │
+│  appointments       │       │                         │
+│  prompt_templates   │       └─────────────────────────┘
+└─────────┬───────────┘
+          │
+          ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                     REACT FRONTEND                               │
+│                                                                  │
+│  /admin/*     → Super Admin Panel (only you)                    │
+│  /dashboard/* → Client Dashboard (white-labeled per firm)       │
+│  /login       → Auth (Supabase Auth)                            │
+└─────────────────────────────────────────────────────────────────┘</div>
+
+  <h3>Tech Stack</h3>
+  <table>
+    <thead><tr><th>Layer</th><th>Technology</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td>Voice AI</td><td>Retell AI</td><td>Phone agents, transcription, recording, tool calls</td></tr>
+      <tr><td>Backend</td><td>Node.js + Express</td><td>Webhooks, API, business logic</td></tr>
+      <tr><td>Database</td><td>Supabase (Postgres)</td><td>Multi-tenant data, auth, real-time</td></tr>
+      <tr><td>Frontend</td><td>React + Vite + Tailwind</td><td>Admin panel + client dashboards</td></tr>
+      <tr><td>Calendar</td><td>Google Calendar API</td><td>Availability checking, booking</td></tr>
+      <tr><td>SMS</td><td>Twilio</td><td>Booking confirmations, reminders</td></tr>
+      <tr><td>Hosting</td><td>Vercel (FE) + Render (BE)</td><td>Deployment</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- 3. MULTI-AGENT SYSTEM -->
+<div class="section" id="s3">
+  <h2>3. Multi-Agent System</h2>
+  <p class="section-desc">One agent per client, all managed from your backend.</p>
+
+  <h3>How the Agent Knows Who It Works For</h3>
+  <p>Each client gets a <strong>dedicated Retell agent</strong> created via the Retell API. The agent's prompt contains that client's specific information &mdash; company name, industry, staff roster, services, and intake questions.</p>
+
+  <div class="callout callout-blue">
+    <strong>Key Concept</strong>
+    NOT one agent for all. One agent per client. Your admin panel auto-creates them via Retell's API. All agents send webhooks to your single backend, which routes data by <code>agent_id</code> &rarr; <code>firm_id</code>.
+  </div>
+
+  <h3>Agent Creation Flow</h3>
+  <div class="diagram">
+Admin clicks "Create Client" in your panel
+         │
+         ▼
+Your backend calls Retell API:
+POST https://api.retellai.com/create-agent
+{
+  "agent_name": "Amy - Bright Smile Dental",
+  "response_engine": {
+    "type": "retell-llm",
+    "llm_id": "..."
+  },
+  "voice_id": "...",
+  "webhook_url": "https://yourapp.com/api/retell/webhook"
+}
+         │
+         ▼
+Retell returns: { "agent_id": "agent_abc123" }
+         │
+         ▼
+Your backend saves:  firms.retell_agent_id = "agent_abc123"
+Assigns phone number to this agent via Retell API
+         │
+         ▼
+Agent is LIVE — answering calls with client-specific prompt</div>
+
+  <h3>Webhook Routing (Single Endpoint, All Clients)</h3>
+  <div class="diagram">
+Call to Client A's number → Retell Agent A → webhook → Your server
+Call to Client B's number → Retell Agent B → webhook → Your server
+Call to Client C's number → Retell Agent C → webhook → Your server
+                                                          │
+                                               agent_id in payload
+                                                          │
+                                                          ▼
+                                               SELECT * FROM firms
+                                               WHERE retell_agent_id = ?
+                                                          │
+                                                          ▼
+                                               Save lead under firm_id
+                                               Push to their CRM if configured</div>
+
+  <h3>Agent Update Flow (Staff Changes, Prompt Edits)</h3>
+  <ol>
+    <li>Update staff table in your DB</li>
+    <li>Re-render the prompt template with current variables (staff names, hours, etc.)</li>
+    <li>Call Retell API: <code>PATCH /update-agent/{agent_id}</code> with the new prompt</li>
+    <li>Next call automatically uses the updated prompt</li>
+  </ol>
+</div>
+
+
+<!-- 4. SUPER ADMIN PANEL -->
+<div class="section" id="s4">
+  <h2>4. Super Admin Panel</h2>
+  <p class="section-desc">Your control center for managing all clients and agents.</p>
+
+  <h3>Admin Panel Pages</h3>
+  <table>
+    <thead><tr><th>Page</th><th>Purpose</th><th>Key Features</th></tr></thead>
+    <tbody>
+      <tr><td><strong>/admin/dashboard</strong></td><td>Overview of all clients</td><td>Total clients, total calls today, total leads, revenue, alerts</td></tr>
+      <tr><td><strong>/admin/clients</strong></td><td>Client list &amp; management</td><td>All clients table, status, plan, agent status, quick actions</td></tr>
+      <tr><td><strong>/admin/clients/new</strong></td><td>Onboard new client</td><td>Form: company, industry, prompt, staff, CRM config, deploy agent</td></tr>
+      <tr><td><strong>/admin/clients/:id</strong></td><td>Single client detail</td><td>Edit prompt, manage staff, view their leads/calls, CRM settings</td></tr>
+      <tr><td><strong>/admin/templates</strong></td><td>Prompt templates library</td><td>Industry templates (legal, dental, plumbing, etc.) with variables</td></tr>
+      <tr><td><strong>/admin/billing</strong></td><td>Plans &amp; usage</td><td>Per-client call minutes, plan tier, invoicing</td></tr>
+    </tbody>
+  </table>
+
+  <h3>New Client Onboarding Form</h3>
+  <div class="diagram">
+┌─────────────────────────────────────────────────────────┐
+│  CREATE NEW CLIENT                                       │
+│                                                          │
+│  Company Name:    [Bright Smile Dental              ]   │
+│  Industry:        [Dental                        ▼ ]    │
+│  Website:         [www.brightsmile.com              ]   │
+│  Phone:           [+1 425-xxx-xxxx                  ]   │
+│  Email:           [info@brightsmile.com             ]   │
+│  Business Hours:  [9:00 AM - 6:00 PM               ]   │
+│                                                          │
+│  ── AI Agent Configuration ──────────────────────────   │
+│  Agent Name:      [Amy                              ]   │
+│  Agent Voice:     [Female - Professional         ▼ ]    │
+│  Prompt Template: [Dental                        ▼ ]    │
+│                   (auto-fills from industry template)    │
+│                                                          │
+│  ── Staff Members ───────────────────────────────────   │
+│  [+ Add Staff]                                           │
+│  ┌──────────────────────────────────────────────────┐   │
+│  │ Dr. Sarah Chen    │ Orthodontics │ ✓ Active      │   │
+│  │ Dr. Mike Ross     │ General      │ ✓ Active      │   │
+│  │ Dr. Patel         │ Oral Surgery │ ✗ On Leave    │   │
+│  └──────────────────────────────────────────────────┘   │
+│                                                          │
+│  ── CRM Integration ────────────────────────────────    │
+│  Mode: ○ Our Dashboard  ○ External CRM  ○ Both         │
+│  CRM Type: [HubSpot ▼]                                  │
+│  API Key:  [************************]                   │
+│                                                          │
+│  ── Prompt Preview ──────────────────────────────────   │
+│  ┌──────────────────────────────────────────────────┐   │
+│  │ You are Amy, a friendly AI receptionist for      │   │
+│  │ Bright Smile Dental.                             │   │
+│  │                                                  │   │
+│  │ Available doctors today:                         │   │
+│  │ - Dr. Sarah Chen (Orthodontics)                  │   │
+│  │ - Dr. Mike Ross (General Dentistry)              │   │
+│  │                                                  │   │
+│  │ Business hours: 9:00 AM - 6:00 PM               │   │
+│  │ ...                                              │   │
+│  └──────────────────────────────────────────────────┘   │
+│                                                          │
+│         [ Create Client & Deploy Agent ]                 │
+└─────────────────────────────────────────────────────────┘</div>
+
+  <h3>What Happens on "Create Client &amp; Deploy Agent"</h3>
+  <ol>
+    <li>Save firm record to <code>firms</code> table in Supabase</li>
+    <li>Save staff records to <code>staff</code> table</li>
+    <li>Render prompt template with variables (company name, staff, hours, etc.)</li>
+    <li>Call Retell API to create a new agent with the rendered prompt</li>
+    <li>Assign/purchase a phone number via Retell API</li>
+    <li>Save <code>retell_agent_id</code> and phone number back to firm record</li>
+    <li>Create login credentials for the client (Supabase Auth)</li>
+    <li>Send welcome email with dashboard link + login</li>
+  </ol>
+</div>
+
+
+<!-- 5. CLIENT DASHBOARD -->
+<div class="section" id="s5">
+  <h2>5. Client Dashboard (White-Label)</h2>
+  <p class="section-desc">Each client sees a dashboard branded and configured for their industry.</p>
+
+  <h3>How White-Labeling Works</h3>
+  <p>It's the <strong>same React app</strong> for all clients. On login, the app fetches the firm's config from the DB and renders accordingly:</p>
+
+  <table>
+    <thead><tr><th>Config Field</th><th>Law Firm</th><th>Dental Clinic</th><th>Plumber</th></tr></thead>
+    <tbody>
+      <tr><td>Sidebar brand</td><td>"Mitchell Law"</td><td>"Bright Smile"</td><td>"ABC Plumbing"</td></tr>
+      <tr><td>Logo</td><td>firm logo</td><td>firm logo</td><td>firm logo</td></tr>
+      <tr><td>Primary color</td><td>#1d4ed8 (blue)</td><td>#059669 (green)</td><td>#d97706 (amber)</td></tr>
+      <tr><td>"Leads" label</td><td>"Leads"</td><td>"Patient Inquiries"</td><td>"Service Requests"</td></tr>
+      <tr><td>"Case Type" label</td><td>"Case Type"</td><td>"Treatment Type"</td><td>"Job Type"</td></tr>
+      <tr><td>"Attorney" label</td><td>"Attorney"</td><td>"Doctor"</td><td>"Technician"</td></tr>
+      <tr><td>Score factors</td><td>case urgency, kids</td><td>treatment value, pain</td><td>job size, urgency</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Client Dashboard Pages</h3>
+  <table>
+    <thead><tr><th>Page</th><th>Features</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Dashboard</strong></td><td>Stats (leads today, calls, hot leads, conversion), recent leads, activity feed, upcoming appointments</td></tr>
+      <tr><td><strong>Leads / Inquiries</strong></td><td>Filterable table, pipeline tabs, score badges, search, CSV export, date filters</td></tr>
+      <tr><td><strong>Lead Detail</strong></td><td>Contact info, call history, transcripts, recordings, notes, status pipeline, assign staff</td></tr>
+      <tr><td><strong>Appointments</strong></td><td>Upcoming/completed/cancelled tabs, date filter, complete/cancel actions</td></tr>
+      <tr><td><strong>Staff</strong></td><td>Add/remove staff, set active/inactive, specializations &mdash; changes update AI agent prompt</td></tr>
+      <tr><td><strong>Settings</strong></td><td>Company info, business hours, AI agent config (read-only for client), CRM integration</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- 6. PROMPT TEMPLATE SYSTEM -->
+<div class="section" id="s6">
+  <h2>6. Prompt Template System</h2>
+  <p class="section-desc">Industry templates with dynamic variables that auto-fill per client.</p>
+
+  <h3>Template Variables</h3>
+  <table>
+    <thead><tr><th>Variable</th><th>Source</th><th>Example Value</th></tr></thead>
+    <tbody>
+      <tr><td><code>{{agent_name}}</code></td><td>Firm config</td><td>"Amy"</td></tr>
+      <tr><td><code>{{company_name}}</code></td><td>Firm config</td><td>"Bright Smile Dental"</td></tr>
+      <tr><td><code>{{business_hours}}</code></td><td>Firm config</td><td>"9 AM - 6 PM, Monday through Friday"</td></tr>
+      <tr><td><code>{{active_staff}}</code></td><td>Staff table (is_active=true)</td><td>"Dr. Sarah Chen (Orthodontics), Dr. Mike Ross (General)"</td></tr>
+      <tr><td><code>{{services}}</code></td><td>Industry config</td><td>"cleanings, fillings, root canals, whitening, braces"</td></tr>
+      <tr><td><code>{{intake_questions}}</code></td><td>Industry template</td><td>Industry-specific intake questions block</td></tr>
+      <tr><td><code>{{phone}}</code></td><td>Firm config</td><td>"(425) 555-0100"</td></tr>
+      <tr><td><code>{{address}}</code></td><td>Firm config</td><td>"123 Main St, Suite 200"</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Example: Dental Template</h3>
+<pre>You are {{agent_name}}, a friendly AI receptionist for {{company_name}}.
+
+AVAILABLE DOCTORS TODAY:
+{{active_staff}}
+
+BUSINESS HOURS: {{business_hours}}
+
+YOUR JOB:
+1. Greet warmly, ask how you can help
+2. Ask their name and phone number
+3. Ask what dental service they need ({{services}})
+4. Ask these intake questions:
+   - Are you a new or existing patient?
+   - When was your last dental visit?
+   - Are you experiencing any pain or discomfort?
+   - Do you have dental insurance?
+5. Check available appointment slots
+6. Book with the appropriate doctor
+7. Confirm and say goodbye
+
+RULES:
+- Be warm and reassuring (many callers have dental anxiety)
+- Never give medical advice
+- If emergency (severe pain, bleeding), say "Please go to the nearest ER"
+- Keep call under 5 minutes</pre>
+
+  <h3>Example: Law Firm Template</h3>
+<pre>You are {{agent_name}}, a professional AI legal assistant for {{company_name}}.
+
+AVAILABLE ATTORNEYS:
+{{active_staff}}
+
+BUSINESS HOURS: {{business_hours}}
+
+YOUR JOB:
+1. Greet professionally
+2. Ask their name and contact info
+3. Ask what legal matter they need help with
+4. For DIVORCE: Are papers filed? Children involved? Shared assets?
+5. For CUSTODY: Existing order? Safety concerns? Hearing date?
+6. Assess urgency and book consultation
+7. Confirm appointment details
+
+RULES:
+- Be empathetic, callers are often in distress
+- NEVER give legal advice
+- If emergency (safety threat), say "Please call 911"
+- Flag high urgency cases</pre>
+
+  <div class="callout callout-amber">
+    <strong>Rendering Flow</strong>
+    Template stored in DB &rarr; Backend replaces <code>{{variables}}</code> with live data from firm + staff tables &rarr; Rendered prompt pushed to Retell via API &rarr; Agent uses it on next call. Re-renders automatically when staff or config changes.
+  </div>
+</div>
+
+
+<!-- 7. STAFF MANAGEMENT -->
+<div class="section" id="s7">
+  <h2>7. Staff / Attorney Management</h2>
+  <p class="section-desc">Clients manage their team. The AI agent automatically knows who's available.</p>
+
+  <h3>How It Works</h3>
+  <div class="diagram">
+Client dashboard → Staff page → Adds "Dr. Patel (Oral Surgery)"
+         │
+         ▼
+Your backend:
+  1. INSERT INTO staff (firm_id, name, specialization, is_active)
+  2. Fetch all active staff for this firm
+  3. Re-render prompt template: {{active_staff}} = "Dr. Chen, Dr. Ross, Dr. Patel"
+  4. PATCH Retell API: update agent prompt
+         │
+         ▼
+Next caller: "We have Dr. Chen, Dr. Ross, and Dr. Patel available..."</div>
+
+  <h3>Staff Table Fields</h3>
+  <table>
+    <thead><tr><th>Field</th><th>Type</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td>id</td><td>UUID</td><td>Primary key</td></tr>
+      <tr><td>firm_id</td><td>UUID (FK)</td><td>Which client this staff belongs to</td></tr>
+      <tr><td>name</td><td>Text</td><td>"Dr. Sarah Chen"</td></tr>
+      <tr><td>role</td><td>Text</td><td>"attorney", "doctor", "technician"</td></tr>
+      <tr><td>specialization</td><td>Text</td><td>"Orthodontics", "Family Law"</td></tr>
+      <tr><td>email</td><td>Text</td><td>For notifications</td></tr>
+      <tr><td>phone</td><td>Text</td><td>For call transfers</td></tr>
+      <tr><td>is_active</td><td>Boolean</td><td>Only active staff appear in AI prompt</td></tr>
+      <tr><td>calendar_id</td><td>Text</td><td>Google Calendar ID for individual booking</td></tr>
+      <tr><td>created_at</td><td>Timestamp</td><td>When added</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Staff Status &rarr; AI Behavior</h3>
+  <table>
+    <thead><tr><th>Staff Status</th><th>Effect on AI Agent</th></tr></thead>
+    <tbody>
+      <tr><td><span class="badge badge-green">Active</span></td><td>Agent mentions them, books appointments with them</td></tr>
+      <tr><td><span class="badge badge-amber">On Leave</span></td><td>Agent does NOT mention them, cannot book with them</td></tr>
+      <tr><td><span class="badge badge-red">Removed</span></td><td>Soft-deleted, agent doesn't know they exist</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- 8. CRM INTEGRATION -->
+<div class="section" id="s8">
+  <h2>8. CRM Integration Strategy</h2>
+  <p class="section-desc">Flexible integration: use our dashboard, their CRM, or both.</p>
+
+  <h3>Three Modes Per Client</h3>
+  <table>
+    <thead><tr><th>Mode</th><th>Behavior</th><th>Best For</th></tr></thead>
+    <tbody>
+      <tr><td><span class="badge badge-purple">Built-in</span></td><td>All data stays in your platform. Client uses your dashboard.</td><td>Small businesses without existing CRM</td></tr>
+      <tr><td><span class="badge badge-blue">External</span></td><td>Data pushed to their CRM via API. They don't use your dashboard.</td><td>Enterprises with established CRM workflows</td></tr>
+      <tr><td><span class="badge badge-green">Both</span></td><td>Data saved in yours AND pushed to theirs. Mirror mode.</td><td>Clients who want your AI features + their existing CRM</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Data Flow</h3>
+  <div class="diagram">
+Call ends → Retell webhook → Your server
+                               │
+                    ┌──────────┴──────────┐
+                    │  Check firm config  │
+                    │  firm.crm_mode = ?  │
+                    └──────────┬──────────┘
+                               │
+        ┌──────────────────────┼──────────────────────┐
+        │                      │                      │
+  Mode: "builtin"       Mode: "external"       Mode: "both"
+        │                      │                      │
+  Save to YOUR DB       Push to THEIR CRM      Save to yours
+                               │                + push to theirs
+                               ▼
+                    ┌─────────────────────┐
+                    │  Which CRM type?    │
+                    ├─────────────────────┤
+                    │ hubspot  → HubSpot  │
+                    │ salesforce → SF API │
+                    │ clio     → Clio API │
+                    │ webhook  → POST URL │
+                    └─────────────────────┘</div>
+
+  <h3>Supported Integrations (Build Priority)</h3>
+  <table>
+    <thead><tr><th>Priority</th><th>Integration</th><th>Method</th><th>Effort</th></tr></thead>
+    <tbody>
+      <tr><td><span class="badge badge-green">P0</span></td><td>Generic Webhook</td><td>POST lead data to client's URL &mdash; works with Zapier, Make, n8n</td><td>1-2 days</td></tr>
+      <tr><td><span class="badge badge-blue">P1</span></td><td>HubSpot</td><td>OAuth + Contacts/Deals API</td><td>3-5 days</td></tr>
+      <tr><td><span class="badge badge-blue">P1</span></td><td>Salesforce</td><td>OAuth + REST API (Leads/Opportunities)</td><td>3-5 days</td></tr>
+      <tr><td><span class="badge badge-amber">P2</span></td><td>Clio (Legal)</td><td>OAuth + Contacts/Matters API</td><td>3-5 days</td></tr>
+      <tr><td><span class="badge badge-amber">P2</span></td><td>Google Sheets</td><td>Google Sheets API &mdash; simple append</td><td>1 day</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Webhook Payload Example</h3>
+<pre>{
+  "event": "new_lead",
+  "timestamp": "2026-03-15T14:32:00Z",
+  "firm": { "name": "Bright Smile Dental", "id": "firm_xyz" },
+  "lead": {
+    "name": "John Smith",
+    "phone": "+14255551234",
+    "email": "john@email.com",
+    "service_type": "Root Canal",
+    "urgency": "high",
+    "score": 85,
+    "score_label": "hot",
+    "notes": "Severe pain, upper right molar, no insurance"
+  },
+  "appointment": {
+    "date": "2026-03-17",
+    "time": "10:00 AM",
+    "doctor": "Dr. Mike Ross",
+    "status": "confirmed"
+  }
+}</pre>
+</div>
+
+
+<!-- 9. AGENT DELIVERY -->
+<div class="section" id="s9">
+  <h2>9. Agent Delivery</h2>
+  <p class="section-desc">How the client's customers actually reach the AI agent &mdash; phone, website widget, or both.</p>
+
+  <h3>Three Delivery Methods</h3>
+  <table>
+    <thead><tr><th>Method</th><th>How It Works</th><th>Build Effort</th><th>Best For</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>A. Phone Number</strong></td>
+        <td>Client gets a dedicated number from Retell. They put it on their website, Google listing, ads, business cards. Customer calls &rarr; AI answers instantly.</td>
+        <td><span class="badge badge-green">0 days</span> &mdash; Retell handles it</td>
+        <td>Every client (primary method)</td>
+      </tr>
+      <tr>
+        <td><strong>B. Website Widget</strong></td>
+        <td>Embeddable voice/chat button on client's website. Visitor clicks &rarr; talks to AI agent in browser.</td>
+        <td><span class="badge badge-amber">3-5 days</span></td>
+        <td>Clients with high web traffic</td>
+      </tr>
+      <tr>
+        <td><strong>C. Both</strong></td>
+        <td>Phone for direct callers + widget for website visitors. Recommended default.</td>
+        <td>&mdash;</td>
+        <td>Most clients</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Method A: Phone Number (Day 1, Zero Work)</h3>
+  <div class="diagram">
+Your admin panel: "Create Client" → Retell API assigns phone number
+         │
+         ▼
+Client puts number on their website, Google Business, ads
+         │
+         ▼
+Customer calls at 10 PM → AI agent answers → intake → books appointment
+         │
+         ▼
+Lawyer wakes up → sees qualified lead on dashboard → ready for consult</div>
+
+  <p>The client doesn't change anything about their website. They just add or replace a phone number. This is the fastest path to value.</p>
+
+  <h3>Method B: Website Widget (Embed Code)</h3>
+  <p>You give the client a single line of code to paste before <code>&lt;/body&gt;</code> on their site:</p>
+<pre>&lt;!-- Client pastes this on their website --&gt;
+&lt;script src="https://app.leapingai.com/widget.js"
+        data-agent="agent_abc123"
+        data-color="#059669"
+        data-position="bottom-right"
+        data-greeting="Hi! Need to book an appointment?"&gt;
+&lt;/script&gt;</pre>
+
+  <div class="diagram">
+┌─────────────────────────────────────────┐
+│  Client's Website                        │
+│                                          │
+│  "Bright Smile Dental"                   │
+│  Services | About | Contact              │
+│                                          │
+│                          ┌──────────┐   │
+│                          │ Talk to  │   │
+│                          │   Amy    │   │
+│                          └──────────┘   │
+└─────────────────────────────────────────┘
+         │
+    Visitor clicks
+         │
+         ▼
+┌─────────────────────┐
+│  ┌───────────────┐  │
+│  │    Amy         │  │
+│  │  "Hi, how can │  │
+│  │  I help you?" │  │
+│  │               │  │
+│  │  [Speaking...] │  │
+│  └───────────────┘  │
+│                     │
+│  Or text chat:      │
+│  ┌───────────────┐  │
+│  │ Type message..│  │
+│  └───────────────┘  │
+└─────────────────────┘</pre></div>
+
+  <h3>Agent Delivery Settings in Admin Panel</h3>
+  <div class="diagram">
+┌─────────────────────────────────────────────────────────┐
+│  CLIENT: Bright Smile Dental → Agent Delivery            │
+│                                                          │
+│  ── Phone Number ────────────────────────────────────   │
+│  Number: +1 (425) 555-0199                               │
+│  Status: ✅ Active                                       │
+│  [Copy Number]  [Change Number]                          │
+│                                                          │
+│  ── Website Widget ──────────────────────────────────   │
+│  Status: ✅ Active                                       │
+│  Widget Color: [#059669]    Position: [Bottom Right ▼]  │
+│  Greeting: [Hi! Need to book an appointment?         ]  │
+│                                                          │
+│  Embed Code:                                             │
+│  ┌──────────────────────────────────────────────────┐   │
+│  │ &lt;script src="https://app.leapingai.com/widget.js │   │
+│  │ " data-agent="agent_abc123"&gt;&lt;/script&gt;            │   │
+│  └──────────────────────────────────────────────────┘   │
+│  [Copy Code]                                             │
+└─────────────────────────────────────────────────────────┘</div>
+</div>
+
+
+<!-- 10. MESSAGING & COMMUNICATION HUB -->
+<div class="section" id="s10">
+  <h2>10. Messaging &amp; Communication Hub</h2>
+  <p class="section-desc">Built-in SMS, email, and notes so lawyers/staff can follow up with leads directly from the dashboard &mdash; no need to switch to a phone or email app.</p>
+
+  <div class="callout callout-purple">
+    <strong>The Real Workflow</strong>
+    Lawyer arrives at 9 AM &rarr; opens dashboard &rarr; sees 3 new leads from overnight calls &rarr; clicks a lead &rarr; reads AI summary &rarr; sends a quick SMS: "Hi John, this is Attorney Mitchell. I reviewed your case details. Looking forward to our consultation tomorrow at 2 PM." &mdash; all without leaving the dashboard.
+  </div>
+
+  <h3>Communication Features on Lead Detail Page</h3>
+  <div class="diagram">
+┌─────────────────────────────────────────────────────────────┐
+│  LEAD: John Smith                           Score: 85 (Hot) │
+│  Divorce · +1 (425) 555-1234 · john@email.com              │
+│  Status: [New] [Contacted] [Booked✓] [Converted] [Closed]  │
+│                                                              │
+│  ═══════════════════════════════════════════════════════════ │
+│                                                              │
+│  ── Communication Timeline ──────────────────────────────── │
+│                                                              │
+│  🤖 AI Call · Mar 15, 10:42 PM                              │
+│  │  Duration: 4 min · Score: 85 (Hot)                       │
+│  │  Summary: "Caller needs divorce attorney. Papers not     │
+│  │  filed. 2 children ages 5, 8. Spouse threatening to      │
+│  │  relocate. Booked for Mar 17 at 2 PM."                  │
+│  │  [▶ Play Recording]  [View Transcript]                   │
+│  │                                                          │
+│  📱 SMS Sent · Mar 16, 9:15 AM · by Attorney Mitchell      │
+│  │  "Hi John, this is Attorney Mitchell from Mitchell       │
+│  │  Family Law. I've reviewed the details from your call.   │
+│  │  Looking forward to our consultation tomorrow at 2 PM.   │
+│  │  Please bring your marriage certificate and any          │
+│  │  relevant documents."                                    │
+│  │                                                          │
+│  📱 SMS Received · Mar 16, 9:22 AM · from John             │
+│  │  "Thank you! I'll be there. Should I bring the kids'    │
+│  │  school records too?"                                    │
+│  │                                                          │
+│  📱 SMS Sent · Mar 16, 9:30 AM · by Attorney Mitchell      │
+│  │  "Yes, that would be helpful. See you tomorrow."        │
+│  │                                                          │
+│  📝 Internal Note · Mar 16, 9:31 AM · by Attorney Mitchell │
+│  │  "High priority. Spouse may be flight risk with kids.   │
+│  │  Prepare emergency custody motion as backup."            │
+│  │                                                          │
+│  📧 Email Sent · Mar 16, 10:00 AM · Auto                   │
+│  │  "Appointment Confirmation: Mar 17 at 2:00 PM"          │
+│                                                              │
+│  ═══════════════════════════════════════════════════════════ │
+│                                                              │
+│  ── Quick Actions ───────────────────────────────────────── │
+│                                                              │
+│  ┌────────────────────────────────────────────────────────┐ │
+│  │ 📱 SMS  │ 📧 Email │ 📞 Call │ 📝 Note │ 📎 File     │ │
+│  └────────────────────────────────────────────────────────┘ │
+│                                                              │
+│  ┌────────────────────────────────────────────────────────┐ │
+│  │ Hi John, this is Attorney Mitchell from Mitchell Fam.. │ │
+│  │                                                        │ │
+│  └────────────────────────────────────────────────────────┘ │
+│  [Send SMS]                          160 chars remaining     │
+│                                                              │
+│  ── Quick Templates ─────────────────────────────────────── │
+│  [Confirm Appointment] [Remind Documents] [Reschedule]      │
+│  [Thank You] [Follow Up] [Custom...]                        │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘</div>
+
+  <h3>Communication Channels Available to Staff</h3>
+  <table>
+    <thead><tr><th>Channel</th><th>Direction</th><th>How It Works</th><th>Build Effort</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>SMS</strong></td>
+        <td>Send &amp; Receive</td>
+        <td>Staff types message in dashboard &rarr; backend sends via Twilio &rarr; replies come back via Twilio webhook &rarr; appear in timeline</td>
+        <td>3-5 days</td>
+      </tr>
+      <tr>
+        <td><strong>Email</strong></td>
+        <td>Send (auto + manual)</td>
+        <td>Staff clicks "Email" &rarr; sends via SendGrid/Resend. Auto emails for confirmations &amp; reminders.</td>
+        <td>2-3 days</td>
+      </tr>
+      <tr>
+        <td><strong>Internal Notes</strong></td>
+        <td>Internal only</td>
+        <td>Staff adds notes visible to team only. Not sent to client. Already partially built (call_notes).</td>
+        <td>1 day (exists)</td>
+      </tr>
+      <tr>
+        <td><strong>Phone (Click-to-Call)</strong></td>
+        <td>Outbound</td>
+        <td>Staff clicks phone icon &rarr; opens <code>tel:</code> link on mobile, or initiates Twilio call on desktop.</td>
+        <td>0.5 day</td>
+      </tr>
+      <tr>
+        <td><strong>File Attachments</strong></td>
+        <td>Internal</td>
+        <td>Upload documents per lead (contracts, court papers). Stored in Supabase Storage.</td>
+        <td>2-3 days</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Message Templates</h3>
+  <p>Pre-written templates that staff can send with one click, customized per industry:</p>
+
+  <table>
+    <thead><tr><th>Template</th><th>Law Firm Example</th><th>Dental Example</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Confirm Appointment</td>
+        <td>"Hi {{name}}, confirming your consultation on {{date}} at {{time}} with {{attorney}}. Please bring a photo ID and any relevant court documents."</td>
+        <td>"Hi {{name}}, confirming your appointment on {{date}} at {{time}} with {{doctor}}. Please arrive 10 min early and bring your insurance card."</td>
+      </tr>
+      <tr>
+        <td>Remind Documents</td>
+        <td>"Reminder: please bring your marriage certificate, financial statements, and any existing court orders to your consultation."</td>
+        <td>"Reminder: please bring your dental insurance card and any recent X-rays to your appointment."</td>
+      </tr>
+      <tr>
+        <td>Follow Up (no show)</td>
+        <td>"Hi {{name}}, we missed you at your consultation today. Would you like to reschedule? Reply YES and we'll find a new time."</td>
+        <td>"Hi {{name}}, we missed you today. Would you like to reschedule? Reply YES and we'll find a new time."</td>
+      </tr>
+      <tr>
+        <td>Thank You (post-consult)</td>
+        <td>"Thank you for meeting with us today. If you'd like to proceed, we can start preparing your paperwork. Feel free to call with any questions."</td>
+        <td>"Thank you for visiting today. If you have any questions about your treatment plan, don't hesitate to reach out."</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Automated Messages (No Staff Action Needed)</h3>
+  <table>
+    <thead><tr><th>Trigger</th><th>Action</th><th>Channel</th></tr></thead>
+    <tbody>
+      <tr><td>Appointment booked (during AI call)</td><td>Send confirmation with date, time, location, what to bring</td><td>SMS + Email</td></tr>
+      <tr><td>24 hours before appointment</td><td>Send reminder</td><td>SMS</td></tr>
+      <tr><td>1 hour before appointment</td><td>Send final reminder with address/directions</td><td>SMS</td></tr>
+      <tr><td>Missed call (AI couldn't answer)</td><td>"We missed your call. We'll call you back shortly."</td><td>SMS</td></tr>
+      <tr><td>No-show (appointment not completed)</td><td>Send reschedule offer after 2 hours</td><td>SMS</td></tr>
+      <tr><td>3 days after consult (no conversion)</td><td>Follow-up: "Any questions about next steps?"</td><td>SMS or Email</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Technical Architecture for Messaging</h3>
+  <div class="diagram">
+┌──────────────────────────────────────────────────────────────┐
+│  OUTBOUND (Staff sends from dashboard)                        │
+│                                                               │
+│  Dashboard → POST /api/messages/send                          │
+│    { lead_id, channel: "sms", text: "Hi John..." }          │
+│         │                                                     │
+│         ▼                                                     │
+│  Backend: save to messages table + send via Twilio/SendGrid  │
+└──────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────┐
+│  INBOUND (Customer replies)                                   │
+│                                                               │
+│  Customer texts back → Twilio webhook → POST /api/twilio/sms │
+│         │                                                     │
+│         ▼                                                     │
+│  Backend: match phone to lead → save to messages table       │
+│         │                                                     │
+│         ▼                                                     │
+│  Supabase Realtime → Dashboard updates live                  │
+│  (staff sees reply appear instantly)                          │
+└──────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────┐
+│  AUTOMATED (Cron / event-triggered)                           │
+│                                                               │
+│  Scheduler checks: any appointments in 24h?                  │
+│         │                                                     │
+│         ▼                                                     │
+│  For each: render template → send via Twilio → save to DB    │
+└──────────────────────────────────────────────────────────────┘</div>
+
+  <h3>Messages Table</h3>
+  <table>
+    <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>id</td><td>UUID (PK)</td><td></td></tr>
+      <tr><td>firm_id</td><td>UUID (FK)</td><td>Tenant isolation</td></tr>
+      <tr><td>lead_id</td><td>TEXT (FK)</td><td>Which lead this message belongs to</td></tr>
+      <tr><td>direction</td><td>TEXT</td><td>"outbound" | "inbound"</td></tr>
+      <tr><td>channel</td><td>TEXT</td><td>"sms" | "email" | "note" | "whatsapp"</td></tr>
+      <tr><td>sender</td><td>TEXT</td><td>Staff name, "AI", "System", or customer phone</td></tr>
+      <tr><td>body</td><td>TEXT</td><td>Message content</td></tr>
+      <tr><td>status</td><td>TEXT</td><td>"sent" | "delivered" | "failed" | "received"</td></tr>
+      <tr><td>twilio_sid</td><td>TEXT</td><td>Twilio message SID for tracking</td></tr>
+      <tr><td>created_at</td><td>TIMESTAMPTZ</td><td></td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-green">
+    <strong>The Complete Lead Lifecycle — All in One Place</strong>
+    AI call comes in &rarr; lead created with transcript + recording &rarr; staff sends SMS to confirm &rarr; customer replies &rarr; auto-reminder sent day before &rarr; post-consult follow-up &rarr; all visible in a single unified timeline on the Lead Detail page. The lawyer never leaves the dashboard.
+  </div>
+</div>
+
+
+<!-- 11. EXTERNAL CRM INTEGRATION — DEEP DIVE -->
+<div class="section" id="s11">
+  <h2>11. External CRM Integration</h2>
+  <p class="section-desc">Technical deep dive: how data flows from your platform to the client's existing CRM.</p>
+
+  <h3>Three Levels of Integration</h3>
+
+  <h4>Level 1: Webhook (Build First &mdash; Covers 90% of Clients)</h4>
+  <p>You POST lead data to a URL the client provides. They wire it to any CRM via Zapier, Make, or n8n.</p>
+  <div class="diagram">
+Call ends → Your server saves lead → POST to client's webhook URL
+                                            │
+                                            ▼
+                                     Zapier / Make / n8n
+                                            │
+                          ┌─────────────────┼──────────────────┐
+                          ▼                 ▼                  ▼
+                       HubSpot         Salesforce         Google Sheets
+                       Clio            Dentrix            Any app</div>
+
+  <h4>Level 2: Native Integration (HubSpot, Salesforce &mdash; Build Second)</h4>
+  <p>Client clicks "Connect HubSpot" &rarr; OAuth popup &rarr; authorized &rarr; leads flow directly via API. No Zapier needed.</p>
+
+  <h4>Level 3: Two-Way Sync (Enterprise &mdash; Build Later)</h4>
+  <p>Bidirectional: changes in their CRM reflect in your dashboard and vice versa. Only build on demand.</p>
+
+  <h3>Client CRM Settings Page</h3>
+  <div class="diagram">
+┌─────────────────────────────────────────────────────────┐
+│  SETTINGS → CRM Integration                              │
+│                                                          │
+│  Mode:  ○ Use VoibixAI Dashboard Only                  │
+│         ○ Push to My CRM Only                           │
+│         ● Both (recommended)                            │
+│                                                          │
+│  ── Connection Method ───────────────────────────────   │
+│                                                          │
+│  ● Webhook (works with Zapier, Make, any CRM)           │
+│    URL: [https://hooks.zapier.com/hooks/catch/xxxxx  ]  │
+│    [Test Connection]  ✅ Last sent: 2 min ago           │
+│                                                          │
+│  ○ HubSpot (direct)                                     │
+│    [Connect HubSpot]                                     │
+│                                                          │
+│  ○ Salesforce (direct)                                  │
+│    [Connect Salesforce]                                  │
+│                                                          │
+│  ── What Gets Sent ─────────────────────────────────    │
+│  ☑ New leads          ☑ Call transcripts                │
+│  ☑ Appointments       ☑ Recordings                      │
+│  ☐ Status changes     ☐ Internal notes                  │
+│                                                          │
+│  [Save Settings]                                         │
+└─────────────────────────────────────────────────────────┘</div>
+
+  <h3>Native HubSpot — Field Mapping</h3>
+  <p>When a client connects HubSpot, they map your fields to their CRM fields:</p>
+  <div class="diagram">
+┌─────────────────────────────────────────────────────────┐
+│  HubSpot Integration → Field Mapping                     │
+│                                                          │
+│  Status: ✅ Connected                                    │
+│  Account: brightsmile.hubspot.com                        │
+│                                                          │
+│  VoibixAI Field    →    HubSpot Field                   │
+│  ─────────────────────────────────────                   │
+│  Caller Name        →    [First Name + Last Name  ▼]   │
+│  Phone              →    [Phone                   ▼]    │
+│  Email              →    [Email                   ▼]    │
+│  Case/Service Type  →    [Custom: Service Type    ▼]    │
+│  Lead Score         →    [HubSpot Score           ▼]    │
+│  AI Summary         →    [Notes                   ▼]    │
+│  Transcript         →    [Custom: Call Transcript ▼]    │
+│                                                          │
+│  [Disconnect]  [Test Sync]  [Save Mapping]               │
+└─────────────────────────────────────────────────────────┘</div>
+
+  <h3>Backend Code Pattern</h3>
+<pre>// Called after every new lead is saved
+async function pushToClientCRM(firm, lead, call) {
+  if (firm.crm_mode === 'builtin') return;
+
+  const payload = {
+    event: 'new_lead',
+    lead: {
+      name: lead.caller_name,
+      phone: lead.caller_phone,
+      email: lead.caller_email,
+      service_type: lead.case_type,
+      score: lead.score,
+      urgency: lead.urgency,
+      summary: call.summary,
+      recording_url: call.recording_url
+    }
+  };
+
+  // Level 1: Generic Webhook
+  if (firm.crm_type === 'webhook') {
+    await fetch(firm.crm_webhook_url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+  }
+
+  // Level 2: Native HubSpot
+  if (firm.crm_type === 'hubspot') {
+    await fetch('https://api.hubapi.com/crm/v3/objects/contacts', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${firm.crm_access_token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        properties: mapFieldsToHubSpot(firm.field_mapping, lead)
+      })
+    });
+  }
+}</pre>
+
+  <h3>Build Priority</h3>
+  <table>
+    <thead><tr><th>Order</th><th>Integration</th><th>Effort</th><th>Coverage</th></tr></thead>
+    <tbody>
+      <tr><td><span class="badge badge-green">1st</span></td><td>Webhook push</td><td>1-2 days</td><td>Any CRM via Zapier (90% of clients)</td></tr>
+      <tr><td><span class="badge badge-blue">2nd</span></td><td>HubSpot native (OAuth)</td><td>4-5 days</td><td>Most popular general CRM</td></tr>
+      <tr><td><span class="badge badge-blue">3rd</span></td><td>Salesforce native (OAuth)</td><td>4-5 days</td><td>Enterprise clients</td></tr>
+      <tr><td><span class="badge badge-amber">Later</span></td><td>Clio, Dentrix, etc.</td><td>On demand</td><td>Industry-specific</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- 12. DATABASE SCHEMA (was 9) -->
+<div class="section" id="s12">
+  <h2>12. Database Schema</h2>
+  <p class="section-desc">Multi-tenant Supabase schema with Row-Level Security.</p>
+
+  <h3>Entity Relationship</h3>
+  <div class="diagram">
+firms (your clients)
+ ├── 1:N → staff (their attorneys/doctors/technicians)
+ ├── 1:N → users (their login accounts)
+ ├── 1:N → leads
+ │          ├── 1:N → calls (call records per lead)
+ │          ├── 1:N → messages (SMS, email, notes per lead)
+ │          └── 1:N → intake_answers (structured Q&A per lead)
+ ├── 1:N → appointments
+ ├── 1:N → message_templates (quick-reply templates per industry)
+ └── 1:1 → crm_integration (external CRM settings)
+
+prompt_templates (shared across firms, per industry)</div>
+
+  <h4>firms</h4>
+  <table>
+    <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>id</td><td>UUID (PK)</td><td></td></tr>
+      <tr><td>name</td><td>TEXT NOT NULL</td><td>"Bright Smile Dental"</td></tr>
+      <tr><td>industry</td><td>TEXT</td><td>"legal", "dental", "plumbing"</td></tr>
+      <tr><td>email, phone, address</td><td>TEXT</td><td>Company contact</td></tr>
+      <tr><td>logo_url</td><td>TEXT</td><td>For white-labeling</td></tr>
+      <tr><td>brand_color</td><td>TEXT</td><td>Hex color for theming</td></tr>
+      <tr><td>business_hours</td><td>TEXT</td><td>"9 AM - 6 PM, Mon-Fri"</td></tr>
+      <tr><td>retell_agent_id</td><td>TEXT</td><td>Linked Retell agent</td></tr>
+      <tr><td>retell_phone_number</td><td>TEXT</td><td>Assigned phone number</td></tr>
+      <tr><td>prompt_template_id</td><td>UUID (FK)</td><td>Template reference</td></tr>
+      <tr><td>rendered_prompt</td><td>TEXT</td><td>Final prompt with variables filled</td></tr>
+      <tr><td>crm_mode</td><td>TEXT</td><td>"builtin" | "external" | "both"</td></tr>
+      <tr><td>crm_type</td><td>TEXT</td><td>"hubspot" | "salesforce" | "webhook" | null</td></tr>
+      <tr><td>crm_api_key</td><td>TEXT</td><td>Encrypted</td></tr>
+      <tr><td>crm_webhook_url</td><td>TEXT</td><td>For generic webhook push</td></tr>
+      <tr><td>plan, status</td><td>TEXT</td><td>"active" | "paused" | "cancelled"</td></tr>
+      <tr><td>created_at</td><td>TIMESTAMPTZ</td><td></td></tr>
+    </tbody>
+  </table>
+
+  <h4>staff, leads, calls, appointments, intake_answers</h4>
+  <p>Follow same pattern as detailed in Sections 7 and existing codebase. All tables include <code>firm_id</code> foreign key for tenant isolation.</p>
+
+  <h3>Row-Level Security</h3>
+<pre>ALTER TABLE leads ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Firms see own leads" ON leads
+  FOR ALL USING (
+    firm_id = (SELECT firm_id FROM users WHERE id = auth.uid())
+  );
+
+CREATE POLICY "Super admins see all" ON leads
+  FOR ALL USING (
+    EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'super_admin')
+  );</pre>
+</div>
+
+
+<!-- ============================================================ -->
+<!--                                                              -->
+<!--  PART II — SCHEMA REQUIREMENTS                               -->
+<!--                                                              -->
+<!-- ============================================================ -->
+<div class="part-divider">
+  <div class="part-number">Part II</div>
+  <h2>Schema Requirements</h2>
+  <p>The original business vision document defines what the product must do across 7 categories. This part maps each requirement, its implementation approach, and its status.</p>
+</div>
+
+
+<!-- 13. SCHEMA OVERVIEW -->
+<div class="section" id="s13">
+  <h2>13. Schema Overview</h2>
+  <p class="section-desc">The full business vision from schema.docx, organized into 7 requirement categories.</p>
+
+  <div class="callout callout-purple">
+    <strong>About This Section</strong>
+    The schema document describes the complete "AI Legal Operations Suite" &mdash; a product that goes far beyond a voice booking agent. It covers lead qualification, consult automation, calendar workflows, CRM, multichannel engagement, AI intelligence, and post-consult growth automation. Sections 14-20 below detail each category with specific requirements.
+  </div>
+
+  <h3>The 7 Requirement Categories</h3>
+  <table>
+    <thead><tr><th>Category</th><th>Schema Section</th><th>Core Idea</th></tr></thead>
+    <tbody>
+      <tr><td><span class="badge badge-blue">A</span></td><td>AI Lead Qualification &amp; Engagement</td><td>24/7 answering, legal-criteria qualification, lead scoring, contact capture</td></tr>
+      <tr><td><span class="badge badge-green">B</span></td><td>AI Consult Automation</td><td>Interactive intake questionnaire, waitlist, auto-callback, escalation</td></tr>
+      <tr><td><span class="badge badge-amber">C</span></td><td>Calendar &amp; Workflow Automation</td><td>Google Calendar, auto-booking, reminders, reschedule, buffer time</td></tr>
+      <tr><td><span class="badge badge-red">D</span></td><td>AI Case Management &amp; CRM</td><td>Auto case profiles, communication timeline, follow-ups, pipeline</td></tr>
+      <tr><td><span class="badge badge-purple">E</span></td><td>Multichannel Engagement</td><td>Voice, WhatsApp, website chat, SMS, email intake</td></tr>
+      <tr><td><span class="badge badge-blue">F</span></td><td>AI Intelligence &amp; Differentiators</td><td>Sentiment analysis, outcome suggestions, case stage detection, NLU</td></tr>
+      <tr><td><span class="badge badge-green">G</span></td><td>Post-Consult Automation &amp; Growth</td><td>Follow-up drip sequences, upsell, document management, billing</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Problems the Schema Solves</h3>
+  <table>
+    <thead><tr><th>#</th><th>Problem</th><th>Schema Solution</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Leads are slow, unqualified, costly</td><td>AI pre-screens every call, scores leads automatically</td></tr>
+      <tr><td>2</td><td>Clients expect 24/7 response</td><td>AI answers instantly, any time</td></tr>
+      <tr><td>3</td><td>Emotional intake burns lawyer time</td><td>AI handles emotional intake, extracts structured facts</td></tr>
+      <tr><td>4</td><td>Scheduling chaos</td><td>Automated calendar with conflict detection</td></tr>
+      <tr><td>5</td><td>No structured case data</td><td>CRM with auto-created case profiles, analytics</td></tr>
+      <tr><td>6</td><td>Follow-ups are manual</td><td>Automated drip sequences, reminders, upsell triggers</td></tr>
+      <tr><td>7</td><td>No market differentiator</td><td>Fastest response wins &mdash; AI answers before competitors</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- 14. SECTION A -->
+<div class="section" id="s14">
+  <h2>14. A: AI Lead Qualification &amp; Engagement</h2>
+  <p class="section-desc">Instant 24/7 answering, legal-criteria qualification, scoring, contact capture.</p>
+
+  <table>
+    <thead><tr><th>Requirement</th><th>Implementation</th><th>Who Does It</th><th>Status in Platform Plan</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Instantly answers 24/7</td>
+        <td>Retell AI agent with assigned phone number, always on</td>
+        <td>Retell</td>
+        <td><span class="badge badge-green">Covered</span></td>
+      </tr>
+      <tr>
+        <td>Qualifies based on real legal criteria</td>
+        <td>System prompt contains industry-specific intake questions</td>
+        <td>Retell (prompt)</td>
+        <td><span class="badge badge-green">Covered</span></td>
+      </tr>
+      <tr>
+        <td>Extracts key case facts</td>
+        <td>AI asks structured questions, sends data via tool call to backend</td>
+        <td>Retell + Backend</td>
+        <td><span class="badge badge-green">Covered</span></td>
+      </tr>
+      <tr>
+        <td>Assigns lead score (0-100)</td>
+        <td>Backend calculates score from intake data (case type, urgency, contact completeness, appointment)</td>
+        <td>Backend</td>
+        <td><span class="badge badge-green">Covered</span></td>
+      </tr>
+      <tr>
+        <td>Captures contact + preferred method</td>
+        <td>AI asks during call, stored via webhook</td>
+        <td>Retell + Backend</td>
+        <td><span class="badge badge-green">Covered</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-green">
+    <strong>Section A: 5/5 Covered</strong>
+    All lead qualification requirements are fully addressed by the Retell agent + webhook + lead scoring pipeline in the Platform Plan.
+  </div>
+</div>
+
+
+<!-- 15. SECTION B -->
+<div class="section" id="s15">
+  <h2>15. B: AI Consult Automation</h2>
+  <p class="section-desc">Interactive questionnaires, waitlist assistant, auto-callback, escalation.</p>
+
+  <table>
+    <thead><tr><th>Requirement</th><th>Implementation</th><th>Status</th><th>Gap</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Interactive questionnaire on phone</td>
+        <td>Prompt-driven intake flow &mdash; AI asks structured questions per case type</td>
+        <td><span class="badge badge-green">Covered</span></td>
+        <td>&mdash;</td>
+      </tr>
+      <tr>
+        <td>Structured intake data capture (divorce papers filed? children? finances?)</td>
+        <td><code>intake_answers</code> table stores Q&amp;A pairs from each call. AI sends answers via tool call, backend stores them.</td>
+        <td><span class="badge badge-red">Not Built</span></td>
+        <td>Table exists in DB schema but nothing writes to it. Need a <code>save_intake_answers</code> tool call from the Retell agent, plus backend handler to store structured pairs.</td>
+      </tr>
+      <tr>
+        <td>Live waitlist assistant (if busy, offer alternatives)</td>
+        <td>AI checks calendar via tool call. If no slots on requested date, offers next available day.</td>
+        <td><span class="badge badge-green">Covered</span></td>
+        <td>&mdash;</td>
+      </tr>
+      <tr>
+        <td>Auto callback/text if busy</td>
+        <td>If call goes unanswered or drops, backend queues a Twilio SMS/callback to the caller.</td>
+        <td><span class="badge badge-red">Not Built</span></td>
+        <td>Requires: missed-call detection from Retell webhook, Twilio SMS service, retry queue logic.</td>
+      </tr>
+      <tr>
+        <td>Auto escalation (urgent cases)</td>
+        <td>AI detects high urgency &rarr; tool call &rarr; backend sends SMS/email alert to firm staff immediately.</td>
+        <td><span class="badge badge-red">Not Built</span></td>
+        <td>Requires: <code>escalate_urgent</code> tool call, backend alert handler, Twilio/email notification to firm admin.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-amber">
+    <strong>Section B: 2/5 Covered</strong>
+    Interactive intake is done via prompts but <strong>not stored as structured data</strong>. Auto-callback and escalation are missing entirely and need Twilio + alert logic.
+  </div>
+
+  <h3>How to Close the Gaps</h3>
+
+  <h4>1. Structured intake answers</h4>
+  <p>Add a Retell tool call <code>save_intake_data</code> that the AI calls at end of intake with structured fields:</p>
+<pre>// Tool call from AI agent
+{
+  "tool": "save_intake_data",
+  "args": {
+    "divorce_papers_filed": "yes",
+    "years_married": "12",
+    "children_involved": "yes, 2 children ages 5 and 8",
+    "shared_assets": "house, retirement accounts",
+    "urgency_reason": "spouse threatening to move out of state with kids"
+  }
+}
+
+// Backend stores each as intake_answer row:
+INSERT INTO intake_answers (call_id, lead_id, question, answer)
+VALUES
+  ('call_123', 'lead_456', 'Divorce papers filed?', 'Yes'),
+  ('call_123', 'lead_456', 'Years married', '12'),
+  ('call_123', 'lead_456', 'Children involved?', 'Yes, 2 children ages 5 and 8'),
+  ...</pre>
+
+  <h4>2. Auto-callback on missed calls</h4>
+  <div class="diagram">
+Retell webhook: call_ended + ended_reason = "no_answer" or "voicemail"
+         │
+         ▼
+Backend detects missed call
+         │
+         ▼
+Queue Twilio SMS to caller:
+"Hi, we missed your call at Mitchell Law.
+ We'll call you back shortly. - Sarah (AI Assistant)"
+         │
+         ▼
+Optionally: schedule Retell outbound call to retry</div>
+
+  <h4>3. Auto-escalation for urgent cases</h4>
+  <div class="diagram">
+During call: AI detects high urgency (safety concern, imminent hearing)
+         │
+         ▼
+AI calls tool: escalate_urgent({ reason: "child safety concern", caller: "John" })
+         │
+         ▼
+Backend:
+  1. SMS to firm admin: "URGENT: John Smith - child safety concern - call now"
+  2. Email to assigned attorney
+  3. Flag lead as priority in dashboard (score boost + alert badge)
+  4. Optionally: transfer call to human via Retell transferCall</div>
+</div>
+
+
+<!-- 16. SECTION C -->
+<div class="section" id="s16">
+  <h2>16. C: Calendar &amp; Workflow Automation</h2>
+  <p class="section-desc">Google Calendar integration, auto-booking, reminders, reschedule, buffer time.</p>
+
+  <table>
+    <thead><tr><th>Requirement</th><th>Implementation</th><th>Status</th><th>Gap</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Google Calendar integration</td>
+        <td>Google Calendar API service with service account auth</td>
+        <td><span class="badge badge-green">Built</span></td>
+        <td>&mdash;</td>
+      </tr>
+      <tr>
+        <td>Auto booking during call</td>
+        <td>AI calls <code>book_appointment</code> tool &rarr; backend creates Calendar event + DB record</td>
+        <td><span class="badge badge-green">Built</span></td>
+        <td>&mdash;</td>
+      </tr>
+      <tr>
+        <td>Auto reminders (SMS/WhatsApp/Email)</td>
+        <td>Cron job checks upcoming appointments, sends Twilio SMS reminder 24h and 1h before</td>
+        <td><span class="badge badge-red">Not Built</span></td>
+        <td>Needs Twilio service + cron scheduler (Supabase Edge Functions or node-cron)</td>
+      </tr>
+      <tr>
+        <td>Auto reschedule</td>
+        <td>AI calls <code>reschedule_appointment</code> tool &rarr; backend updates Calendar event</td>
+        <td><span class="badge badge-red">Not Built</span></td>
+        <td>New tool call + backend handler. Moderate effort.</td>
+      </tr>
+      <tr>
+        <td>Buffer time between clients</td>
+        <td>Calendar slot logic adds 15-min gap after each booking</td>
+        <td><span class="badge badge-amber">Partial</span></td>
+        <td>Current slots are 30-min with no gap. Need to add configurable buffer.</td>
+      </tr>
+      <tr>
+        <td>Outlook integration</td>
+        <td>Microsoft Graph API for Outlook Calendar</td>
+        <td><span class="badge badge-red">Not Built</span></td>
+        <td>Separate integration needed alongside Google Calendar. Lower priority.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-amber">
+    <strong>Section C: 2.5/6 Covered</strong>
+    Core booking works. Missing: SMS reminders, reschedule tool, configurable buffer, Outlook.
+  </div>
+</div>
+
+
+<!-- 17. SECTION D -->
+<div class="section" id="s17">
+  <h2>17. D: AI Case Management &amp; CRM</h2>
+  <p class="section-desc">Auto case profiles, communication timeline, follow-ups, lead pipeline.</p>
+
+  <table>
+    <thead><tr><th>Requirement</th><th>Implementation</th><th>Status</th><th>Gap</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Auto case profiles from intake</td>
+        <td>End-of-call webhook creates lead record with all intake data, score, transcript</td>
+        <td><span class="badge badge-green">Built</span></td>
+        <td>&mdash;</td>
+      </tr>
+      <tr>
+        <td>Timeline of communications</td>
+        <td>LeadDetail page shows call history with timestamps, transcripts, recordings</td>
+        <td><span class="badge badge-green">Built</span></td>
+        <td>Only shows calls. Schema envisions SMS, email, WhatsApp in timeline too (multichannel).</td>
+      </tr>
+      <tr>
+        <td>Follow-up reminders</td>
+        <td>Follow-up date field on lead. Dashboard shows reminder.</td>
+        <td><span class="badge badge-amber">Partial</span></td>
+        <td>UI exists (date picker + display). But no actual reminder notification (no cron, no push, no SMS).</td>
+      </tr>
+      <tr>
+        <td>Lead pipeline view</td>
+        <td>Pipeline tabs: new &rarr; contacted &rarr; booked &rarr; converted &rarr; closed</td>
+        <td><span class="badge badge-green">Built</span></td>
+        <td>&mdash;</td>
+      </tr>
+      <tr>
+        <td>Multi-tenant (each firm sees own data)</td>
+        <td>Supabase RLS policies per firm_id</td>
+        <td><span class="badge badge-red">Not Built</span></td>
+        <td>Covered in Platform Plan (Section 9) but not yet implemented in code.</td>
+      </tr>
+      <tr>
+        <td>Document storage automation</td>
+        <td>File upload per lead, stored in Supabase Storage</td>
+        <td><span class="badge badge-red">Not Built</span></td>
+        <td>Schema lists this. Needs file upload UI + Supabase Storage bucket.</td>
+      </tr>
+      <tr>
+        <td>Task automation</td>
+        <td>Auto-create tasks based on lead status changes (e.g., "Call back in 2 days")</td>
+        <td><span class="badge badge-red">Not Built</span></td>
+        <td>Needs tasks table + automation rules engine.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-amber">
+    <strong>Section D: 3/7 Covered</strong>
+    Core CRM features work (profiles, pipeline, call history). Missing: real follow-up notifications, document storage, task automation, multi-tenant enforcement.
+  </div>
+</div>
+
+
+<!-- 18. SECTION E -->
+<div class="section" id="s18">
+  <h2>18. E: Multichannel Engagement</h2>
+  <p class="section-desc">Voice, WhatsApp, website chat, SMS, email &mdash; AI handles intake everywhere.</p>
+
+  <div class="callout callout-blue">
+    <strong>Schema Context</strong>
+    The schema explicitly states: "Your AI is NOT limited to voice. Instead: Multichannel Engagement &mdash; Voice, WhatsApp, Website Chat, SMS, Email. AI handles intake everywhere clients show up."
+  </div>
+
+  <table>
+    <thead><tr><th>Channel</th><th>Implementation</th><th>Status</th><th>Effort</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Voice (Phone)</td>
+        <td>Retell AI agent with dedicated phone number</td>
+        <td><span class="badge badge-green">Built</span></td>
+        <td>&mdash;</td>
+      </tr>
+      <tr>
+        <td>WhatsApp</td>
+        <td>WhatsApp Business API + message templates + AI response engine</td>
+        <td><span class="badge badge-red">Not Built</span></td>
+        <td>2-3 weeks. Needs Meta Business verification, template approval, webhook handler.</td>
+      </tr>
+      <tr>
+        <td>Website Chat</td>
+        <td>Embeddable chat widget on client's website. Retell has web voice embed, or build text chat with LLM.</td>
+        <td><span class="badge badge-red">Not Built</span></td>
+        <td>1-2 weeks. Chat widget component + WebSocket backend.</td>
+      </tr>
+      <tr>
+        <td>SMS Intake</td>
+        <td>Twilio incoming SMS &rarr; AI processes text &rarr; responds with intake questions</td>
+        <td><span class="badge badge-red">Not Built</span></td>
+        <td>1 week. Twilio webhook + conversational SMS logic.</td>
+      </tr>
+      <tr>
+        <td>Email Intake</td>
+        <td>Email parsing service (SendGrid Inbound Parse or similar) &rarr; AI extracts info</td>
+        <td><span class="badge badge-red">Not Built</span></td>
+        <td>1-2 weeks. Email webhook + LLM parsing.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-red">
+    <strong>Section E: 1/5 Covered</strong>
+    Only voice is implemented. Multichannel is Phase 2+ &mdash; the schema treats it as important but not MVP-blocking. Voice alone is sufficient for initial demo and first clients.
+  </div>
+</div>
+
+
+<!-- 19. SECTION F -->
+<div class="section" id="s19">
+  <h2>19. F: AI Intelligence &amp; Differentiators</h2>
+  <p class="section-desc">Sentiment analysis, outcome suggestions, case stage detection, NLU &mdash; what makes this product unique.</p>
+
+  <div class="callout callout-purple">
+    <strong>Schema Context</strong>
+    The schema identifies 3 key differentiators: (1) Automated intelligent qualification &mdash; AI gathers real legal facts, not just "what's your name"; (2) Outcome suggestion &mdash; AI suggests what specialist/documents needed; (3) Case stage detection &mdash; early divorce vs litigation stage gets different responses.
+  </div>
+
+  <table>
+    <thead><tr><th>Feature</th><th>Implementation</th><th>Status</th><th>How to Build</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Intelligent qualification (legal-fact gathering)</td>
+        <td>Prompt-driven: AI asks case-specific questions based on case type</td>
+        <td><span class="badge badge-green">Covered</span></td>
+        <td>Already in prompt templates (divorce questions, custody questions, etc.)</td>
+      </tr>
+      <tr>
+        <td>Outcome suggestion ("you may need custody specialist", "bring documents A, B, C")</td>
+        <td>Add to prompt: after intake, AI suggests next steps based on gathered facts</td>
+        <td><span class="badge badge-red">Not Built</span></td>
+        <td><strong>Prompt engineering only</strong> &mdash; add a section to prompt template: "Based on gathered information, suggest which specialist and what documents to bring." Zero code change.</td>
+      </tr>
+      <tr>
+        <td>Case stage detection (early vs litigation)</td>
+        <td>AI asks "Are papers already filed?" and adjusts tone/recommendations</td>
+        <td><span class="badge badge-red">Not Built</span></td>
+        <td><strong>Prompt engineering only</strong> &mdash; add branching logic to prompt: "If papers filed, treat as active case. If not filed, treat as initial consultation."</td>
+      </tr>
+      <tr>
+        <td>Sentiment analysis (detect urgency/emotion from transcript)</td>
+        <td>Post-call: run transcript through LLM to classify sentiment (distressed/calm/angry/urgent)</td>
+        <td><span class="badge badge-red">Not Built</span></td>
+        <td>After end-of-call webhook, send transcript to OpenAI/Claude for sentiment classification. Store <code>sentiment</code> column on calls table. Display on dashboard.</td>
+      </tr>
+      <tr>
+        <td>Geographical jurisdiction awareness</td>
+        <td>AI asks "what state/county?" and adjusts recommendations</td>
+        <td><span class="badge badge-red">Not Built</span></td>
+        <td><strong>Prompt engineering</strong> &mdash; add jurisdiction question to intake flow. Store as intake_answer.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-amber">
+    <strong>Section F: 1/5 Covered</strong>
+    However, 3 of the 4 missing features are <strong>prompt-only changes</strong> requiring zero code. Sentiment analysis is the only one needing backend work. This section has high impact for low effort.
+  </div>
+</div>
+
+
+<!-- 20. SECTION G -->
+<div class="section" id="s20">
+  <h2>20. G: Post-Consult Automation &amp; Growth</h2>
+  <p class="section-desc">Follow-up drip sequences, retainer upsell, document management, billing triggers.</p>
+
+  <div class="callout callout-blue">
+    <strong>Schema Context (Use Case 4)</strong>
+    "After first consultation &rarr; AI schedules follow-ups, sends reminders, upsells mediation or document review services &mdash; automates billing triggers."
+  </div>
+
+  <table>
+    <thead><tr><th>Feature</th><th>Implementation</th><th>Status</th><th>Effort</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Automated follow-up sequences</td>
+        <td>After consultation, send drip SMS/emails: Day 1: "Thank you", Day 3: "Any questions?", Day 7: "Ready to proceed?"</td>
+        <td><span class="badge badge-red">Not Built</span></td>
+        <td>Needs: sequence engine (cron + template), Twilio SMS, email service. 1-2 weeks.</td>
+      </tr>
+      <tr>
+        <td>Retainer upsell automation</td>
+        <td>After X days without conversion, AI sends offer: "We also offer mediation services" or "Document review package available"</td>
+        <td><span class="badge badge-red">Not Built</span></td>
+        <td>Needs: upsell templates per industry, trigger rules, SMS/email. 1 week.</td>
+      </tr>
+      <tr>
+        <td>Document storage</td>
+        <td>File upload per lead &mdash; contracts, court documents, intake forms</td>
+        <td><span class="badge badge-red">Not Built</span></td>
+        <td>Supabase Storage bucket + upload UI on LeadDetail page. 3-5 days.</td>
+      </tr>
+      <tr>
+        <td>Self-help guides / Knowledge library</td>
+        <td>Per-industry FAQ and guides that AI can reference or send to callers</td>
+        <td><span class="badge badge-red">Not Built</span></td>
+        <td>Knowledge base table + prompt context injection. 1 week.</td>
+      </tr>
+      <tr>
+        <td>Automated billing triggers</td>
+        <td>When lead converts, trigger invoice creation in Stripe/billing system</td>
+        <td><span class="badge badge-red">Not Built</span></td>
+        <td>Stripe integration + webhook on status change. 1-2 weeks.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-red">
+    <strong>Section G: 0/5 Covered</strong>
+    All post-consult automation is unbuilt. This is explicitly Phase 2+ in the schema. Important for client retention and revenue growth, but not needed for initial demo or first paying clients.
+  </div>
+</div>
+
+
+<!-- ============================================================ -->
+<!--                                                              -->
+<!--  PART III — ROADMAP & COSTS                                  -->
+<!--                                                              -->
+<!-- ============================================================ -->
+<div class="part-divider">
+  <div class="part-number">Part III</div>
+  <h2>Combined Roadmap &amp; Costs</h2>
+  <p>Schema coverage scorecard, migration plan, implementation timeline, and cost model &mdash; bringing Parts I and II together into an actionable build plan.</p>
+</div>
+
+
+<!-- 21. SCHEMA vs PLATFORM SCORECARD -->
+<div class="section" id="s21">
+  <h2>21. Schema vs Platform &mdash; Coverage Scorecard</h2>
+  <p class="section-desc">How much of the original business vision is addressed by the Platform Plan.</p>
+
+  <table>
+    <thead><tr><th>Category</th><th>Total Requirements</th><th>Covered</th><th>Score</th><th>Effort to Close</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>A.</strong> Lead Qualification</td>
+        <td>5</td>
+        <td>5</td>
+        <td><span class="badge badge-green">100%</span></td>
+        <td>&mdash;</td>
+      </tr>
+      <tr>
+        <td><strong>B.</strong> Consult Automation</td>
+        <td>5</td>
+        <td>2</td>
+        <td><span class="badge badge-red">40%</span></td>
+        <td>1-2 weeks (Twilio + intake_answers + escalation)</td>
+      </tr>
+      <tr>
+        <td><strong>C.</strong> Calendar &amp; Workflow</td>
+        <td>6</td>
+        <td>2.5</td>
+        <td><span class="badge badge-amber">42%</span></td>
+        <td>1-2 weeks (reminders + reschedule + buffer)</td>
+      </tr>
+      <tr>
+        <td><strong>D.</strong> CRM &amp; Case Management</td>
+        <td>7</td>
+        <td>3</td>
+        <td><span class="badge badge-amber">43%</span></td>
+        <td>2-3 weeks (multi-tenant + docs + tasks + real follow-ups)</td>
+      </tr>
+      <tr>
+        <td><strong>E.</strong> Multichannel</td>
+        <td>5</td>
+        <td>1</td>
+        <td><span class="badge badge-red">20%</span></td>
+        <td>4-6 weeks (WhatsApp, chat, SMS intake, email)</td>
+      </tr>
+      <tr>
+        <td><strong>F.</strong> AI Intelligence</td>
+        <td>5</td>
+        <td>1</td>
+        <td><span class="badge badge-red">20%</span></td>
+        <td>1 week (3 are prompt-only, 1 needs backend)</td>
+      </tr>
+      <tr>
+        <td><strong>G.</strong> Post-Consult Growth</td>
+        <td>5</td>
+        <td>0</td>
+        <td><span class="badge badge-red">0%</span></td>
+        <td>3-4 weeks (drip sequences, docs, billing)</td>
+      </tr>
+      <tr style="background: var(--primary-bg); font-weight: 700;">
+        <td><strong>TOTAL</strong></td>
+        <td><strong>38</strong></td>
+        <td><strong>14.5</strong></td>
+        <td><span class="badge badge-amber">38%</span></td>
+        <td><strong>~14-20 weeks for 100%</strong></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>What's Needed per Milestone</h3>
+  <table>
+    <thead><tr><th>Milestone</th><th>Schema Coverage Needed</th><th>Categories</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Demo-ready</strong></td><td>~50%</td><td>A (100%) + C partial + D partial + Platform Plan basics</td></tr>
+      <tr><td><strong>First paying client</strong></td><td>~65%</td><td>Above + B (auto-callback, escalation) + F (prompt improvements) + SMS</td></tr>
+      <tr><td><strong>Product-market fit</strong></td><td>~80%</td><td>Above + E (at least WhatsApp or chat) + G (follow-up sequences)</td></tr>
+      <tr><td><strong>Full vision</strong></td><td>100%</td><td>All categories including billing, document management, all channels</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- 22. VAPI → RETELL MIGRATION -->
+<div class="section" id="s22">
+  <h2>22. VAPI &rarr; Retell Migration</h2>
+  <p class="section-desc">Swapping the voice AI provider. Isolated change &mdash; only affects webhook layer.</p>
+
+  <h3>What Changes</h3>
+  <table>
+    <thead><tr><th>File</th><th>Change</th><th>Effort</th></tr></thead>
+    <tbody>
+      <tr><td>webhookController.js</td><td>Full rewrite &mdash; different event format</td><td>1-2 days</td></tr>
+      <tr><td>vapiWebhook.js &rarr; retellWebhook.js</td><td>Rename route, update path</td><td>Light</td></tr>
+      <tr><td>server/index.js</td><td>Update route import</td><td>1 line</td></tr>
+      <tr><td>.env</td><td>RETELL_API_KEY instead of VAPI_API_KEY</td><td>1 line</td></tr>
+      <tr><td>New: server/services/retell.js</td><td>Retell API client for agent CRUD</td><td>New file</td></tr>
+    </tbody>
+  </table>
+
+  <h3>What Stays the Same</h3>
+  <ul>
+    <li>Entire React frontend &mdash; no voice-provider code in the client</li>
+    <li>Database schema &mdash; leads, calls, appointments are provider-agnostic</li>
+    <li>Lead scoring, Google Calendar, all API routes &mdash; downstream of webhook</li>
+  </ul>
+
+  <h3>Key Format Differences</h3>
+  <table>
+    <thead><tr><th>Feature</th><th>VAPI (Current)</th><th>Retell (New)</th></tr></thead>
+    <tbody>
+      <tr><td>Post-call event</td><td><code>end-of-call-report</code></td><td><code>call_ended</code> / <code>call_analyzed</code></td></tr>
+      <tr><td>Transcript</td><td>Plain text string</td><td>Array of utterance objects</td></tr>
+      <tr><td>Tool calls</td><td><code>message.toolCallList[]</code></td><td>Retell LLM function calling</td></tr>
+      <tr><td>Tool response shape</td><td><code>{ results: [{ toolCallId, result }] }</code></td><td><code>{ response: { result } }</code></td></tr>
+      <tr><td>Recording</td><td><code>recordingUrl</code></td><td><code>recording_url</code></td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- 23. CURRENT CODEBASE ASSESSMENT -->
+<div class="section" id="s23">
+  <h2>23. Current Codebase Assessment</h2>
+  <p class="section-desc">What exists today, what's reusable, and what's broken.</p>
+
+  <h3>Reusable Components</h3>
+  <table>
+    <thead><tr><th>Component</th><th>Reusability</th></tr></thead>
+    <tbody>
+      <tr><td>React dashboard UI (Dashboard, Leads, LeadDetail, Appointments)</td><td>90% &mdash; add dynamic labels</td></tr>
+      <tr><td>Components (Sidebar, TopBar, StatsCard, ScoreBadge, StatusBadge)</td><td>90% &mdash; parameterize brand</td></tr>
+      <tr><td>Express API routes (leads, appointments CRUD)</td><td>95% &mdash; add firm_id filtering</td></tr>
+      <tr><td>Lead scoring algorithm</td><td>80% &mdash; make per-industry configurable</td></tr>
+      <tr><td>Google Calendar integration</td><td>100%</td></tr>
+      <tr><td>Supabase service + fallback</td><td>100%</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Bugs to Fix Before Demo</h3>
+  <table>
+    <thead><tr><th>Bug</th><th>Location</th><th>Fix</th></tr></thead>
+    <tbody>
+      <tr><td>Activity feed sort does nothing</td><td>Dashboard.jsx line 38</td><td><code>.sort((a, b) =&gt; 0)</code> &rarr; sort by time</td></tr>
+      <tr><td>Date filter not wired on Appointments</td><td>Appointments.jsx line 44</td><td><code>dateRange</code> state exists but not applied to filter</td></tr>
+      <tr><td>Local store objects lack <code>created_at</code></td><td>webhookController.js line 215</td><td>Add <code>created_at: new Date().toISOString()</code></td></tr>
+      <tr><td>Settings save is fake</td><td>Settings.jsx line 12</td><td>Just a setTimeout, no persistence</td></tr>
+      <tr><td>Notifications are hardcoded</td><td>TopBar.jsx line 10</td><td>Static array of 3 fake items</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Security Issues (Fix Immediately)</h3>
+  <table>
+    <thead><tr><th>Issue</th><th>Risk</th><th>Fix</th></tr></thead>
+    <tbody>
+      <tr><td>.env tracked in git</td><td>API keys exposed</td><td>Add to .gitignore, rotate keys</td></tr>
+      <tr><td>Google service account JSON in repo</td><td>GCP credential leak</td><td>Remove from repo, use env variable</td></tr>
+      <tr><td>No input validation on PATCH routes</td><td>Any field can be overwritten</td><td>Add field allowlist</td></tr>
+      <tr><td>No authentication</td><td>Anyone can access all data</td><td>Add Supabase Auth + middleware</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- 24. COMBINED IMPLEMENTATION ROADMAP -->
+<div class="section" id="s24">
+  <h2>24. Combined Implementation Roadmap</h2>
+  <p class="section-desc">6 phases merging Platform Plan features with Schema requirements. Platform Plan items in purple, Schema items in blue.</p>
+
+  <h3>Phase 1: Foundation (Weeks 1-2)</h3>
+  <p>Fix security, add auth, migrate to Retell, establish multi-tenancy.</p>
+  <table>
+    <thead><tr><th>Task</th><th>Source</th><th>Days</th></tr></thead>
+    <tbody>
+      <tr><td>Fix security (.env, credentials, input validation)</td><td><span class="badge badge-purple">Platform</span></td><td>0.5</td></tr>
+      <tr><td>Supabase Auth + login page (super_admin, admin, staff roles)</td><td><span class="badge badge-purple">Platform</span></td><td>3</td></tr>
+      <tr><td>Multi-tenant DB migration + RLS policies</td><td><span class="badge badge-purple">Platform</span> <span class="badge badge-blue">Schema D</span></td><td>3</td></tr>
+      <tr><td>Retell webhook rewrite (replace VAPI)</td><td><span class="badge badge-purple">Platform</span></td><td>2</td></tr>
+      <tr><td>firm_id filtering on all API routes</td><td><span class="badge badge-purple">Platform</span></td><td>1</td></tr>
+      <tr><td>Fix bugs (activity sort, date filter, created_at, settings)</td><td><span class="badge badge-purple">Platform</span></td><td>0.5</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Phase 2: Admin Panel + Agent Deployment (Weeks 3-4)</h3>
+  <p>Build the super admin panel. Create clients, deploy agents, deliver via phone + widget.</p>
+  <table>
+    <thead><tr><th>Task</th><th>Source</th><th>Days</th></tr></thead>
+    <tbody>
+      <tr><td>Admin dashboard page (all-clients overview)</td><td><span class="badge badge-purple">Platform</span></td><td>2</td></tr>
+      <tr><td>Client CRUD (create, edit, pause, delete)</td><td><span class="badge badge-purple">Platform</span></td><td>3</td></tr>
+      <tr><td>Retell API service (create/update agents programmatically)</td><td><span class="badge badge-purple">Platform</span></td><td>2</td></tr>
+      <tr><td>Prompt template editor with {{variables}}</td><td><span class="badge badge-purple">Platform</span></td><td>3</td></tr>
+      <tr><td>Full deployment flow: create client &rarr; render prompt &rarr; create agent &rarr; assign phone</td><td><span class="badge badge-purple">Platform</span></td><td>2</td></tr>
+      <tr><td>Website widget (embeddable voice/chat for client websites)</td><td><span class="badge badge-purple">Platform</span></td><td>4</td></tr>
+      <tr><td>Agent delivery settings page (phone number + widget embed code + config)</td><td><span class="badge badge-purple">Platform</span></td><td>1</td></tr>
+    </tbody>
+  </table>
+  <div class="callout callout-green">
+    <strong>DEMO CHECKPOINT (End of Week 4)</strong>
+    You can now demo: create a client from admin panel, agent answers calls with custom prompt, leads appear on branded dashboard.
+  </div>
+
+  <h3>Phase 3: Messaging Hub + Client Features + Schema B/C (Weeks 5-8)</h3>
+  <p>Communication hub for staff to message leads, staff management, white-labeling, plus Schema B/C gaps.</p>
+  <table>
+    <thead><tr><th>Task</th><th>Source</th><th>Days</th></tr></thead>
+    <tbody>
+      <tr><td>Messages table + API routes (send/receive SMS, email, notes)</td><td><span class="badge badge-purple">Platform</span></td><td>3</td></tr>
+      <tr><td>Twilio SMS send + inbound webhook (two-way texting from dashboard)</td><td><span class="badge badge-purple">Platform</span></td><td>3</td></tr>
+      <tr><td>Unified communication timeline on LeadDetail page (calls + SMS + notes + email)</td><td><span class="badge badge-purple">Platform</span></td><td>3</td></tr>
+      <tr><td>Message templates (quick-reply per industry: confirm, remind, follow-up, etc.)</td><td><span class="badge badge-purple">Platform</span></td><td>2</td></tr>
+      <tr><td>Auto-messages: booking confirmation SMS, 24h + 1h reminders (cron scheduler)</td><td><span class="badge badge-blue">Schema C</span></td><td>2</td></tr>
+      <tr><td>Email send service (SendGrid/Resend for confirmations + manual emails)</td><td><span class="badge badge-purple">Platform</span></td><td>2</td></tr>
+      <tr><td>Staff management page (add/edit/deactivate, auto-update prompt)</td><td><span class="badge badge-purple">Platform</span></td><td>3</td></tr>
+      <tr><td>White-label theming (dynamic brand, colors, industry labels)</td><td><span class="badge badge-purple">Platform</span></td><td>2</td></tr>
+      <tr><td>Auto-callback on missed calls (detect drop + send SMS)</td><td><span class="badge badge-blue">Schema B</span></td><td>2</td></tr>
+      <tr><td>Auto-escalation for urgent cases (SMS/email alert to firm staff)</td><td><span class="badge badge-blue">Schema B</span></td><td>2</td></tr>
+      <tr><td>Structured intake_answers storage (save_intake_data tool call)</td><td><span class="badge badge-blue">Schema B</span></td><td>2</td></tr>
+      <tr><td>Reschedule tool call + handler</td><td><span class="badge badge-blue">Schema C</span></td><td>1.5</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Phase 4: CRM Integration + Schema F Intelligence (Weeks 9-10)</h3>
+  <p>External CRM push, plus AI intelligence features from Schema.</p>
+  <table>
+    <thead><tr><th>Task</th><th>Source</th><th>Days</th></tr></thead>
+    <tbody>
+      <tr><td>Generic webhook integration (POST to client's URL)</td><td><span class="badge badge-purple">Platform</span></td><td>2</td></tr>
+      <tr><td>CRM settings page (webhook URL, API key config)</td><td><span class="badge badge-purple">Platform</span></td><td>2</td></tr>
+      <tr><td>HubSpot native integration (OAuth + push contacts/deals)</td><td><span class="badge badge-purple">Platform</span></td><td>4</td></tr>
+      <tr><td>Prompt improvements: outcome suggestions, case stage detection, jurisdiction</td><td><span class="badge badge-blue">Schema F</span></td><td>1</td></tr>
+      <tr><td>Sentiment analysis (post-call LLM classification of transcript)</td><td><span class="badge badge-blue">Schema F</span></td><td>2</td></tr>
+      <tr><td>Supabase Realtime for live dashboard updates</td><td><span class="badge badge-purple">Platform</span></td><td>2</td></tr>
+    </tbody>
+  </table>
+  <div class="callout callout-green">
+    <strong>FIRST CLIENT CHECKPOINT (End of Week 10)</strong>
+    Product is ready for first paying clients. Voice intake, messaging hub, smart scoring, CRM integration, branded dashboard, AI intelligence all working. Staff can SMS/email leads directly from dashboard.
+  </div>
+
+  <h3>Phase 5: Multichannel — Schema E (Weeks 11-14)</h3>
+  <p>Add non-voice intake channels as described in Schema.</p>
+  <table>
+    <thead><tr><th>Task</th><th>Source</th><th>Days</th></tr></thead>
+    <tbody>
+      <tr><td>Website chat widget (embeddable, text-based AI intake)</td><td><span class="badge badge-blue">Schema E</span></td><td>7</td></tr>
+      <tr><td>WhatsApp Business API integration</td><td><span class="badge badge-blue">Schema E</span></td><td>10</td></tr>
+      <tr><td>SMS intake (Twilio inbound &rarr; AI conversation)</td><td><span class="badge badge-blue">Schema E</span></td><td>5</td></tr>
+      <tr><td>Unified communication timeline on LeadDetail (calls + SMS + chat + WhatsApp)</td><td><span class="badge badge-blue">Schema D</span></td><td>3</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Phase 6: Growth Automation — Schema G (Weeks 15-18)</h3>
+  <p>Post-consult automation, upsell, documents, billing.</p>
+  <table>
+    <thead><tr><th>Task</th><th>Source</th><th>Days</th></tr></thead>
+    <tbody>
+      <tr><td>Automated follow-up drip sequences (SMS/email)</td><td><span class="badge badge-blue">Schema G</span></td><td>7</td></tr>
+      <tr><td>Document upload &amp; storage (Supabase Storage)</td><td><span class="badge badge-blue">Schema D/G</span></td><td>4</td></tr>
+      <tr><td>Upsell automation (retainer, mediation, document review offers)</td><td><span class="badge badge-blue">Schema G</span></td><td>5</td></tr>
+      <tr><td>Salesforce native integration</td><td><span class="badge badge-purple">Platform</span></td><td>4</td></tr>
+      <tr><td>Knowledge library / self-help guides</td><td><span class="badge badge-blue">Schema G</span></td><td>5</td></tr>
+      <tr><td>Billing triggers (Stripe integration)</td><td><span class="badge badge-blue">Schema G</span></td><td>5</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Roadmap Summary</h3>
+  <table>
+    <thead><tr><th>Phase</th><th>Weeks</th><th>Schema Coverage After</th><th>Milestone</th></tr></thead>
+    <tbody>
+      <tr><td>Phase 1: Foundation</td><td>1-2</td><td>~38%</td><td>Secure, multi-tenant, Retell working</td></tr>
+      <tr><td>Phase 2: Admin Panel + Agent Delivery</td><td>3-4</td><td>~45%</td><td>Demo-ready (phone + widget)</td></tr>
+      <tr><td>Phase 3: Messaging Hub + Client Features + B/C</td><td>5-8</td><td>~65%</td><td>Staff can SMS/email leads from dashboard, auto-reminders</td></tr>
+      <tr><td>Phase 4: CRM Integration + Intelligence</td><td>9-10</td><td>~75%</td><td>First paying client</td></tr>
+      <tr><td>Phase 5: Multichannel</td><td>11-14</td><td>~88%</td><td>Product-market fit</td></tr>
+      <tr><td>Phase 6: Growth Automation</td><td>15-18</td><td>~98%</td><td>Full schema vision</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- 25. COST ESTIMATES -->
+<div class="section" id="s25">
+  <h2>25. Cost Estimates &amp; Pricing</h2>
+  <p class="section-desc">Operational costs and suggested pricing model.</p>
+
+  <h3>Per-Client Costs</h3>
+  <table>
+    <thead><tr><th>Service</th><th>Cost</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Retell AI</td><td>~$0.07-0.15/min</td><td>Per call minute</td></tr>
+      <tr><td>Phone Number</td><td>~$2-5/month</td><td>Per number</td></tr>
+      <tr><td>Twilio SMS</td><td>~$0.0079/msg</td><td>Confirmations + reminders</td></tr>
+      <tr><td>Google Calendar API</td><td>Free</td><td>Within quota</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Platform Costs (Fixed)</h3>
+  <table>
+    <thead><tr><th>Service</th><th>Free Tier</th><th>Scale (50+ clients)</th></tr></thead>
+    <tbody>
+      <tr><td>Supabase</td><td>Free (500MB)</td><td>$25/month (Pro)</td></tr>
+      <tr><td>Vercel</td><td>Free (hobby)</td><td>$20/month (Pro)</td></tr>
+      <tr><td>Render</td><td>Free (750 hrs)</td><td>$7-25/month</td></tr>
+      <tr><td>Domain</td><td>&mdash;</td><td>~$10/year</td></tr>
+      <tr><td><strong>Total fixed</strong></td><td><strong>~$0-10/month</strong></td><td><strong>~$55-80/month</strong></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Pricing Models</h3>
+
+  <h4>Model A: Flat Tier Pricing (Platform Plan)</h4>
+  <table>
+    <thead><tr><th>Plan</th><th>Price/month</th><th>Includes</th></tr></thead>
+    <tbody>
+      <tr><td>Starter</td><td>$99</td><td>1 agent, 100 call minutes, built-in dashboard</td></tr>
+      <tr><td>Professional</td><td>$249</td><td>1 agent, 500 minutes, CRM integration, SMS</td></tr>
+      <tr><td>Enterprise</td><td>$499+</td><td>Multiple agents, unlimited minutes, custom integrations</td></tr>
+    </tbody>
+  </table>
+
+  <h4>Model B: Value-Based Pricing (Schema Recommendation)</h4>
+  <table>
+    <thead><tr><th>Component</th><th>Price</th><th>Rationale</th></tr></thead>
+    <tbody>
+      <tr><td>Base platform fee</td><td>$199/month</td><td>Dashboard access, agent, phone number</td></tr>
+      <tr><td>Per qualified lead</td><td>$15-25/lead</td><td>Only pay for leads that score "warm" or "hot"</td></tr>
+      <tr><td>Per booked appointment</td><td>$10-20/booking</td><td>Direct measurable ROI</td></tr>
+      <tr><td>Guarantee</td><td>&mdash;</td><td>"10 qualified leads/month or 50% discount"</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-purple">
+    <strong>Schema Recommendation</strong>
+    The schema strongly suggests value-based pricing over flat tiers: "Not per user &mdash; but per qualified lead / acquisition metric." This aligns incentives: the better your AI performs, the more both you and the client earn.
+  </div>
+
+  <div class="footer-note">
+    <p>VoibixAI Platform Plan v2.1 &mdash; March 2026</p>
+    <p>Part I: Platform Plan | Part II: Schema Requirements | Part III: Combined Roadmap</p>
+    <p>This is an internal planning document. Architecture and timelines are subject to revision.</p>
+  </div>
+</div>
+
+</body>
+</html>
