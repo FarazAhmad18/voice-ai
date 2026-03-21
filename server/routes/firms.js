@@ -14,6 +14,7 @@ const FIRM_UPDATABLE = [
   'logo_url', 'brand_color', 'business_hours', 'agent_name',
   'agent_voice_id', 'prompt_template_id', 'crm_mode', 'crm_type',
   'crm_webhook_url', 'crm_api_key', 'plan', 'status',
+  'calendar_mode', 'google_calendar_id',
 ];
 
 // All firm routes require super_admin

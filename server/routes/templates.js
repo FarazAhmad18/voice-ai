@@ -137,6 +137,66 @@ router.patch('/:id', async (req, res) => {
   res.json(data);
 });
 
+// POST /api/templates/:id/preview — render template with a given firm's data
+router.post('/:id/preview', async (req, res) => {
+  if (!supabase) return res.status(500).json({ error: 'Database not configured' });
+
+  const { firm_id } = req.body;
+  if (!firm_id) return res.status(400).json({ error: 'firm_id is required' });
+
+  // Fetch template
+  const { data: template, error: tErr } = await supabase
+    .from('prompt_templates')
+    .select('*')
+    .eq('id', req.params.id)
+    .single();
+
+  if (tErr || !template) return res.status(404).json({ error: 'Template not found' });
+
+  // Fetch firm
+  const { data: firm, error: fErr } = await supabase
+    .from('firms')
+    .select('*')
+    .eq('id', firm_id)
+    .single();
+
+  if (fErr || !firm) return res.status(404).json({ error: 'Firm not found' });
+
+  // Fetch active staff
+  const { data: staff } = await supabase
+    .from('staff')
+    .select('*')
+    .eq('firm_id', firm_id)
+    .eq('is_active', true)
+    .order('name');
+
+  // Fetch active knowledge entries
+  const { data: knowledge } = await supabase
+    .from('firm_knowledge')
+    .select('question, answer, category')
+    .eq('firm_id', firm_id)
+    .eq('is_active', true)
+    .order('sort_order')
+    .order('created_at');
+
+  const { renderPrompt } = require('../services/promptRenderer');
+  const rendered = renderPrompt(template, firm, staff || [], knowledge || []);
+
+  logger.info('admin', `Template preview rendered: ${template.name} for ${firm.name}`, {
+    userId: req.user.id,
+    details: { templateId: template.id, firmId: firm.id, promptLength: rendered.length },
+    source: 'routes.templates.preview',
+  });
+
+  res.json({
+    rendered,
+    firm_name: firm.name,
+    staff_count: staff?.length || 0,
+    knowledge_count: knowledge?.length || 0,
+    prompt_length: rendered.length,
+  });
+});
+
 // DELETE /api/templates/:id
 router.delete('/:id', async (req, res) => {
   if (!supabase) return res.status(500).json({ error: 'Database not configured' });

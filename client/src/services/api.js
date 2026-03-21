@@ -1,3 +1,5 @@
+import { getCached, setCached, invalidateByPath, getTTL } from './cache.js';
+
 const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 /**
@@ -32,6 +34,15 @@ function getToken() {
  * Authenticated fetch wrapper.
  */
 async function apiFetch(path, options = {}) {
+  const method = (options.method || 'GET').toUpperCase();
+  const isGet = method === 'GET';
+
+  // Serve from cache on GET hits
+  if (isGet) {
+    const cached = getCached(path);
+    if (cached !== null) return cached;
+  }
+
   const token = getToken();
   const headers = {
     'Content-Type': 'application/json',
@@ -55,7 +66,18 @@ async function apiFetch(path, options = {}) {
     throw new Error(data.error || `API error: ${res.status}`);
   }
 
-  return res.json();
+  const data = await res.json();
+
+  if (isGet) {
+    // Cache the response
+    const ttl = getTTL(path);
+    setCached(path, data, ttl);
+  } else {
+    // Mutation — invalidate related cache entries
+    invalidateByPath(path);
+  }
+
+  return data;
 }
 
 // ── Leads ──────────────────────────────────────────────
@@ -167,6 +189,13 @@ export async function updateTemplate(id, updates) {
 
 export async function deleteTemplate(id) {
   return apiFetch(`/templates/${id}`, { method: 'DELETE' });
+}
+
+export async function previewTemplate(templateId, firmId) {
+  return apiFetch(`/templates/${templateId}/preview`, {
+    method: 'POST',
+    body: JSON.stringify({ firm_id: firmId }),
+  });
 }
 
 // ── Messages ─────────────────────────────────────────────

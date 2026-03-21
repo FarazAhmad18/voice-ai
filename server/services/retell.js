@@ -76,14 +76,19 @@ async function listAgents() {
 }
 
 /**
- * Create a new Retell LLM with a prompt.
+ * Create a new Retell LLM with a prompt and optional tool definitions.
+ * @param {object} opts
+ * @param {string} opts.generalPrompt - Rendered system prompt
+ * @param {string} [opts.beginMessage] - Opening line the agent says
+ * @param {object[]} [opts.tools] - Retell general_tools definitions (check_availability, book_appointment, save_intake_data)
  */
-async function createLLM({ generalPrompt, beginMessage }) {
+async function createLLM({ generalPrompt, beginMessage, tools }) {
   if (!retellClient) throw new Error('RETELL_API_KEY not configured');
   try {
     const llm = await retellClient.llm.create({
       general_prompt: generalPrompt,
       ...(beginMessage ? { begin_message: beginMessage } : {}),
+      ...(tools && tools.length > 0 ? { general_tools: tools } : {}),
     });
     logger.info('retell_api', `LLM created: ${llm.llm_id}`, {
       details: { llmId: llm.llm_id, promptLength: generalPrompt?.length },
@@ -151,15 +156,21 @@ async function createWebCall(agentId) {
 }
 
 /**
- * Import an existing phone number (e.g., from Twilio) into Retell.
+ * Import an existing Twilio phone number into Retell.
+ *
+ * Retell requires a termination_uri — the SIP endpoint Retell will use
+ * to route calls through Twilio. Format: sip:<twilio_account_sid>@pstn.twilio.com
+ * This routes inbound calls: caller → Twilio number → Retell SIP → AI agent.
  */
 async function importPhoneNumber(phoneNumber, agentId, twilioAccountSid, twilioAuthToken) {
   if (!retellClient) throw new Error('RETELL_API_KEY not configured');
+  const terminationUri = `sip:${twilioAccountSid}@pstn.twilio.com`;
   return retellClient.phoneNumber.import({
     phone_number: phoneNumber,
     agent_id: agentId,
     twilio_account_sid: twilioAccountSid,
     twilio_auth_token: twilioAuthToken,
+    termination_uri: terminationUri,
   });
 }
 

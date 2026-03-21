@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import {
   Webhook, Eye, EyeOff, Loader2, Building2, Bot, Users,
   CreditCard, User, CheckCircle, Shield,
-  Globe, Clock, MapPin, Mail, Phone, ExternalLink, Brain, ArrowRight, RefreshCw,
+  Globe, Clock, MapPin, Mail, Phone, ExternalLink, Brain, ArrowRight, RefreshCw, Calendar,
 } from 'lucide-react';
 
 /* ─── Inject keyframe styles once ─── */
@@ -72,6 +72,8 @@ export default function Settings() {
     crm_type: '',
     crm_webhook_url: '',
     crm_api_key: '',
+    calendar_mode: 'builtin',
+    google_calendar_id: '',
   });
 
   useEffect(() => {
@@ -87,6 +89,8 @@ export default function Settings() {
         crm_type: firm.crm_type || '',
         crm_webhook_url: firm.crm_webhook_url || '',
         crm_api_key: firm.crm_api_key || '',
+        calendar_mode: firm.calendar_mode || 'builtin',
+        google_calendar_id: firm.google_calendar_id || '',
       });
       // Pre-fill sync fields from stored IDs
       setSyncAgentId(firm.retell_agent_id || '');
@@ -489,6 +493,57 @@ export default function Settings() {
           )}
         </div>
       </div>
+
+      {/* Calendar Mode -- admin only */}
+      {(user?.role === 'admin' || user?.role === 'super_admin') && (
+        <div className="settings-fade-in-up bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden" style={{ animationDelay: '280ms' }}>
+          <div className="bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-4 flex items-center gap-3">
+            <div className="w-8 h-8 bg-white/15 rounded-lg flex items-center justify-center">
+              <Calendar size={16} className="text-white/90" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-white">Appointment Calendar</h3>
+              <p className="text-xs text-white/50">How availability is checked during calls</p>
+            </div>
+          </div>
+          <div className="p-6 space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Calendar Mode</label>
+              <select
+                value={form.calendar_mode}
+                onChange={(e) => setForm(p => ({ ...p, calendar_mode: e.target.value }))}
+                disabled={saving}
+                className="w-full px-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-300 focus:bg-white disabled:opacity-50 transition-all appearance-none cursor-pointer"
+              >
+                <option value="builtin">Built-in (Recommended)</option>
+                <option value="google">Google Calendar</option>
+              </select>
+              <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">
+                {form.calendar_mode === 'builtin'
+                  ? 'Availability checked against your dashboard appointments. Per-attorney, zero setup, works immediately.'
+                  : 'Availability checked against a linked Google Calendar. Blocks external meetings. Requires Google Calendar ID below.'}
+              </p>
+            </div>
+
+            {form.calendar_mode === 'google' && (
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Google Calendar ID</label>
+                <input
+                  type="text"
+                  value={form.google_calendar_id}
+                  onChange={(e) => setForm(p => ({ ...p, google_calendar_id: e.target.value }))}
+                  placeholder="example@group.calendar.google.com"
+                  disabled={saving}
+                  className="w-full px-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-300 focus:bg-white placeholder:text-slate-300 disabled:opacity-50 transition-all font-mono text-xs"
+                />
+                <p className="text-[11px] text-slate-400 mt-1.5">
+                  Found in Google Calendar → Settings → your calendar → Calendar ID
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* CRM Integration -- admin only */}
       {user?.role === 'admin' || user?.role === 'super_admin' ? (

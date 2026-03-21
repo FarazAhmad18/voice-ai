@@ -9,7 +9,7 @@ const { sanitizeText } = require('../utils/sanitize');
 const { updateFirmAgent } = require('../controllers/agentController');
 
 // Client-facing settings — admin can update their own firm
-const CLIENT_UPDATABLE = ['name', 'email', 'phone', 'address', 'website', 'business_hours', 'crm_mode', 'crm_type', 'crm_webhook_url', 'crm_api_key'];
+const CLIENT_UPDATABLE = ['name', 'email', 'phone', 'address', 'website', 'business_hours', 'crm_mode', 'crm_type', 'crm_webhook_url', 'crm_api_key', 'calendar_mode', 'google_calendar_id'];
 
 /**
  * Validate a URL is not targeting a private/internal IP (SSRF prevention).

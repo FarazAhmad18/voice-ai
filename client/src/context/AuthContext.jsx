@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
+import { clearAll as clearApiCache } from '../services/cache.js';
 
 const AuthContext = createContext(null);
 
@@ -70,6 +71,7 @@ export function AuthProvider({ children }) {
   }
 
   async function logout() {
+    clearApiCache();
     await supabase.auth.signOut();
     setUser(null);
     setFirm(null);
