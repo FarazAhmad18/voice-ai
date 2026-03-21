@@ -87,13 +87,22 @@ router.get('/:id', async (req, res) => {
 
   if (error) return res.status(404).json({ error: 'Lead not found' });
 
-  const { data: calls } = await supabase
-    .from('calls')
-    .select('*')
-    .eq('lead_id', id)
-    .eq('firm_id', lead.firm_id)
-    .order('created_at', { ascending: false })
-    .limit(50);
+  const [{ data: calls }, { data: appointments }] = await Promise.all([
+    supabase
+      .from('calls')
+      .select('*')
+      .eq('lead_id', id)
+      .eq('firm_id', lead.firm_id)
+      .order('created_at', { ascending: false })
+      .limit(50),
+    supabase
+      .from('appointments')
+      .select('*, staff:assigned_staff_id(id, name, specialization)')
+      .eq('lead_id', id)
+      .eq('firm_id', lead.firm_id)
+      .order('created_at', { ascending: false })
+      .limit(5),
+  ]);
 
   logger.info('lead', `Fetched lead detail: ${id}`, {
     firmId: req.firm?.id,
@@ -104,7 +113,7 @@ router.get('/:id', async (req, res) => {
     source: 'routes.leads.getById',
   });
 
-  return res.json({ ...lead, calls: calls || [] });
+  return res.json({ ...lead, calls: calls || [], appointments: appointments || [] });
 });
 
 // PATCH /api/leads/:id

@@ -46,8 +46,9 @@ try {
  * Get available time slots for a given date
  * Checks Google Calendar for existing events and returns open 30-min slots
  */
-async function getAvailableSlots(date, firmId) {
-  if (!calendar || !CALENDAR_ID) {
+async function getAvailableSlots(date, firmId, calendarId) {
+  const effectiveCalendarId = calendarId || CALENDAR_ID;
+  if (!calendar || !effectiveCalendarId) {
     // Fallback mock slots
     logger.debug('calendar', `Returning mock slots for ${date} (calendar not configured)`, {
       firmId,
@@ -67,7 +68,7 @@ async function getAvailableSlots(date, firmId) {
     let response;
     try {
       response = await calendar.events.list({
-        calendarId: CALENDAR_ID,
+        calendarId: effectiveCalendarId,
         timeMin: dayStart.toISOString(),
         timeMax: dayEnd.toISOString(),
         singleEvents: true,
@@ -131,8 +132,9 @@ async function getAvailableSlots(date, firmId) {
 /**
  * Create a calendar event for the booked appointment
  */
-async function createAppointmentEvent(appointment, firmId) {
-  if (!calendar || !CALENDAR_ID) {
+async function createAppointmentEvent(appointment, firmId, calendarId) {
+  const effectiveCalendarId = calendarId || CALENDAR_ID;
+  if (!calendar || !effectiveCalendarId) {
     logger.debug('calendar', 'Not configured, skipping event creation', {
       firmId,
       source: 'googleCalendar.createAppointmentEvent',
@@ -169,7 +171,7 @@ async function createAppointmentEvent(appointment, firmId) {
     };
 
     const response = await calendar.events.insert({
-      calendarId: CALENDAR_ID,
+      calendarId: effectiveCalendarId,
       resource: event,
     });
 

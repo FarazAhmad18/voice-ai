@@ -278,12 +278,20 @@ async function handleCallEnded(call) {
     created_at: new Date().toISOString(),
   };
 
-  // Link appointment to lead
+  // Link appointment to lead, and propagate assigned_staff_id to lead
   if (recentAppointment) {
     await supabase
       .from('appointments')
       .update({ lead_id: lead.id })
       .eq('id', recentAppointment.id);
+
+    if (recentAppointment.assigned_staff_id && !lead.assigned_staff_id) {
+      lead.assigned_staff_id = recentAppointment.assigned_staff_id;
+      await supabase
+        .from('leads')
+        .update({ assigned_staff_id: recentAppointment.assigned_staff_id })
+        .eq('id', lead.id);
+    }
   }
 
   // Save to Supabase
@@ -465,9 +473,83 @@ async function handleCallAnalyzed(call) {
 /**
  * Handle check_availability tool call.
  */
+const CASE_KEYWORDS = {
+  divorce:           ['divorce', 'separation'],
+  custody:           ['custody', 'child custody'],
+  support:           ['support', 'alimony'],
+  domestic_violence: ['domestic violence', 'domestic', 'violence', 'protective'],
+  paternity:         ['paternity'],
+  adoption:          ['adoption'],
+};
+
+const ALL_SLOTS = [
+  '9:00 AM', '9:30 AM', '10:00 AM', '10:30 AM',
+  '11:00 AM', '11:30 AM', '12:00 PM', '12:30 PM',
+  '1:00 PM', '1:30 PM', '2:00 PM', '2:30 PM',
+  '3:00 PM', '3:30 PM', '4:00 PM', '4:30 PM',
+];
+
+/**
+ * Builtin availability checker — queries our own appointments table.
+ * Checks per-attorney if staffId provided, otherwise firm-wide.
+ */
+async function getBuiltinAvailableSlots(date, firmId, staffId) {
+  if (!supabase) return ALL_SLOTS;
+
+  let query = supabase
+    .from('appointments')
+    .select('appointment_time')
+    .eq('firm_id', firmId)
+    .eq('appointment_date', date)
+    .eq('status', 'confirmed');
+
+  if (staffId) query = query.eq('assigned_staff_id', staffId);
+
+  const { data: booked } = await query;
+  const bookedTimes = new Set((booked || []).map(a => a.appointment_time));
+  return ALL_SLOTS.filter(slot => !bookedTimes.has(slot));
+}
+
+/**
+ * Resolve which staff member to use based on staff_name or case_type.
+ * Returns the matched staff record (with calendar_id) or null.
+ */
+async function resolveStaff(firmId, staffName, caseType) {
+  if (!supabase || !firmId) return null;
+  const { data: staffMembers } = await supabase
+    .from('staff')
+    .select('id, name, specialization, role, calendar_id')
+    .eq('firm_id', firmId)
+    .eq('is_active', true);
+  if (!staffMembers?.length) return null;
+
+  // 1. Match by name
+  if (staffName) {
+    const normalized = staffName.toLowerCase();
+    const match = staffMembers.find(s =>
+      s.name.toLowerCase().includes(normalized) || normalized.includes(s.name.toLowerCase())
+    );
+    if (match) return match;
+  }
+
+  // 2. Match by case_type → specialization keywords
+  if (caseType) {
+    const keywords = CASE_KEYWORDS[caseType.toLowerCase()] || [caseType.toLowerCase()];
+    const match = staffMembers.find(s =>
+      keywords.some(kw => s.specialization?.toLowerCase().includes(kw) || s.role?.toLowerCase().includes(kw))
+    );
+    if (match) return match;
+  }
+
+  // 3. First active staff
+  return staffMembers[0];
+}
+
 async function handleCheckAvailability(req, res) {
   const { args, call } = req.body;
   const date = args?.date;
+  const staffName = args?.staff_name || args?.attorney_name;
+  const caseType = args?.case_type;
 
   // Always tell the agent what today's date is so it can resolve relative dates correctly
   const todayDate = new Date();
@@ -497,20 +579,36 @@ async function handleCheckAvailability(req, res) {
     });
   }
 
-  logger.info('tool_call', `check_availability called for ${date}`, {
+  // Resolve firm + attorney
+  const firm = await lookupFirmByAgentId(call?.agent_id);
+  const assignedStaff = firm ? await resolveStaff(firm.id, staffName, caseType) : null;
+  const mode = firm?.calendar_mode || 'builtin';
+
+  logger.info('tool_call', `check_availability [${mode}] for ${date}${assignedStaff ? ` — ${assignedStaff.name}` : ''}`, {
     callId: call?.call_id,
-    details: { date },
+    details: { date, mode, staffName: assignedStaff?.name },
     source: 'webhookController.handleCheckAvailability',
   });
 
   try {
-    const slots = await getAvailableSlots(date);
+    let slots;
 
-    logger.info('calendar', `${slots.length} slots available on ${date}`, {
+    if (mode === 'google') {
+      // Google Calendar mode — check firm's linked Google Calendar
+      const calendarId = firm?.google_calendar_id || null;
+      slots = await getAvailableSlots(date, firm?.id, calendarId);
+    } else {
+      // Builtin mode — query our own appointments table per attorney
+      slots = await getBuiltinAvailableSlots(date, firm?.id, assignedStaff?.id);
+    }
+
+    logger.info('calendar', `${slots.length} slots available on ${date} [${mode}]${assignedStaff ? ` for ${assignedStaff.name}` : ''}`, {
       callId: call?.call_id,
-      details: { date, slotCount: slots.length, slots },
+      details: { date, slotCount: slots.length, mode },
       source: 'webhookController.handleCheckAvailability',
     });
+
+    const attorneyLabel = assignedStaff?.name || null;
 
     if (slots.length === 0) {
       return res.json({
@@ -518,7 +616,8 @@ async function handleCheckAvailability(req, res) {
         today: todayStr,
         date,
         slots: [],
-        message: `We don't have any available times on ${date}. Would you like to try another day?`,
+        assigned_attorney: attorneyLabel,
+        message: `${attorneyLabel ? `${attorneyLabel} doesn't` : `We don't`} have any available times on ${date}. Would you like to try another day?`,
       });
     }
 
@@ -527,15 +626,16 @@ async function handleCheckAvailability(req, res) {
       today: todayStr,
       date,
       slots,
-      message: `We have the following times available on ${date}: ${slots.join(', ')}`,
+      assigned_attorney: attorneyLabel,
+      message: `${attorneyLabel ? `${attorneyLabel} is` : `We are`} available on ${date} at: ${slots.join(', ')}`,
     });
   } catch (err) {
-    logger.error('calendar', `Failed to check availability: ${err.message}`, {
+    logger.error('calendar', `Failed to check availability [${mode}]: ${err.message}`, {
       callId: call?.call_id,
-      details: { error: err.message, date },
+      details: { error: err.message, date, mode },
       source: 'webhookController.handleCheckAvailability',
     });
-    return res.json({ available: true, date, slots: ['9:00 AM', '10:30 AM', '1:00 PM', '2:30 PM', '4:00 PM'], message: 'Here are our available times.' });
+    return res.json({ available: true, today: todayStr, date, slots: ALL_SLOTS.slice(0, 5), message: 'Here are our available times.' });
   }
 }
 
@@ -558,6 +658,8 @@ async function handleBookAppointment(req, res) {
     appointment_time,
     urgency,
     notes,
+    staff_name,
+    attorney_name,
   } = args || {};
 
   // Look up firm by agent_id
@@ -604,6 +706,10 @@ async function handleBookAppointment(req, res) {
     source: 'webhookController.handleBookAppointment',
   });
 
+  // Resolve attorney using shared helper (name → case_type → first active)
+  const assignedStaff = await resolveStaff(firmId, staff_name || attorney_name, case_type);
+  const assignedStaffId = assignedStaff?.id || null;
+
   const appointment = {
     id: `apt_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
     firm_id: firmId,
@@ -616,6 +722,7 @@ async function handleBookAppointment(req, res) {
     urgency: urgency || 'low',
     notes: notes || '',
     status: 'confirmed',
+    assigned_staff_id: assignedStaffId,
     created_at: new Date().toISOString(),
   };
 
@@ -636,26 +743,30 @@ async function handleBookAppointment(req, res) {
     });
   }
 
-  // Create Google Calendar event
-  try {
-    await createAppointmentEvent(appointment);
-    logger.info('calendar', `Calendar event created for ${caller_name}`, {
-      callId: call?.call_id,
-      details: { date: appointment_date, time: appointment_time },
-      source: 'webhookController.handleBookAppointment',
-    });
-  } catch (err) {
-    logger.error('calendar', `Failed to create calendar event: ${err.message}`, {
-      callId: call?.call_id,
-      details: { error: err.message },
-      source: 'webhookController.handleBookAppointment',
-    });
+  // Create Google Calendar event only if firm uses google mode
+  if (firm?.calendar_mode === 'google') {
+    try {
+      await createAppointmentEvent(appointment, firmId, firm?.google_calendar_id || null);
+      logger.info('calendar', `Google Calendar event created for ${caller_name}`, {
+        callId: call?.call_id,
+        details: { date: appointment_date, time: appointment_time },
+        source: 'webhookController.handleBookAppointment',
+      });
+    } catch (err) {
+      logger.error('calendar', `Failed to create Google Calendar event: ${err.message}`, {
+        callId: call?.call_id,
+        details: { error: err.message },
+        source: 'webhookController.handleBookAppointment',
+      });
+    }
   }
 
+  const attorneyMsg = assignedStaff ? ` with ${assignedStaff.name}` : '';
   return res.json({
     success: true,
     appointment_id: appointment.id,
-    message: `Your consultation has been booked for ${appointment_date} at ${appointment_time}. Please arrive 10 minutes early and bring a photo ID and any relevant documents.`,
+    attorney: assignedStaff?.name || null,
+    message: `Your consultation has been booked${attorneyMsg} for ${appointment_date} at ${appointment_time}. Please arrive 10 minutes early and bring a photo ID and any relevant documents.`,
   });
 }
 

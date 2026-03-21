@@ -280,6 +280,7 @@ export default function LeadDetail() {
   const currentStatusIdx = STATUS_FLOW.findIndex(s => s.key === lead.status);
   const days = daysSince(lead.created_at);
   const gradient = getScoreGradient(lead.score_label);
+  const latestAppointment = lead.appointments?.[0] || null;
 
   return (
     <div className="space-y-6">
@@ -429,8 +430,33 @@ export default function LeadDetail() {
               <InfoRow icon={Briefcase} label={labels.case} value={lead.case_type} iconColor="text-amber-500 bg-amber-50" />
               <InfoRow icon={AlertTriangle} label="Urgency" value={lead.urgency} iconColor="text-red-500 bg-red-50"
                 valueClass={lead.urgency === 'high' ? 'text-red-600 font-semibold' : ''} />
-              <InfoRow icon={CalendarCheck} label="Appointment" value={lead.appointment_booked ? 'Booked' : 'Not booked'} iconColor="text-violet-500 bg-violet-50"
-                valueClass={lead.appointment_booked ? 'text-emerald-600' : 'text-slate-400'} />
+              {latestAppointment ? (
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-violet-500 bg-violet-50">
+                    <CalendarCheck size={15} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-slate-400 mb-1">Appointment</p>
+                    <p className="text-sm font-semibold text-emerald-600">
+                      {latestAppointment.appointment_date} at {latestAppointment.appointment_time}
+                    </p>
+                    {latestAppointment.staff?.name && (
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        with {latestAppointment.staff.name}
+                        {latestAppointment.staff.specialization ? ` · ${latestAppointment.staff.specialization}` : ''}
+                      </p>
+                    )}
+                    <span className={`inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                      latestAppointment.status === 'confirmed' ? 'bg-emerald-50 text-emerald-600' :
+                      latestAppointment.status === 'completed' ? 'bg-blue-50 text-blue-600' :
+                      latestAppointment.status === 'cancelled' ? 'bg-red-50 text-red-500' :
+                      'bg-slate-50 text-slate-500'
+                    }`}>{latestAppointment.status}</span>
+                  </div>
+                </div>
+              ) : (
+                <InfoRow icon={CalendarCheck} label="Appointment" value="Not booked" iconColor="text-violet-500 bg-violet-50" valueClass="text-slate-400" />
+              )}
               <InfoRow icon={PhoneIncoming} label="Source" value={lead.source || 'Phone'} iconColor="text-blue-500 bg-blue-50" />
               <InfoRow icon={Clock} label="First Contact" value={`${new Date(lead.created_at).toLocaleDateString()}${days !== null ? ` (${days}d ago)` : ''}`} iconColor="text-slate-400 bg-slate-50" />
               {lead.sentiment && (
