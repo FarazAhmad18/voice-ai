@@ -2,10 +2,9 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchFirms, fetchLogs } from '../../services/api';
 import {
-  Building2, Users, Phone, AlertTriangle, ChevronRight, Activity,
+  Building2, Users, AlertTriangle, ChevronRight, Activity,
   TrendingUp, Zap, Shield, ArrowUpRight, Globe, Server,
-  PhoneCall, DollarSign, Crown, Sparkles, Eye, Pencil,
-  Pause, Play, Clock, CheckCircle2, XCircle, AlertCircle,
+  PhoneCall, DollarSign, Crown, Sparkles, CheckCircle2,
 } from 'lucide-react';
 
 /* ── Inject admin-specific styles once ── */
@@ -97,13 +96,6 @@ const INDUSTRY_COLORS = {
   real_estate: { bg: 'bg-violet-500/10', text: 'text-violet-400', border: 'border-violet-500/20', dot: 'bg-violet-400' },
   medical: { bg: 'bg-rose-500/10', text: 'text-rose-400', border: 'border-rose-500/20', dot: 'bg-rose-400' },
   other: { bg: 'bg-slate-500/10', text: 'text-slate-400', border: 'border-slate-500/20', dot: 'bg-slate-400' },
-};
-
-const PLAN_COLORS = {
-  free: 'bg-slate-500/10 text-slate-400 border-slate-500/20',
-  starter: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-  pro: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
-  enterprise: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
 };
 
 /* ── Skeleton Loading ── */
@@ -279,19 +271,19 @@ export default function AdminDashboard() {
           ═══════════════════════════════════════════════ */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
 
-        {/* ── Left: Client Cards + Activity ── */}
+        {/* ── Left: Ranked Clients + Activity ── */}
         <div className="lg:col-span-8 space-y-5">
 
-          {/* Client Overview Cards */}
+          {/* Top Clients by Activity */}
           <div className="bg-white rounded-2xl border border-slate-100 shadow-sm">
             <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 bg-gradient-to-br from-indigo-50 to-violet-50 rounded-xl flex items-center justify-center">
-                  <Globe size={16} className="text-indigo-500" />
+                  <TrendingUp size={16} className="text-indigo-500" />
                 </div>
                 <div>
-                  <h3 className="text-[15px] font-semibold text-slate-900">Client Overview</h3>
-                  <p className="text-xs text-slate-400">{firms.length} client{firms.length !== 1 ? 's' : ''} on the platform</p>
+                  <h3 className="text-[15px] font-semibold text-slate-900">Top Clients by Activity</h3>
+                  <p className="text-xs text-slate-400">Ranked by total leads generated</p>
                 </div>
               </div>
               <Link
@@ -315,17 +307,80 @@ export default function AdminDashboard() {
                 </Link>
               </div>
             ) : (
-              <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-                {firms.map((firm, idx) => (
-                  <ClientCard key={firm.id} firm={firm} delay={idx * 50} />
-                ))}
+              <div className="divide-y divide-slate-50">
+                {/* Table header */}
+                <div className="px-6 py-2.5 grid grid-cols-12 gap-3">
+                  <div className="col-span-1 text-[10px] font-semibold text-slate-300 uppercase tracking-wider">#</div>
+                  <div className="col-span-5 text-[10px] font-semibold text-slate-300 uppercase tracking-wider">Client</div>
+                  <div className="col-span-2 text-[10px] font-semibold text-slate-300 uppercase tracking-wider text-center">Leads</div>
+                  <div className="col-span-2 text-[10px] font-semibold text-slate-300 uppercase tracking-wider text-center">Appts</div>
+                  <div className="col-span-2 text-[10px] font-semibold text-slate-300 uppercase tracking-wider text-right">Status</div>
+                </div>
+                {[...firms]
+                  .sort((a, b) => (b._counts?.leads || 0) - (a._counts?.leads || 0))
+                  .slice(0, 8)
+                  .map((firm, idx) => {
+                    const ic = INDUSTRY_COLORS[firm.industry] || INDUSTRY_COLORS.other;
+                    const isActive = firm.status === 'active';
+                    const hasAgent = !!firm.retell_agent_id;
+                    const maxLeads = firms.reduce((m, f) => Math.max(m, f._counts?.leads || 0), 1);
+                    const barWidth = Math.max(4, Math.round(((firm._counts?.leads || 0) / maxLeads) * 100));
+                    return (
+                      <Link
+                        key={firm.id}
+                        to={`/admin/clients/${firm.id}`}
+                        className="px-6 py-3.5 grid grid-cols-12 gap-3 items-center hover:bg-slate-50/60 transition-all group admin-fade-in"
+                        style={{ animationDelay: `${idx * 40}ms` }}
+                      >
+                        <div className="col-span-1">
+                          <span className={`text-sm font-bold ${idx === 0 ? 'text-amber-500' : idx === 1 ? 'text-slate-400' : idx === 2 ? 'text-amber-700' : 'text-slate-300'}`}>
+                            {idx + 1}
+                          </span>
+                        </div>
+                        <div className="col-span-5 flex items-center gap-3 min-w-0">
+                          <div
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white flex-shrink-0 shadow-sm"
+                            style={{ backgroundColor: firm.brand_color || '#6d28d9' }}
+                          >
+                            {firm.name?.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-slate-800 group-hover:text-indigo-600 transition-colors truncate">{firm.name}</p>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <span className={`text-[10px] font-medium ${ic.text} capitalize`}>{firm.industry}</span>
+                              {!hasAgent && <span className="text-[10px] text-slate-300">· no agent</span>}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="col-span-2 flex flex-col items-center gap-1">
+                          <span className="text-sm font-bold text-slate-900 tabular-nums">{firm._counts?.leads || 0}</span>
+                          <div className="w-full h-1 bg-slate-100 rounded-full overflow-hidden">
+                            <div className="h-full bg-indigo-400 rounded-full transition-all" style={{ width: `${barWidth}%` }} />
+                          </div>
+                        </div>
+                        <div className="col-span-2 text-center">
+                          <span className="text-sm font-bold text-slate-900 tabular-nums">{firm._counts?.appointments || 0}</span>
+                        </div>
+                        <div className="col-span-2 flex justify-end">
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold ${
+                            isActive ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
+                            firm.status === 'paused' ? 'bg-amber-50 text-amber-700 border border-amber-100' :
+                            'bg-slate-50 text-slate-500 border border-slate-100'
+                          }`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-emerald-500' : firm.status === 'paused' ? 'bg-amber-500' : 'bg-slate-400'}`} />
+                            {firm.status}
+                          </span>
+                        </div>
+                      </Link>
+                    );
+                  })}
               </div>
             )}
 
             {firms.length > 0 && (
               <div className="px-6 py-3 border-t border-slate-50">
                 <Link to="/admin/clients" className="inline-flex items-center gap-1.5 text-xs font-medium text-indigo-500 hover:text-indigo-700 transition-colors">
-                  View all clients <ArrowUpRight size={12} />
+                  Manage all clients <ArrowUpRight size={12} />
                 </Link>
               </div>
             )}
@@ -529,89 +584,6 @@ export default function AdminDashboard() {
             </div>
           </div>
         </div>
-      </div>
-    </div>
-  );
-}
-
-/* ── Client Card ── */
-function ClientCard({ firm, delay }) {
-  const ic = INDUSTRY_COLORS[firm.industry] || INDUSTRY_COLORS.other;
-  const planColor = PLAN_COLORS[firm.plan || 'free'] || PLAN_COLORS.free;
-  const isActive = firm.status === 'active';
-  const hasAgent = !!firm.retell_agent_id;
-
-  return (
-    <div
-      className="relative rounded-xl border border-slate-100 p-4 hover:border-indigo-200/60 admin-card-lift admin-fade-in group"
-      style={{
-        animationDelay: `${delay}ms`,
-        borderLeftWidth: '3px',
-        borderLeftColor: firm.brand_color || '#6d28d9',
-      }}
-    >
-      <div className="flex items-start gap-3.5">
-        <div
-          className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold text-white flex-shrink-0 shadow-sm"
-          style={{ backgroundColor: firm.brand_color || '#6d28d9' }}
-        >
-          {firm.name?.charAt(0).toUpperCase()}
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <p className="text-sm font-semibold text-slate-900 truncate group-hover:text-indigo-600 transition-colors">{firm.name}</p>
-          </div>
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold border ${ic.bg} ${ic.text} ${ic.border} capitalize`}>
-              {firm.industry}
-            </span>
-            <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold border ${planColor} capitalize`}>
-              {firm.plan || 'free'}
-            </span>
-            <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold ${
-              isActive ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-amber-50 text-amber-600 border border-amber-100'
-            }`}>
-              <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-              {firm.status}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Mini stats */}
-      <div className="flex items-center gap-4 mt-3.5 pt-3 border-t border-slate-50">
-        <div className="flex items-center gap-1.5">
-          <Users size={12} className="text-slate-300" />
-          <span className="text-xs font-semibold text-slate-700">{firm._counts?.leads || 0}</span>
-          <span className="text-[10px] text-slate-400">leads</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <Phone size={12} className="text-slate-300" />
-          <span className="text-xs font-semibold text-slate-700">{firm._counts?.staff || 0}</span>
-          <span className="text-[10px] text-slate-400">staff</span>
-        </div>
-        <div className="flex items-center gap-1.5 ml-auto">
-          <div className={`w-1.5 h-1.5 rounded-full ${hasAgent ? 'bg-emerald-400' : 'bg-slate-300'}`} />
-          <span className="text-[10px] text-slate-400">{hasAgent ? 'Agent live' : 'No agent'}</span>
-        </div>
-      </div>
-
-      {/* Quick actions on hover */}
-      <div className="absolute top-3 right-3 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-        <Link
-          to={`/admin/clients/${firm.id}`}
-          className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center hover:bg-indigo-100 transition-colors"
-          title="View"
-        >
-          <Eye size={13} className="text-indigo-500" />
-        </Link>
-        <Link
-          to={`/admin/clients/${firm.id}`}
-          className="w-7 h-7 rounded-lg bg-slate-50 flex items-center justify-center hover:bg-slate-100 transition-colors"
-          title="Edit"
-        >
-          <Pencil size={12} className="text-slate-500" />
-        </Link>
       </div>
     </div>
   );
