@@ -695,39 +695,105 @@ export default function Settings() {
 
       {/* Plan */}
       <div className="settings-fade-in-up bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden" style={{ animationDelay: '400ms' }}>
-        <div className="bg-gradient-to-r from-amber-400 to-orange-500 px-6 py-4 flex items-center gap-3">
+        <div className={`px-6 py-4 flex items-center gap-3 ${
+          firm.plan === 'enterprise' ? 'bg-gradient-to-r from-amber-500 to-orange-500' :
+          firm.plan === 'scale' ? 'bg-gradient-to-r from-violet-600 to-purple-600' :
+          'bg-gradient-to-r from-blue-500 to-indigo-600'
+        }`}>
           <div className="w-8 h-8 bg-white/15 rounded-lg flex items-center justify-center">
             <CreditCard size={16} className="text-white/90" />
           </div>
           <h3 className="text-sm font-bold text-white">Plan & Usage</h3>
+          <span className={`ml-auto inline-flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-semibold ${
+            firm.status === 'active' ? 'bg-white/20 text-white' :
+            firm.status === 'paused' ? 'bg-black/20 text-white/80' :
+            'bg-black/20 text-white/60'
+          }`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${firm.status === 'active' ? 'bg-white' : 'bg-white/40'}`} />
+            {firm.status || 'active'}
+          </span>
         </div>
-        <div className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-2.5">
-                <p className="text-base font-bold text-slate-900 capitalize">{firm.plan || 'Growth'} Plan</p>
-                <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider ${
-                  firm.plan === 'enterprise' ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white' :
-                  firm.plan === 'scale' ? 'bg-gradient-to-r from-violet-500 to-purple-500 text-white' :
-                  'bg-gradient-to-r from-blue-500 to-indigo-500 text-white'
-                }`}>
-                  {firm.plan || 'growth'}
-                </span>
-              </div>
-              <p className="text-xs text-slate-400 mt-1">Contact admin for plan changes</p>
-            </div>
-            <span className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold ${
-              firm.status === 'active' ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100' :
-              firm.status === 'paused' ? 'bg-amber-50 text-amber-700 ring-1 ring-amber-100' :
-              'bg-slate-50 text-slate-500 ring-1 ring-slate-100'
-            }`}>
-              <span className={`w-2 h-2 rounded-full ${
-                firm.status === 'active' ? 'bg-emerald-500' :
-                firm.status === 'paused' ? 'bg-amber-500' : 'bg-slate-400'
-              }`} />
-              {firm.status || 'unknown'}
-            </span>
-          </div>
+
+        <div className="p-6 space-y-5">
+          {/* Plan name + price */}
+          {(() => {
+            const PLAN_DATA = {
+              growth:     { price: '$899/mo', minutes: '1,000 min/mo', agents: '1 AI agent', support: 'Email support' },
+              scale:      { price: '$1,499/mo', minutes: '3,000 min/mo', agents: '2 AI agents', support: 'Priority support' },
+              enterprise: { price: 'Custom pricing', minutes: 'Unlimited minutes', agents: 'Unlimited AI agents', support: 'Dedicated account manager' },
+            };
+            const PLAN_FEATURES = {
+              growth:     ['1,000 minutes/month', '1 AI voice agent', 'Full CRM dashboard', 'Lead tracking & scoring', 'Appointment booking', 'Custom agent script', 'Call transcripts', 'Email support'],
+              scale:      ['3,000 minutes/month', '2 AI voice agents', 'Full CRM dashboard', 'Lead tracking & scoring', 'Appointment booking', 'Custom agent scripts', 'Call transcripts & analytics', 'Follow-up automation', 'Priority support'],
+              enterprise: ['Unlimited minutes', 'Unlimited AI agents', 'Full CRM dashboard', 'Lead tracking & scoring', 'Appointment booking', 'Custom agent scripts', 'Advanced analytics & reporting', 'Follow-up automation', 'Custom integrations', 'Dedicated account manager'],
+            };
+            const plan = firm.plan || 'growth';
+            const data = PLAN_DATA[plan] || PLAN_DATA.growth;
+            const features = PLAN_FEATURES[plan] || PLAN_FEATURES.growth;
+            const accentColor = plan === 'enterprise' ? 'text-amber-600' : plan === 'scale' ? 'text-violet-600' : 'text-blue-600';
+            const badgeBg = plan === 'enterprise' ? 'bg-amber-50 border-amber-100' : plan === 'scale' ? 'bg-violet-50 border-violet-100' : 'bg-blue-50 border-blue-100';
+            const checkColor = plan === 'enterprise' ? 'text-amber-500' : plan === 'scale' ? 'text-violet-500' : 'text-blue-500';
+
+            return (
+              <>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="flex items-center gap-2.5">
+                      <p className="text-xl font-bold text-slate-900 capitalize">{plan} Plan</p>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${badgeBg} ${accentColor} uppercase tracking-wider`}>
+                        {plan}
+                      </span>
+                    </div>
+                    <p className={`text-2xl font-bold mt-1 ${accentColor}`}>
+                      {data.price}
+                    </p>
+                  </div>
+                  <div className="text-right space-y-1">
+                    <p className="text-xs font-semibold text-slate-700">{data.minutes}</p>
+                    <p className="text-xs font-semibold text-slate-700">{data.agents}</p>
+                    <p className="text-xs text-slate-400">{data.support}</p>
+                  </div>
+                </div>
+
+                {/* Features list */}
+                <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+                  {features.map((f, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <svg className={`w-4 h-4 shrink-0 ${checkColor}`} viewBox="0 0 16 16" fill="none">
+                        <circle cx="8" cy="8" r="7" className={plan === 'enterprise' ? 'fill-amber-100' : plan === 'scale' ? 'fill-violet-100' : 'fill-blue-100'} />
+                        <path d="M5 8l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      <span className="text-xs text-slate-600">{f}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Upgrade prompt */}
+                {plan !== 'enterprise' && (
+                  <div className="pt-4 border-t border-slate-100">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs font-semibold text-slate-700">
+                          {plan === 'growth' ? 'Upgrade to Scale for 3× minutes + analytics' : 'Upgrade to Enterprise for unlimited capacity'}
+                        </p>
+                        <p className="text-xs text-slate-400 mt-0.5">Contact us to upgrade your plan</p>
+                      </div>
+                      <a
+                        href="mailto:support@voibixai.com?subject=Plan Upgrade Request"
+                        className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-colors ${
+                          plan === 'growth'
+                            ? 'bg-violet-600 text-white hover:bg-violet-700'
+                            : 'bg-amber-500 text-white hover:bg-amber-600'
+                        }`}
+                      >
+                        Upgrade Plan
+                      </a>
+                    </div>
+                  </div>
+                )}
+              </>
+            );
+          })()}
         </div>
       </div>
 

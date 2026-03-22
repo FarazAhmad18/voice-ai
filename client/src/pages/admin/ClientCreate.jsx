@@ -1,7 +1,38 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createFirm, fetchTemplates } from '../../services/api';
-import { ArrowLeft, Plus, X, Rocket } from 'lucide-react';
+import { ArrowLeft, Plus, X, Rocket, Check, Crown, Zap, TrendingUp } from 'lucide-react';
+
+const PLANS = [
+  {
+    id: 'growth',
+    label: 'Growth',
+    price: '$899',
+    icon: TrendingUp,
+    color: 'blue',
+    description: 'For businesses ready to automate calls and never miss a lead.',
+    features: ['1,000 minutes/month', '1 AI voice agent', 'Full CRM dashboard', 'Lead tracking & scoring', 'Appointment booking', 'Custom agent script', 'Call transcripts', 'Email support'],
+  },
+  {
+    id: 'scale',
+    label: 'Scale',
+    price: '$1,499',
+    icon: Zap,
+    color: 'violet',
+    popular: true,
+    description: 'For growing teams that need multiple agents and deeper insights.',
+    features: ['3,000 minutes/month', '2 AI voice agents', 'Full CRM dashboard', 'Lead tracking & scoring', 'Appointment booking', 'Custom agent scripts', 'Call transcripts & analytics', 'Follow-up automation', 'Priority support'],
+  },
+  {
+    id: 'enterprise',
+    label: 'Enterprise',
+    price: 'Custom',
+    icon: Crown,
+    color: 'amber',
+    description: 'For large operations needing unlimited capacity and custom setup.',
+    features: ['Unlimited minutes', 'Unlimited AI agents', 'Full CRM dashboard', 'Lead tracking & scoring', 'Appointment booking', 'Custom agent scripts', 'Advanced analytics & reporting', 'Follow-up automation', 'Custom integrations', 'Dedicated account manager'],
+  },
+];
 
 const INDUSTRIES = [
   { value: 'legal', label: 'Legal / Law Firm' },
@@ -30,6 +61,7 @@ export default function ClientCreate() {
     agent_voice_id: '',
     prompt_template_id: '',
     brand_color: '#6d28d9',
+    plan: 'growth',
     admin_email: '',
     admin_name: '',
     admin_password: '',
@@ -243,6 +275,66 @@ export default function ClientCreate() {
               <input type="password" value={form.admin_password} onChange={e => updateForm('admin_password', e.target.value)}
                 className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200" placeholder="Minimum 6 characters" />
             </div>
+          </div>
+        </div>
+
+        {/* Plan Selection */}
+        <div className="bg-white rounded-2xl border border-slate-100 p-6 space-y-4">
+          <div>
+            <h3 className="text-sm font-semibold text-slate-800">Plan</h3>
+            <p className="text-xs text-slate-400 mt-0.5">Select the plan this client is on</p>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            {PLANS.map(plan => {
+              const Icon = plan.icon;
+              const selected = form.plan === plan.id;
+              const colorMap = {
+                blue:   { ring: 'ring-blue-500 border-blue-300', bg: 'bg-blue-600', badge: 'bg-blue-50 text-blue-600', icon: 'text-blue-500' },
+                violet: { ring: 'ring-violet-500 border-violet-300', bg: 'bg-violet-600', badge: 'bg-violet-50 text-violet-600', icon: 'text-violet-500' },
+                amber:  { ring: 'ring-amber-500 border-amber-300', bg: 'bg-amber-500', badge: 'bg-amber-50 text-amber-600', icon: 'text-amber-500' },
+              };
+              const c = colorMap[plan.color];
+              return (
+                <button
+                  key={plan.id}
+                  type="button"
+                  onClick={() => updateForm('plan', plan.id)}
+                  className={`relative text-left rounded-xl border-2 p-4 transition-all ${
+                    selected ? `${c.ring} ring-2 bg-slate-50` : 'border-slate-100 hover:border-slate-200'
+                  }`}
+                >
+                  {plan.popular && (
+                    <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-2.5 py-0.5 bg-violet-600 text-white text-[10px] font-bold rounded-full whitespace-nowrap">
+                      Most Popular
+                    </span>
+                  )}
+                  <div className="flex items-center justify-between mb-3">
+                    <Icon size={16} className={c.icon} />
+                    {selected && (
+                      <div className={`w-5 h-5 rounded-full ${c.bg} flex items-center justify-center`}>
+                        <Check size={11} className="text-white" />
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-sm font-bold text-slate-900">{plan.label}</p>
+                  <p className="text-base font-bold text-slate-900 mt-0.5">
+                    {plan.price}
+                    {plan.price !== 'Custom' && <span className="text-xs font-normal text-slate-400">/mo</span>}
+                  </p>
+                  <ul className="mt-3 space-y-1.5">
+                    {plan.features.slice(0, 4).map((f, i) => (
+                      <li key={i} className="flex items-start gap-1.5">
+                        <Check size={11} className={`${c.icon} mt-0.5 shrink-0`} />
+                        <span className="text-[11px] text-slate-500 leading-tight">{f}</span>
+                      </li>
+                    ))}
+                    {plan.features.length > 4 && (
+                      <li className="text-[11px] text-slate-400 pl-4">+{plan.features.length - 4} more</li>
+                    )}
+                  </ul>
+                </button>
+              );
+            })}
           </div>
         </div>
 
