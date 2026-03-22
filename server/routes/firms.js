@@ -158,7 +158,7 @@ router.post('/', async (req, res) => {
         prompt_template_id: prompt_template_id || null,
         brand_color: brand_color || '#6d28d9',
         status: 'active',
-        plan: 'free',
+        plan: 'growth',
       })
       .select()
       .single();

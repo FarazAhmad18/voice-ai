@@ -44,9 +44,8 @@ const INDUSTRY_COLORS = {
 };
 
 const PLAN_BADGES = {
-  free: { bg: 'bg-slate-50', text: 'text-slate-500', border: 'border-slate-100', icon: null },
-  starter: { bg: 'bg-blue-50', text: 'text-blue-600', border: 'border-blue-100', icon: null },
-  pro: { bg: 'bg-violet-50', text: 'text-violet-600', border: 'border-violet-100', icon: Crown },
+  growth: { bg: 'bg-blue-50', text: 'text-blue-600', border: 'border-blue-100', icon: null },
+  scale: { bg: 'bg-violet-50', text: 'text-violet-600', border: 'border-violet-100', icon: Crown },
   enterprise: { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-100', icon: Crown },
 };
 
@@ -269,7 +268,7 @@ export default function ClientList() {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {filtered.map((firm, idx) => {
             const ic = INDUSTRY_COLORS[firm.industry] || INDUSTRY_COLORS.other;
-            const pb = PLAN_BADGES[firm.plan || 'free'] || PLAN_BADGES.free;
+            const pb = PLAN_BADGES[firm.plan || 'growth'] || PLAN_BADGES.growth;
             const PlanIcon = pb.icon;
             const isActive = firm.status === 'active';
             const hasAgent = !!firm.retell_agent_id;
@@ -320,7 +319,7 @@ export default function ClientList() {
                     </span>
                     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold border ${pb.bg} ${pb.text} ${pb.border} capitalize`}>
                       {PlanIcon && <PlanIcon size={9} />}
-                      {firm.plan || 'free'}
+                      {firm.plan || 'growth'}
                     </span>
                     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold ${
                       hasAgent ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-slate-50 text-slate-400 border border-slate-100'

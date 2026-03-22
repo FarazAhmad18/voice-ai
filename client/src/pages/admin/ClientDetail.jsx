@@ -4,7 +4,7 @@ import { fetchFirm, updateFirm, fetchTemplates, syncFirmAgent, deployFirmAgent }
 import { ArrowLeft, Bot, Phone, Save, Users, BarChart3, Calendar, RefreshCw, Rocket, Check, AlertCircle } from 'lucide-react';
 
 const INDUSTRIES = ['legal', 'dental', 'plumbing', 'real_estate', 'medical', 'other'];
-const PLANS = ['free', 'starter', 'pro', 'enterprise'];
+const PLANS = ['growth', 'scale', 'enterprise'];
 const STATUSES = ['active', 'paused', 'cancelled'];
 
 export default function ClientDetail() {
@@ -26,7 +26,7 @@ export default function ClientDetail() {
   const [form, setForm] = useState({
     name: '', industry: 'legal', email: '', phone: '', address: '',
     website: '', business_hours: '', agent_name: '', agent_voice_id: '',
-    prompt_template_id: '', brand_color: '#6d28d9', status: 'active', plan: 'free',
+    prompt_template_id: '', brand_color: '#6d28d9', status: 'active', plan: 'growth',
   });
 
   useEffect(() => {
@@ -48,7 +48,7 @@ export default function ClientDetail() {
           prompt_template_id: firmData.prompt_template_id || '',
           brand_color: firmData.brand_color || '#6d28d9',
           status: firmData.status || 'active',
-          plan: firmData.plan || 'free',
+          plan: firmData.plan || 'growth',
         });
       } catch {
         // handled by null firm state

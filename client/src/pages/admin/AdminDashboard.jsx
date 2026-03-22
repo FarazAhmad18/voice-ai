@@ -87,7 +87,7 @@ function formatRelativeTime(dateStr) {
   return `${diffDay}d ago`;
 }
 
-const PLAN_PRICES = { free: 0, starter: 49, pro: 149, enterprise: 499 };
+const PLAN_PRICES = { growth: 899, scale: 1499, enterprise: 0 }; // enterprise = custom pricing
 
 const INDUSTRY_COLORS = {
   legal: { bg: 'bg-blue-500/10', text: 'text-blue-400', border: 'border-blue-500/20', dot: 'bg-blue-400' },
@@ -150,11 +150,11 @@ export default function AdminDashboard() {
   const totalStaff = firms.reduce((sum, f) => sum + (f._counts?.staff || 0), 0);
 
   // Revenue calculation
-  const planCounts = { free: 0, starter: 0, pro: 0, enterprise: 0 };
+  const planCounts = { growth: 0, scale: 0, enterprise: 0 };
   firms.forEach(f => {
-    const plan = f.plan || 'free';
+    const plan = f.plan || 'growth';
     if (planCounts[plan] !== undefined) planCounts[plan]++;
-    else planCounts.free++;
+    else planCounts.growth++;
   });
   const estimatedMRR = Object.entries(planCounts).reduce((sum, [plan, count]) => sum + (PLAN_PRICES[plan] || 0) * count, 0);
 
@@ -466,25 +466,26 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            <p className="text-3xl font-bold text-white mb-5 admin-number-pop tracking-tight">
+            <p className="text-3xl font-bold text-white mb-1 admin-number-pop tracking-tight">
               ${estimatedMRR.toLocaleString()}
               <span className="text-sm text-indigo-300/40 font-normal ml-1">/mo</span>
             </p>
+            {planCounts.enterprise > 0 && (
+              <p className="text-[10px] text-amber-400/60 mb-4">+ {planCounts.enterprise} enterprise (custom pricing)</p>
+            )}
+            {planCounts.enterprise === 0 && <div className="mb-5" />}
 
             <div className="space-y-2.5">
               {[
-                { plan: 'Enterprise', count: planCounts.enterprise, price: PLAN_PRICES.enterprise, color: 'bg-amber-400' },
-                { plan: 'Pro', count: planCounts.pro, price: PLAN_PRICES.pro, color: 'bg-violet-400' },
-                { plan: 'Starter', count: planCounts.starter, price: PLAN_PRICES.starter, color: 'bg-blue-400' },
-                { plan: 'Free', count: planCounts.free, price: PLAN_PRICES.free, color: 'bg-slate-500' },
+                { plan: 'Enterprise', count: planCounts.enterprise, label: 'Custom', color: 'bg-amber-400' },
+                { plan: 'Scale', count: planCounts.scale, label: '$1,499/mo', color: 'bg-violet-400' },
+                { plan: 'Growth', count: planCounts.growth, label: '$899/mo', color: 'bg-blue-400' },
               ].map(tier => (
                 <div key={tier.plan} className="flex items-center gap-3">
                   <div className={`w-2.5 h-2.5 rounded-[3px] flex-shrink-0 ${tier.color}`} />
                   <span className="text-[13px] text-indigo-200/70 flex-1">{tier.plan}</span>
                   <span className="text-[13px] font-bold text-white tabular-nums">{tier.count}</span>
-                  <span className="text-[11px] text-indigo-300/30 w-16 text-right tabular-nums">
-                    ${(tier.count * tier.price).toLocaleString()}
-                  </span>
+                  <span className="text-[11px] text-indigo-300/30 w-20 text-right tabular-nums">{tier.label}</span>
                 </div>
               ))}
             </div>
@@ -493,9 +494,8 @@ export default function AdminDashboard() {
             {firms.length > 0 && (
               <div className="flex h-2 rounded-full overflow-hidden bg-indigo-900/50 mt-5">
                 {planCounts.enterprise > 0 && <div className="bg-amber-400" style={{ width: `${(planCounts.enterprise / firms.length) * 100}%` }} />}
-                {planCounts.pro > 0 && <div className="bg-violet-400" style={{ width: `${(planCounts.pro / firms.length) * 100}%` }} />}
-                {planCounts.starter > 0 && <div className="bg-blue-400" style={{ width: `${(planCounts.starter / firms.length) * 100}%` }} />}
-                {planCounts.free > 0 && <div className="bg-slate-500" style={{ width: `${(planCounts.free / firms.length) * 100}%` }} />}
+                {planCounts.scale > 0 && <div className="bg-violet-400" style={{ width: `${(planCounts.scale / firms.length) * 100}%` }} />}
+                {planCounts.growth > 0 && <div className="bg-blue-400" style={{ width: `${(planCounts.growth / firms.length) * 100}%` }} />}
               </div>
             )}
           </div>

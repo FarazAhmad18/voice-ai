@@ -106,7 +106,7 @@ const SECTIONS = [
           'Edit company details, business hours, contact info',
           'Change agent name, voice ID, prompt template',
           'Change brand color',
-          'Change plan (free/starter/pro/enterprise) and status (active/paused/cancelled)',
+          'Change plan (growth/scale/enterprise) and status (active/paused/cancelled)',
           'Sync Agent — re-renders the prompt and pushes it to Retell (use after any change)',
           'Deploy Agent — if the firm was created without an agent, deploy one now',
         ],

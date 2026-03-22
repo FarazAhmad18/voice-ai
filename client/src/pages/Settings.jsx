@@ -705,14 +705,13 @@ export default function Settings() {
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-2.5">
-                <p className="text-base font-bold text-slate-900 capitalize">{firm.plan || 'Free'} Plan</p>
+                <p className="text-base font-bold text-slate-900 capitalize">{firm.plan || 'Growth'} Plan</p>
                 <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider ${
-                  firm.plan === 'enterprise' ? 'bg-gradient-to-r from-violet-500 to-purple-500 text-white' :
-                  firm.plan === 'pro' ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white' :
-                  firm.plan === 'starter' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white' :
-                  'bg-slate-100 text-slate-500'
+                  firm.plan === 'enterprise' ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white' :
+                  firm.plan === 'scale' ? 'bg-gradient-to-r from-violet-500 to-purple-500 text-white' :
+                  'bg-gradient-to-r from-blue-500 to-indigo-500 text-white'
                 }`}>
-                  {firm.plan || 'free'}
+                  {firm.plan || 'growth'}
                 </span>
               </div>
               <p className="text-xs text-slate-400 mt-1">Contact admin for plan changes</p>
