@@ -19,6 +19,7 @@ import ClientCreate from './pages/admin/ClientCreate';
 import ClientDetail from './pages/admin/ClientDetail';
 import TemplateList from './pages/admin/TemplateList';
 import Logs from './pages/admin/Logs';
+import Manual from './pages/admin/Manual';
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, isSuperAdmin, firm, loading } = useAuth();
@@ -74,6 +75,7 @@ function AppLayout() {
           <Route path="/admin/clients/:id" element={<AdminRoute><ClientDetail /></AdminRoute>} />
           <Route path="/admin/templates" element={<AdminRoute><TemplateList /></AdminRoute>} />
           <Route path="/admin/logs" element={<AdminRoute><Logs /></AdminRoute>} />
+          <Route path="/admin/manual" element={<AdminRoute><Manual /></AdminRoute>} />
         </Routes>
       </main>
     </div>

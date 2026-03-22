@@ -7,7 +7,7 @@ import { supabase } from '../services/supabase';
 import {
   LayoutDashboard, Users, UserCheck, Calendar, Settings, Phone,
   Building2, FileText, Activity, LogOut, Shield, Search, Bell,
-  Menu, X, ChevronDown, Command, Keyboard, Brain,
+  Menu, X, ChevronDown, Command, Keyboard, Brain, BookOpen,
 } from 'lucide-react';
 
 const clientNav = [
@@ -25,6 +25,7 @@ const adminNav = [
   { path: '/admin/clients', label: 'Clients', icon: Building2 },
   { path: '/admin/templates', label: 'Templates', icon: FileText },
   { path: '/admin/logs', label: 'Logs', icon: Activity },
+  { path: '/admin/manual', label: 'Manual', icon: BookOpen },
 ];
 
 export default function Navbar() {
