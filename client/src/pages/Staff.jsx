@@ -400,7 +400,7 @@ export default function Staff() {
 
                   {/* Actions */}
                   {isAdmin && (
-                    <div className="flex items-center gap-1 flex-shrink-0">
+                    <div className="flex items-center gap-1 flex-shrink-0 flex-col sm:flex-row">
                       <button
                         onClick={() => handleToggleActive(member)}
                         className={`p-2.5 rounded-xl transition-all ${
@@ -470,7 +470,7 @@ export default function Staff() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 mb-1.5">Role</label>
                   <input
@@ -493,7 +493,7 @@ export default function Staff() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 mb-1.5">Email</label>
                   <input

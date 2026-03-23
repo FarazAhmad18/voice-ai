@@ -228,7 +228,7 @@ export default function Appointments() {
       {/* Filters */}
       <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-slate-200/60 shadow-sm shadow-slate-100/50 p-5">
         <div className="flex items-center justify-between flex-wrap gap-3">
-          <div className="flex items-center gap-0.5 bg-slate-50 rounded-xl p-1">
+          <div className="flex items-center gap-0.5 bg-slate-50 rounded-xl p-1 overflow-x-auto">
             {STATUS_TABS.map((t) => {
               const count = t.key === 'all' ? appointments.length : appointments.filter((a) => a.status === t.key).length;
               const isActive = tab === t.key;
@@ -331,7 +331,7 @@ export default function Appointments() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-2 flex-shrink-0">
+                  <div className="flex items-center gap-2 flex-shrink-0 flex-col sm:flex-row">
                     {apt.status === 'confirmed' && (
                       <>
                         <button

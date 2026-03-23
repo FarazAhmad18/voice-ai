@@ -326,7 +326,7 @@ export default function Navbar() {
               </button>
 
               {/* Notification dropdown with animation */}
-              <div className={`absolute right-0 top-[calc(100%+8px)] w-[360px] bg-white rounded-xl shadow-xl shadow-zinc-200/50 border border-zinc-200/80 z-50 overflow-hidden transition-all duration-200 origin-top-right ${
+              <div className={`absolute right-0 top-[calc(100%+8px)] w-[calc(100vw-2rem)] sm:w-[360px] max-w-[360px] bg-white rounded-xl shadow-xl shadow-zinc-200/50 border border-zinc-200/80 z-50 overflow-hidden transition-all duration-200 origin-top-right ${
                 notifOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
               }`}>
                 <div className="px-4 py-3.5 border-b border-zinc-100 flex items-center justify-between">
@@ -391,7 +391,7 @@ export default function Navbar() {
               </button>
 
               {/* User dropdown with animation */}
-              <div className={`absolute right-0 top-[calc(100%+8px)] w-64 bg-white rounded-xl shadow-xl shadow-zinc-200/50 border border-zinc-200/80 z-50 overflow-hidden transition-all duration-200 origin-top-right ${
+              <div className={`absolute right-0 top-[calc(100%+8px)] w-[calc(100vw-2rem)] sm:w-64 max-w-[264px] bg-white rounded-xl shadow-xl shadow-zinc-200/50 border border-zinc-200/80 z-50 overflow-hidden transition-all duration-200 origin-top-right ${
                 userMenuOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
               }`}>
                 <div className="px-4 py-3.5 border-b border-zinc-100">

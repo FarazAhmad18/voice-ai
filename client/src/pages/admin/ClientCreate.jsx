@@ -140,8 +140,8 @@ export default function ClientCreate() {
         <div className="bg-white rounded-2xl border border-slate-100 p-6 space-y-4">
           <h3 className="text-sm font-semibold text-slate-800">Company Information</h3>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="col-span-1 sm:col-span-2">
               <label className="block text-xs font-medium text-slate-400 mb-1.5">Company Name *</label>
               <input type="text" required value={form.name} onChange={e => updateForm('name', e.target.value)}
                 className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200" placeholder="Bright Smile Dental" />
@@ -172,7 +172,7 @@ export default function ClientCreate() {
               <input type="tel" value={form.phone} onChange={e => updateForm('phone', e.target.value)}
                 className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200" placeholder="+1 425-555-0100" />
             </div>
-            <div className="col-span-2">
+            <div className="col-span-1 sm:col-span-2">
               <label className="block text-xs font-medium text-slate-400 mb-1.5">Address</label>
               <input type="text" value={form.address} onChange={e => updateForm('address', e.target.value)}
                 className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200" placeholder="123 Main St, Suite 200" />
@@ -194,7 +194,7 @@ export default function ClientCreate() {
         <div className="bg-white rounded-2xl border border-slate-100 p-6 space-y-4">
           <h3 className="text-sm font-semibold text-slate-800">AI Agent Configuration</h3>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-slate-400 mb-1.5">Agent Name</label>
               <input type="text" value={form.agent_name} onChange={e => updateForm('agent_name', e.target.value)}
@@ -259,7 +259,7 @@ export default function ClientCreate() {
           <h3 className="text-sm font-semibold text-slate-800">Client Admin Login</h3>
           <p className="text-xs text-slate-400">Create a login account for this client to access their dashboard.</p>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-slate-400 mb-1.5">Admin Email</label>
               <input type="email" value={form.admin_email} onChange={e => updateForm('admin_email', e.target.value)}
@@ -270,7 +270,7 @@ export default function ClientCreate() {
               <input type="text" value={form.admin_name} onChange={e => updateForm('admin_name', e.target.value)}
                 className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200" placeholder="Dr. Chen" />
             </div>
-            <div className="col-span-2">
+            <div className="col-span-1 sm:col-span-2">
               <label className="block text-xs font-medium text-slate-400 mb-1.5">Password</label>
               <input type="password" value={form.admin_password} onChange={e => updateForm('admin_password', e.target.value)}
                 className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200" placeholder="Minimum 6 characters" />
@@ -284,7 +284,7 @@ export default function ClientCreate() {
             <h3 className="text-sm font-semibold text-slate-800">Plan</h3>
             <p className="text-xs text-slate-400 mt-0.5">Select the plan this client is on</p>
           </div>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {PLANS.map(plan => {
               const Icon = plan.icon;
               const selected = form.plan === plan.id;

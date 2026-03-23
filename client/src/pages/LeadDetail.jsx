@@ -358,7 +358,7 @@ export default function LeadDetail() {
         </div>
 
         {/* Pipeline Stepper */}
-        <div className="px-6 py-5 bg-slate-50/50 border-t border-slate-100">
+        <div className="px-6 py-5 bg-slate-50/50 border-t border-slate-100 overflow-x-auto">
           <div className="flex items-center">
             {STATUS_FLOW.map((stage, idx) => {
               const isActive = lead.status === stage.key;

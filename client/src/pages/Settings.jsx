@@ -140,7 +140,7 @@ export default function Settings() {
             <div className="p-6 space-y-4">
               <div className="h-4 w-32 settings-shimmer rounded" />
               <div className="h-10 settings-shimmer rounded-xl" />
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="h-10 settings-shimmer rounded-xl" />
                 <div className="h-10 settings-shimmer rounded-xl" />
               </div>
@@ -222,7 +222,7 @@ export default function Settings() {
               className="w-full px-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white disabled:opacity-50 transition-all"
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 mb-1.5">
                 <Mail size={10} className="text-slate-400" />
@@ -264,7 +264,7 @@ export default function Settings() {
               className="w-full px-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white placeholder:text-slate-300 disabled:opacity-50 transition-all"
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 mb-1.5">
                 <Globe size={10} className="text-slate-400" />
@@ -355,7 +355,7 @@ export default function Settings() {
             <p className="text-xs text-slate-500 leading-relaxed">
               Paste your Retell Agent ID and LLM ID below. Clicking <strong>Sync Now</strong> will push your current staff list and knowledge base into the AI agent's prompt.
             </p>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-1.5">Agent ID</label>
                 <input

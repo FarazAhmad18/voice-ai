@@ -183,7 +183,7 @@ export default function TemplateList() {
               <button onClick={cancel} className="p-1 text-slate-400 hover:text-slate-600"><X size={16} /></button>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-medium text-slate-400 mb-1.5">Name</label>
                 <input type="text" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
@@ -354,7 +354,7 @@ export default function TemplateList() {
               {previewResult && (
                 <div className="space-y-4">
                   {/* Stats row */}
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div className="bg-slate-50 rounded-xl px-4 py-3 text-center">
                       <p className="text-lg font-semibold text-slate-800">{previewResult.prompt_length.toLocaleString()}</p>
                       <p className="text-xs text-slate-400 mt-0.5">characters</p>

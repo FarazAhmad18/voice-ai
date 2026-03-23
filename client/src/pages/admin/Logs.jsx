@@ -207,7 +207,7 @@ export default function Logs() {
 
         {/* Filter Bar */}
         <div className="bg-[#161b22] border-b border-[#30363d] px-5 py-2.5">
-          <div className="flex items-center gap-2.5 max-w-7xl mx-auto">
+          <div className="flex items-center gap-2.5 max-w-7xl mx-auto overflow-x-auto">
             {/* Category dropdown */}
             <div className="relative" ref={categoryRef}>
               <button

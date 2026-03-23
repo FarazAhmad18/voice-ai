@@ -160,7 +160,7 @@ export default function ClientDetail() {
       )}
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {[
           { icon: BarChart3, color: 'blue', count: firm._counts?.leads || 0, label: 'Leads' },
           { icon: Calendar, color: 'violet', count: firm._counts?.appointments || 0, label: 'Appointments' },
@@ -185,7 +185,7 @@ export default function ClientDetail() {
           {/* Company Details */}
           <div className="bg-white rounded-2xl border border-slate-100 p-6 space-y-4">
             <h3 className="text-sm font-semibold text-slate-800">Company Details</h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Name" value={form.name} onChange={v => setForm(p => ({ ...p, name: v }))} />
               <div>
                 <label className="block text-xs font-medium text-slate-400 mb-1.5">Industry</label>
@@ -196,7 +196,7 @@ export default function ClientDetail() {
               </div>
               <Field label="Email" value={form.email} onChange={v => setForm(p => ({ ...p, email: v }))} />
               <Field label="Phone" value={form.phone} onChange={v => setForm(p => ({ ...p, phone: v }))} />
-              <div className="col-span-2">
+              <div className="col-span-1 sm:col-span-2">
                 <Field label="Address" value={form.address} onChange={v => setForm(p => ({ ...p, address: v }))} />
               </div>
               <Field label="Website" value={form.website} onChange={v => setForm(p => ({ ...p, website: v }))} />
@@ -207,10 +207,10 @@ export default function ClientDetail() {
           {/* AI Agent Config */}
           <div className="bg-white rounded-2xl border border-slate-100 p-6 space-y-4">
             <h3 className="text-sm font-semibold text-slate-800">AI Agent Configuration</h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Agent Name" value={form.agent_name} onChange={v => setForm(p => ({ ...p, agent_name: v }))} placeholder="Sarah" />
               <Field label="Voice ID" value={form.agent_voice_id} onChange={v => setForm(p => ({ ...p, agent_voice_id: v }))} placeholder="retell-Cimo" />
-              <div className="col-span-2">
+              <div className="col-span-1 sm:col-span-2">
                 <label className="block text-xs font-medium text-slate-400 mb-1.5">Prompt Template</label>
                 <select value={form.prompt_template_id} onChange={e => setForm(p => ({ ...p, prompt_template_id: e.target.value }))}
                   className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200">

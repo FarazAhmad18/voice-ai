@@ -381,7 +381,7 @@ export default function Leads() {
           <DateFilter value={dateRange} onChange={setDateRange} />
         </div>
 
-        <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center justify-between gap-3 flex-wrap overflow-x-auto">
           {/* Pipeline tabs with slide indicator */}
           <div ref={pipelineRef} className="relative flex items-center gap-0.5 bg-slate-50 rounded-xl p-1">
             {/* Sliding active indicator */}
