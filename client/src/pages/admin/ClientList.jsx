@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchFirms, updateFirm } from '../../services/api';
 import { toast } from 'sonner';
+import ConfirmModal from '../../components/ConfirmModal';
 import {
   Building2, Search, Plus, ChevronRight, Users, Phone, Eye,
   Pencil, Pause, Play, Sparkles, Globe, TrendingUp,
@@ -56,6 +57,7 @@ export default function ClientList() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [industryFilter, setIndustryFilter] = useState('all');
   const [toggling, setToggling] = useState(null);
+  const [confirmToggle, setConfirmToggle] = useState(null); // { firm }
 
   useEffect(() => {
     async function load() {
@@ -85,6 +87,7 @@ export default function ClientList() {
   async function handleToggleStatus(firm) {
     const newStatus = firm.status === 'active' ? 'paused' : 'active';
     setToggling(firm.id);
+    setConfirmToggle(null);
     try {
       await updateFirm(firm.id, { status: newStatus });
       setFirms(prev => prev.map(f => f.id === firm.id ? { ...f, status: newStatus } : f));
@@ -111,8 +114,25 @@ export default function ClientList() {
 
   const hasActiveFilters = statusFilter !== 'all' || industryFilter !== 'all' || search;
 
+  const confirmFirm = confirmToggle?.firm;
+
   return (
     <div className="max-w-[1400px] mx-auto space-y-5">
+
+      <ConfirmModal
+        open={!!confirmToggle}
+        onCancel={() => setConfirmToggle(null)}
+        onConfirm={() => handleToggleStatus(confirmFirm)}
+        loading={toggling === confirmFirm?.id}
+        danger={confirmFirm?.status === 'active'}
+        title={confirmFirm?.status === 'active' ? `Pause ${confirmFirm?.name}?` : `Activate ${confirmFirm?.name}?`}
+        message={
+          confirmFirm?.status === 'active'
+            ? 'The AI agent will stop routing new calls. Existing data is preserved.'
+            : 'The client will be reactivated and the AI agent will resume handling calls.'
+        }
+        confirmLabel={confirmFirm?.status === 'active' ? 'Pause Client' : 'Activate Client'}
+      />
 
       {/* ── Platform Stats Bar ── */}
       <div className="bg-gradient-to-r from-indigo-950 via-slate-900 to-indigo-950 rounded-2xl p-5 flex flex-wrap items-center gap-6 border border-indigo-900/30">
@@ -362,7 +382,7 @@ export default function ClientList() {
                       <Pencil size={12} /> Edit
                     </Link>
                     <button
-                      onClick={() => handleToggleStatus(firm)}
+                      onClick={() => setConfirmToggle({ firm })}
                       disabled={toggling === firm.id}
                       className={`flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg transition-colors ${
                         isActive

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { fetchKnowledge, createKnowledge, updateKnowledge, deleteKnowledge } from '../services/api';
 import { toast } from 'sonner';
+import ConfirmModal from '../components/ConfirmModal';
 import {
   Brain, Plus, Search, Edit3, Trash2, GripVertical,
   ToggleLeft, ToggleRight, MessageCircleQuestion, Sparkles,
@@ -89,6 +90,7 @@ export default function Knowledge() {
   const [form, setForm] = useState({ ...EMPTY_FORM });
   const [submitting, setSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+  const [confirmDeleteEntry, setConfirmDeleteEntry] = useState(null); // entry to delete
   const [togglingId, setTogglingId] = useState(null);
   const answerRef = useRef(null);
 
@@ -229,6 +231,17 @@ export default function Knowledge() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+      <ConfirmModal
+        open={!!confirmDeleteEntry}
+        onCancel={() => setConfirmDeleteEntry(null)}
+        onConfirm={() => { handleDelete(confirmDeleteEntry.id); setConfirmDeleteEntry(null); }}
+        loading={deletingId === confirmDeleteEntry?.id}
+        danger
+        title="Delete knowledge entry?"
+        message="This entry will be permanently removed from the AI knowledge base."
+        confirmLabel="Delete"
+      />
+
       {/* Header */}
       <div className="knowledge-fade-in-up" style={{ animationDelay: '0ms' }}>
         <div className="bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700 rounded-2xl shadow-lg shadow-violet-200/50 px-8 py-7 relative overflow-hidden">
@@ -511,11 +524,7 @@ export default function Knowledge() {
                           <Edit3 size={14} />
                         </button>
                         <button
-                          onClick={() => {
-                            if (confirm('Are you sure you want to delete this entry?')) {
-                              handleDelete(entry.id);
-                            }
-                          }}
+                          onClick={() => setConfirmDeleteEntry(entry)}
                           disabled={deletingId === entry.id}
                           className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all disabled:opacity-50"
                           title="Delete"

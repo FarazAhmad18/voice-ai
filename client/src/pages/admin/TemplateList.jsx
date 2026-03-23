@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { fetchTemplates, createTemplate, updateTemplate, deleteTemplate, fetchFirms, previewTemplate as renderTemplatePreview } from '../../services/api';
 import { FileText, Plus, Edit3, Trash2, X, Save, ChevronDown, ChevronUp, Eye, Copy, Check, AlertCircle } from 'lucide-react';
+import ConfirmModal from '../../components/ConfirmModal';
 
 export default function TemplateList() {
   const [templates, setTemplates] = useState([]);
@@ -10,6 +11,8 @@ export default function TemplateList() {
   const [creating, setCreating] = useState(false);
   const [expanded, setExpanded] = useState(null);
   const [error, setError] = useState('');
+  const [confirmDeleteTemplate, setConfirmDeleteTemplate] = useState(null); // template to delete
+  const [deletingTemplate, setDeletingTemplate] = useState(false);
 
   // Preview state
   const [previewTemplateData, setPreviewTemplateState] = useState(null); // template being previewed
@@ -82,14 +85,17 @@ export default function TemplateList() {
     }
   }
 
-  async function handleDelete(id) {
-    if (!confirm('Delete this template?')) return;
+  async function handleDelete(tmpl) {
+    setDeletingTemplate(true);
+    setConfirmDeleteTemplate(null);
     setError('');
     try {
-      await deleteTemplate(id);
+      await deleteTemplate(tmpl.id);
       await loadAll();
     } catch (err) {
       setError(err.message || 'Failed to delete template');
+    } finally {
+      setDeletingTemplate(false);
     }
   }
 
@@ -140,6 +146,17 @@ export default function TemplateList() {
 
   return (
     <>
+      <ConfirmModal
+        open={!!confirmDeleteTemplate}
+        onCancel={() => setConfirmDeleteTemplate(null)}
+        onConfirm={() => handleDelete(confirmDeleteTemplate)}
+        loading={deletingTemplate}
+        danger
+        title={`Delete "${confirmDeleteTemplate?.name}"?`}
+        message="This prompt template will be permanently deleted. Clients using it will not be affected until their next prompt re-render."
+        confirmLabel="Delete Template"
+      />
+
       <div className="max-w-4xl mx-auto space-y-5">
         <div className="flex items-center justify-between">
           <div>
@@ -243,7 +260,7 @@ export default function TemplateList() {
                       className="p-2 text-slate-400 hover:text-blue-600 transition-colors">
                       <Edit3 size={14} />
                     </button>
-                    <button onClick={(e) => { e.stopPropagation(); handleDelete(t.id); }}
+                    <button onClick={(e) => { e.stopPropagation(); setConfirmDeleteTemplate(t); }}
                       className="p-2 text-slate-400 hover:text-red-500 transition-colors">
                       <Trash2 size={14} />
                     </button>

@@ -4,6 +4,7 @@ import { fetchAppointments, updateAppointment } from '../services/api';
 import { toast } from 'sonner';
 import DateFilter from '../components/DateFilter';
 import StatusBadge from '../components/StatusBadge';
+import ConfirmModal from '../components/ConfirmModal';
 import { CalendarCheck, Clock, Phone, User, ChevronRight, CheckCircle, XCircle, AlertCircle, Calendar, Users } from 'lucide-react';
 
 /* ─── Inject keyframe styles once ─── */
@@ -68,6 +69,7 @@ export default function Appointments() {
   const [tab, setTab] = useState('all');
   const [dateRange, setDateRange] = useState('all');
   const [actionLoading, setActionLoading] = useState(null);
+  const [confirmCancel, setConfirmCancel] = useState(null); // appointment to cancel
 
   async function loadAppointments() {
     setError(null);
@@ -170,6 +172,17 @@ export default function Appointments() {
 
   return (
     <div className="space-y-6">
+      <ConfirmModal
+        open={!!confirmCancel}
+        onCancel={() => setConfirmCancel(null)}
+        onConfirm={() => { handleStatusChange(confirmCancel.id, 'cancelled'); setConfirmCancel(null); }}
+        loading={actionLoading === confirmCancel?.id + 'cancelled'}
+        danger
+        title={`Cancel appointment?`}
+        message={confirmCancel ? `Cancel the appointment for ${confirmCancel.caller_name || 'this client'} on ${confirmCancel.appointment_date} at ${confirmCancel.appointment_time}? This cannot be undone.` : ''}
+        confirmLabel="Cancel Appointment"
+      />
+
       {error && (
         <div className="bg-red-50/80 backdrop-blur-sm border border-red-100 rounded-2xl px-5 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -334,7 +347,7 @@ export default function Appointments() {
                           Complete
                         </button>
                         <button
-                          onClick={() => handleStatusChange(apt.id, 'cancelled')}
+                          onClick={() => setConfirmCancel(apt)}
                           disabled={actionLoading === apt.id + 'cancelled'}
                           className="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold text-red-600 bg-red-50 rounded-xl hover:bg-red-100 transition-all ring-1 ring-red-200/60 disabled:opacity-50"
                         >

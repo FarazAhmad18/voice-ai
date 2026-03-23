@@ -122,7 +122,7 @@ router.post('/', async (req, res) => {
   const {
     name, industry, email, phone, address, website,
     business_hours, agent_name, agent_voice_id,
-    prompt_template_id, brand_color,
+    prompt_template_id, brand_color, plan,
     staff: staffList,
     admin_email, admin_name, admin_password,
     deploy_agent, area_code,
@@ -158,7 +158,7 @@ router.post('/', async (req, res) => {
         prompt_template_id: prompt_template_id || null,
         brand_color: brand_color || '#6d28d9',
         status: 'active',
-        plan: 'growth',
+        plan: ['growth', 'scale', 'enterprise'].includes(plan) ? plan : 'growth',
       })
       .select()
       .single();
@@ -276,56 +276,83 @@ router.post('/', async (req, res) => {
 
 // PATCH /api/firms/:id — update client
 router.patch('/:id', validateBody(FIRM_UPDATABLE), async (req, res) => {
-  if (!supabase) return res.status(500).json({ error: 'Database not configured' });
+  const firmId = req.params.id;
+  const userId = req.user?.id;
 
-  // Sanitize text fields to prevent XSS
-  const sanitizedBody = { ...req.body };
-  if (sanitizedBody.name) sanitizedBody.name = sanitizeText(sanitizedBody.name, 200);
-  if (sanitizedBody.agent_name) sanitizedBody.agent_name = sanitizeText(sanitizedBody.agent_name, 100);
-  if (sanitizedBody.address) sanitizedBody.address = sanitizeText(sanitizedBody.address, 500);
-  if (sanitizedBody.business_hours) sanitizedBody.business_hours = sanitizeText(sanitizedBody.business_hours, 200);
-
-  const { data, error } = await supabase
-    .from('firms')
-    .update(sanitizedBody)
-    .eq('id', req.params.id)
-    .select()
-    .single();
-
-  if (error) {
-    logger.error('database', `Failed to update firm: ${error.message}`, {
-      firmId: req.params.id,
-      userId: req.user.id,
-      source: 'routes.firms.patch',
-    });
-    return res.status(500).json({ error: 'Failed to update client. Please try again.' });
-  }
-  if (!data) return res.status(404).json({ error: 'Firm not found' });
-
-  // FIX 3: Strip sensitive fields before logging
-  const safeDetails = { ...req.body };
-  delete safeDetails.admin_password;
-  delete safeDetails.crm_api_key;
-  delete safeDetails.crm_access_token;
-
-  logger.info('admin', `Client updated: ${data.name}`, {
-    firmId: data.id,
-    userId: req.user.id,
-    details: safeDetails,
-    source: 'routes.firms.patch',
+  console.log(`[PATCH /firms/${firmId}] START — body:`, JSON.stringify(req.body), '| user:', userId);
+  logger.info('admin', `PATCH firm started: ${firmId}`, {
+    firmId, userId, details: { body: req.body }, source: 'routes.firms.patch',
   });
 
-  // Re-render prompt if template or relevant fields changed
-  const promptFields = ['prompt_template_id', 'agent_name', 'business_hours', 'name', 'phone', 'address'];
-  if (promptFields.some(f => req.body[f] !== undefined)) {
-    await reRenderFirmPrompt(data.id);
-    // Update Retell agent if deployed
-    if (data.retell_agent_id) {
-      try { await updateFirmAgent(data.id); } catch (e) { /* logged inside */ }
-    }
+  if (!supabase) {
+    console.error(`[PATCH /firms/${firmId}] FAIL — supabase not configured`);
+    return res.status(500).json({ error: 'Database not configured' });
   }
 
-  res.json(data);
+  try {
+    // Sanitize text fields to prevent XSS
+    const sanitizedBody = { ...req.body };
+    if (sanitizedBody.name) sanitizedBody.name = sanitizeText(sanitizedBody.name, 200);
+    if (sanitizedBody.agent_name) sanitizedBody.agent_name = sanitizeText(sanitizedBody.agent_name, 100);
+    if (sanitizedBody.address) sanitizedBody.address = sanitizeText(sanitizedBody.address, 500);
+    if (sanitizedBody.business_hours) sanitizedBody.business_hours = sanitizeText(sanitizedBody.business_hours, 200);
+
+    console.log(`[PATCH /firms/${firmId}] calling supabase update with:`, JSON.stringify(sanitizedBody));
+
+    const { data, error } = await supabase
+      .from('firms')
+      .update(sanitizedBody)
+      .eq('id', firmId)
+      .select()
+      .single();
+
+    console.log(`[PATCH /firms/${firmId}] supabase result — error:`, error?.message || null, '| data:', data ? data.id : null);
+
+    if (error) {
+      logger.error('database', `Supabase update failed for firm ${firmId}: ${error.message}`, {
+        firmId, userId,
+        details: { code: error.code, hint: error.hint, details: error.details, body: sanitizedBody },
+        source: 'routes.firms.patch',
+      });
+      return res.status(500).json({ error: 'Failed to update client. Please try again.' });
+    }
+
+    if (!data) {
+      console.warn(`[PATCH /firms/${firmId}] no data returned — firm not found`);
+      return res.status(404).json({ error: 'Firm not found' });
+    }
+
+    const safeDetails = { ...req.body };
+    delete safeDetails.crm_api_key;
+    delete safeDetails.crm_access_token;
+
+    logger.info('admin', `Client updated: ${data.name} (${Object.keys(sanitizedBody).join(', ')})`, {
+      firmId: data.id, userId,
+      details: safeDetails,
+      source: 'routes.firms.patch',
+    });
+
+    // Re-render prompt if template or relevant fields changed
+    const promptFields = ['prompt_template_id', 'agent_name', 'business_hours', 'name', 'phone', 'address'];
+    if (promptFields.some(f => req.body[f] !== undefined)) {
+      console.log(`[PATCH /firms/${firmId}] re-rendering prompt...`);
+      await reRenderFirmPrompt(data.id);
+      if (data.retell_agent_id) {
+        try { await updateFirmAgent(data.id); } catch (e) { /* logged inside */ }
+      }
+    }
+
+    console.log(`[PATCH /firms/${firmId}] SUCCESS — sending response`);
+    res.json(data);
+  } catch (err) {
+    console.error(`[PATCH /firms/${firmId}] CAUGHT ERROR:`, err.message, err.stack);
+    logger.error('database', `Unexpected error updating firm ${firmId}: ${err.message}`, {
+      firmId, userId,
+      details: { error: err.message, stack: err.stack, body: req.body },
+      source: 'routes.firms.patch',
+    });
+    res.status(500).json({ error: 'Failed to update client. Please try again.' });
+  }
 });
 
 // POST /api/firms/:id/sync-agent — re-render prompt and push to Retell

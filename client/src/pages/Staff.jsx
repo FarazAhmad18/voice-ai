@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useFirm } from '../context/FirmContext';
 import { fetchStaff, createStaff, updateStaff, deleteStaff } from '../services/api';
 import { toast } from 'sonner';
+import ConfirmModal from '../components/ConfirmModal';
 import {
   Plus, X, Pencil, Trash2, UserCheck, UserX, Search,
   Mail, Phone, Briefcase, Shield, Users, Sparkles,
@@ -85,6 +86,8 @@ export default function Staff() {
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(null); // staff member to delete
+  const [deleting, setDeleting] = useState(false);
 
   const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
 
@@ -165,13 +168,16 @@ export default function Staff() {
   }
 
   async function handleDelete(member) {
-    if (!window.confirm(`Remove ${member.name} from the team?`)) return;
+    setDeleting(true);
+    setConfirmDelete(null);
     try {
       await deleteStaff(member.id);
       setStaff(prev => prev.filter(s => s.id !== member.id));
       toast.success(`${member.name} removed`);
     } catch (err) {
       toast.error(err.message || 'Failed to remove staff member');
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -227,6 +233,17 @@ export default function Staff() {
 
   return (
     <div className="space-y-6">
+      <ConfirmModal
+        open={!!confirmDelete}
+        onCancel={() => setConfirmDelete(null)}
+        onConfirm={() => handleDelete(confirmDelete)}
+        loading={deleting}
+        danger
+        title={`Remove ${confirmDelete?.name}?`}
+        message="This team member will be removed. The AI agent prompt will be updated automatically."
+        confirmLabel="Remove"
+      />
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
@@ -403,7 +420,7 @@ export default function Staff() {
                         <Pencil size={15} />
                       </button>
                       <button
-                        onClick={() => handleDelete(member)}
+                        onClick={() => setConfirmDelete(member)}
                         className="p-2.5 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 hover:shadow-sm transition-all"
                         title="Remove"
                       >
