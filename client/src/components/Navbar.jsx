@@ -13,11 +13,9 @@ import {
 const clientNav = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/leads', label: 'Leads', icon: Users },
-  { path: '/follow-ups', label: 'Follow Ups', icon: UserCheck },
-  { path: '/staff', label: 'Staff', icon: Users, adminOnly: true },
-  { path: '/knowledge', label: 'AI Knowledge', icon: Brain, adminOnly: true },
   { path: '/appointments', label: 'Appointments', icon: Calendar },
-  { path: '/settings', label: 'Settings', icon: Settings },
+  { path: '/staff', label: 'Staff', icon: Users, adminOnly: true },
+  { path: '/settings', label: 'Settings', icon: Settings, adminOnly: true },
 ];
 
 const adminNav = [
@@ -405,24 +403,10 @@ export default function Navbar() {
                   <Link
                     to="/settings"
                     onClick={() => setUserMenuOpen(false)}
-                    className="flex items-center justify-between px-4 py-2.5 text-sm text-zinc-600 hover:bg-zinc-50 transition-colors duration-150"
+                    className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-zinc-600 hover:bg-zinc-50 transition-colors duration-150"
                   >
-                    <span className="flex items-center gap-2.5">
-                      <Settings size={15} className="text-zinc-400" />
-                      Settings
-                    </span>
-                    <kbd className="text-[10px] text-zinc-300 font-mono">,</kbd>
-                  </Link>
-                  <Link
-                    to={isSuperAdmin ? '/admin' : '/'}
-                    onClick={() => setUserMenuOpen(false)}
-                    className="flex items-center justify-between px-4 py-2.5 text-sm text-zinc-600 hover:bg-zinc-50 transition-colors duration-150"
-                  >
-                    <span className="flex items-center gap-2.5">
-                      <Keyboard size={15} className="text-zinc-400" />
-                      Keyboard shortcuts
-                    </span>
-                    <kbd className="text-[10px] text-zinc-300 font-mono">?</kbd>
+                    <Settings size={15} className="text-zinc-400" />
+                    Settings
                   </Link>
                 </div>
                 <div className="border-t border-zinc-100 py-1">
