@@ -55,6 +55,7 @@ export default function AppointmentCalendar({ appointments = [] }) {
 
   return (
     <div className="bg-white rounded-2xl border border-slate-100/80 shadow-sm overflow-hidden">
+      <div className="flex-1 min-w-0">
       {/* Header */}
       <div className="px-6 py-5 flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -83,7 +84,7 @@ export default function AppointmentCalendar({ appointments = [] }) {
         </div>
       </div>
 
-      <div className="flex">
+      <div className="flex flex-col lg:flex-row">
         {/* Calendar Grid */}
         <div className={`${selectedDay ? 'flex-1' : 'w-full'} transition-all duration-300`}>
           {/* Day headers */}
@@ -172,7 +173,7 @@ export default function AppointmentCalendar({ appointments = [] }) {
 
         {/* Side Panel — Appointment Details */}
         {selectedDay && (
-          <div className="w-80 border-l border-slate-100 bg-slate-50/50 flex flex-col animate-slideIn">
+          <div className="w-full lg:w-80 max-h-[400px] lg:max-h-none border-t lg:border-t-0 lg:border-l border-slate-100 bg-slate-50/50 flex flex-col animate-slideIn overflow-y-auto">
             {/* Panel Header */}
             <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-white">
               <div>
@@ -254,6 +255,7 @@ export default function AppointmentCalendar({ appointments = [] }) {
             </div>
           </div>
         )}
+      </div>
       </div>
 
       <style>{`
