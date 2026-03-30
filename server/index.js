@@ -42,8 +42,9 @@ if (isProduction && !process.env.FRONTEND_URL) {
   process.exit(1);
 }
 
+const frontendUrl = (process.env.FRONTEND_URL || '').trim().replace(/\/+$/, '');
 const allowedOrigins = isProduction
-  ? [process.env.FRONTEND_URL]
+  ? [frontendUrl]
   : [
       'http://localhost:5173',
       'http://localhost:5174',
@@ -51,7 +52,7 @@ const allowedOrigins = isProduction
       'http://127.0.0.1:5173',
       'http://127.0.0.1:5174',
       'http://127.0.0.1:3000',
-      ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
+      ...(frontendUrl ? [frontendUrl] : []),
     ];
 
 app.use(cors({
@@ -61,9 +62,11 @@ app.use(cors({
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
-    callback(new Error('Not allowed by CORS'));
+    logger.warn('system', `CORS blocked origin: ${origin}`, { details: { origin, allowed: allowedOrigins } });
+    callback(null, false);
   },
-  methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+  methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
 }));
 
