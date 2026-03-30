@@ -55,20 +55,22 @@ const allowedOrigins = isProduction
       ...(frontendUrl ? [frontendUrl] : []),
     ];
 
-app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (mobile apps, curl, server-to-server)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    logger.warn('system', `CORS blocked origin: ${origin}`, { details: { origin, allowed: allowedOrigins } });
-    callback(null, false);
-  },
-  methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
-}));
+// Log allowed origins on startup for debugging
+logger.info('system', `CORS allowed origins: ${JSON.stringify(allowedOrigins)}`);
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin && allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  }
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
+  next();
+});
 
 // --- Security headers ---
 app.use((req, res, next) => {
