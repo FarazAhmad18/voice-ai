@@ -152,11 +152,25 @@ async function handleCallEnded(call) {
   }
 
   // Find if this caller booked an appointment during the call
-  // First try by phone, then fall back to most recent unlinked appointment for this firm (handles Test Chat / unknown phone)
+  // Strategy: 1) retell_call_id on appointments table (100% reliable, survives restarts)
+  //           2) Phone number match (for appointments booked outside this call)
+  //           3) Fallback: recent unlinked appointment for this firm
   let recentAppointment = null;
-  const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
 
-  if (callerPhone && callerPhone !== 'unknown') {
+  // 1. Direct lookup by retell_call_id — the appointment was tagged with this call's ID
+  if (call.call_id) {
+    const { data: aptByCallId } = await supabase
+      .from('appointments')
+      .select('*')
+      .eq('retell_call_id', call.call_id)
+      .eq('firm_id', firmId)
+      .limit(1)
+      .maybeSingle();
+    recentAppointment = aptByCallId || null;
+  }
+
+  // 2. Phone number match
+  if (!recentAppointment && callerPhone && callerPhone !== 'unknown') {
     const { data: aptByPhone } = await supabase
       .from('appointments')
       .select('*')
@@ -167,14 +181,15 @@ async function handleCallEnded(call) {
     recentAppointment = aptByPhone?.[0] || null;
   }
 
-  // Fallback: find most recent unlinked appointment for this firm in last 5 minutes
+  // 3. Fallback: recent unlinked appointment for this firm (last 10 min)
   if (!recentAppointment) {
+    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
     const { data: recentApt } = await supabase
       .from('appointments')
       .select('*')
       .eq('firm_id', firmId)
       .is('lead_id', null)
-      .gte('created_at', fiveMinutesAgo)
+      .gte('created_at', tenMinutesAgo)
       .order('created_at', { ascending: false })
       .limit(1);
     recentAppointment = recentApt?.[0] || null;
@@ -723,6 +738,7 @@ async function handleBookAppointment(req, res) {
     notes: notes || '',
     status: 'confirmed',
     assigned_staff_id: assignedStaffId,
+    retell_call_id: call?.call_id || null,
     created_at: new Date().toISOString(),
   };
 
