@@ -9,46 +9,6 @@ import {
   X, ChevronDown, Loader2, BookOpen, Hash, CheckCircle,
 } from 'lucide-react';
 
-/* ─── Inject keyframe styles once ─── */
-const STYLE_ID = '__knowledge-premium-styles';
-if (typeof document !== 'undefined' && !document.getElementById(STYLE_ID)) {
-  const style = document.createElement('style');
-  style.id = STYLE_ID;
-  style.textContent = `
-    @keyframes knowledgeFadeInUp {
-      from { opacity: 0; transform: translateY(16px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes knowledgeShimmer {
-      0%   { background-position: -200% 0; }
-      100% { background-position: 200% 0; }
-    }
-    @keyframes knowledgeSlideIn {
-      from { opacity: 0; transform: translateY(-8px) scale(0.98); }
-      to   { opacity: 1; transform: translateY(0) scale(1); }
-    }
-    @keyframes knowledgePopIn {
-      from { opacity: 0; transform: scale(0.95); }
-      to   { opacity: 1; transform: scale(1); }
-    }
-    .knowledge-fade-in-up {
-      animation: knowledgeFadeInUp 0.4s ease forwards;
-      opacity: 0;
-    }
-    .knowledge-shimmer {
-      background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
-      background-size: 200% 100%;
-      animation: knowledgeShimmer 1.5s ease-in-out infinite;
-    }
-    .knowledge-slide-in {
-      animation: knowledgeSlideIn 0.3s ease forwards;
-    }
-    .knowledge-pop-in {
-      animation: knowledgePopIn 0.25s ease forwards;
-    }
-  `;
-  document.head.appendChild(style);
-}
 
 const CATEGORIES = [
   { value: 'all', label: 'All' },
@@ -212,18 +172,18 @@ export default function Knowledge() {
     return (
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header skeleton */}
-        <div className="knowledge-shimmer h-32 rounded-2xl" />
+        <div className="skeleton-shimmer h-32 rounded-lg" />
         {/* Stats skeleton */}
         <div className="grid grid-cols-3 gap-4">
           {[1, 2, 3].map(i => (
-            <div key={i} className="knowledge-shimmer h-20 rounded-xl" />
+            <div key={i} className="skeleton-shimmer h-20 rounded-lg" />
           ))}
         </div>
         {/* Filter skeleton */}
-        <div className="knowledge-shimmer h-12 rounded-xl" />
+        <div className="skeleton-shimmer h-12 rounded-lg" />
         {/* Cards skeleton */}
         {[1, 2, 3, 4].map(i => (
-          <div key={i} className="knowledge-shimmer h-28 rounded-xl" />
+          <div key={i} className="skeleton-shimmer h-28 rounded-lg" />
         ))}
       </div>
     );
@@ -243,16 +203,12 @@ export default function Knowledge() {
       />
 
       {/* Header */}
-      <div className="knowledge-fade-in-up" style={{ animationDelay: '0ms' }}>
-        <div className="bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700 rounded-2xl shadow-lg shadow-violet-200/50 px-8 py-7 relative overflow-hidden">
-          {/* Decorative elements */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/4" />
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/4" />
-
-          <div className="relative flex items-start justify-between">
+      <div>
+        <div className="bg-violet-600 rounded-lg px-8 py-7 overflow-hidden">
+          <div className="flex items-start justify-between">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                <div className="w-10 h-10 bg-white/15 rounded-lg flex items-center justify-center">
                   <Brain size={20} className="text-white" />
                 </div>
                 <div>
@@ -263,7 +219,7 @@ export default function Knowledge() {
             </div>
             <button
               onClick={openAddForm}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/15 hover:bg-white/25 backdrop-blur-sm text-white text-sm font-semibold rounded-xl border border-white/20 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/15 hover:bg-white/25 text-white text-sm font-semibold rounded-lg border border-white/20 transition-all duration-200"
             >
               <Plus size={16} />
               Add Entry
@@ -273,8 +229,8 @@ export default function Knowledge() {
       </div>
 
       {/* Stats bar */}
-      <div className="knowledge-fade-in-up grid grid-cols-3 gap-4" style={{ animationDelay: '50ms' }}>
-        <div className="bg-white rounded-xl border border-slate-200/60 shadow-sm px-5 py-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+      <div className="grid grid-cols-3 gap-4">
+        <div className="bg-white rounded-lg border border-slate-200/60 shadow-sm px-5 py-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 bg-violet-50 rounded-lg flex items-center justify-center">
               <BookOpen size={16} className="text-violet-500" />
@@ -285,7 +241,7 @@ export default function Knowledge() {
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl border border-slate-200/60 shadow-sm px-5 py-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+        <div className="bg-white rounded-lg border border-slate-200/60 shadow-sm px-5 py-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 bg-emerald-50 rounded-lg flex items-center justify-center">
               <CheckCircle size={16} className="text-emerald-500" />
@@ -296,7 +252,7 @@ export default function Knowledge() {
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl border border-slate-200/60 shadow-sm px-5 py-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+        <div className="bg-white rounded-lg border border-slate-200/60 shadow-sm px-5 py-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center">
               <Hash size={16} className="text-blue-500" />
@@ -310,7 +266,7 @@ export default function Knowledge() {
       </div>
 
       {/* Search + Category Filter */}
-      <div className="knowledge-fade-in-up space-y-3" style={{ animationDelay: '100ms' }}>
+      <div className="space-y-3">
         {/* Search */}
         <div className="relative">
           <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" />
@@ -319,7 +275,7 @@ export default function Knowledge() {
             placeholder="Search questions and answers..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-11 pr-4 py-3 text-sm bg-white border border-slate-200/60 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 placeholder:text-slate-300 transition-all"
+            className="w-full pl-11 pr-4 py-3 text-sm bg-white border border-slate-200/60 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 placeholder:text-slate-300 transition-all"
           />
           {search && (
             <button
@@ -362,8 +318,8 @@ export default function Knowledge() {
 
       {/* Add/Edit Form */}
       {showForm && (
-        <div className="knowledge-slide-in bg-white rounded-2xl border border-violet-200/60 shadow-lg shadow-violet-100/30 overflow-hidden">
-          <div className="bg-gradient-to-r from-violet-500 to-purple-500 px-6 py-4 flex items-center justify-between">
+        <div className="bg-white rounded-lg border border-violet-200/60 shadow-sm overflow-hidden">
+          <div className="bg-violet-500 px-6 py-4 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <div className="w-7 h-7 bg-white/15 rounded-lg flex items-center justify-center">
                 <Sparkles size={14} className="text-white" />
@@ -393,7 +349,7 @@ export default function Knowledge() {
                   onChange={(e) => setForm(p => ({ ...p, question: e.target.value }))}
                   placeholder="e.g., What are your office hours?"
                   autoFocus
-                  className="w-full pl-10 pr-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white placeholder:text-slate-300 transition-all"
+                  className="w-full pl-10 pr-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white placeholder:text-slate-300 transition-all"
                 />
               </div>
             </div>
@@ -408,7 +364,7 @@ export default function Knowledge() {
                 onChange={handleAnswerChange}
                 placeholder="e.g., We are open Monday through Friday, 9 AM to 5 PM."
                 rows={3}
-                className="w-full px-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white placeholder:text-slate-300 transition-all resize-none"
+                className="w-full px-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white placeholder:text-slate-300 transition-all resize-none"
                 style={{ minHeight: '80px' }}
               />
             </div>
@@ -421,7 +377,7 @@ export default function Knowledge() {
                 <select
                   value={form.category}
                   onChange={(e) => setForm(p => ({ ...p, category: e.target.value }))}
-                  className="w-full px-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white transition-all appearance-none cursor-pointer"
+                  className="w-full px-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white transition-all appearance-none cursor-pointer"
                 >
                   {CATEGORIES.filter(c => c.value !== 'all').map(c => (
                     <option key={c.value} value={c.value}>{c.label}</option>
@@ -435,14 +391,14 @@ export default function Knowledge() {
               <button
                 type="button"
                 onClick={cancelForm}
-                className="px-5 py-2.5 text-sm font-medium text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded-xl transition-all"
+                className="px-5 py-2.5 text-sm font-medium text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded-lg transition-all"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={submitting || !form.question.trim() || !form.answer.trim()}
-                className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-violet-500 to-purple-500 hover:from-violet-600 hover:to-purple-600 text-white text-sm font-semibold rounded-xl shadow-sm shadow-violet-300/30 transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-2 px-6 py-2.5 bg-violet-500 hover:bg-violet-600 text-white text-sm font-semibold rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {submitting ? (
                   <>
@@ -458,8 +414,8 @@ export default function Knowledge() {
 
       {/* Entry list */}
       {filtered.length === 0 ? (
-        <div className="knowledge-fade-in-up bg-white rounded-2xl border border-slate-200/60 shadow-sm px-8 py-16 text-center" style={{ animationDelay: '150ms' }}>
-          <div className="w-16 h-16 bg-gradient-to-br from-violet-50 to-purple-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <div className="bg-white rounded-lg border border-slate-200/60 shadow-sm px-8 py-16 text-center">
+          <div className="w-16 h-16 bg-violet-50 rounded-lg flex items-center justify-center mx-auto mb-4">
             <Brain size={28} className="text-violet-300" />
           </div>
           {entries.length === 0 ? (
@@ -470,7 +426,7 @@ export default function Knowledge() {
               </p>
               <button
                 onClick={openAddForm}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-violet-500 to-purple-500 text-white text-sm font-semibold rounded-xl shadow-sm shadow-violet-200/50 hover:shadow-md hover:from-violet-600 hover:to-purple-600 transition-all duration-200"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-violet-500 hover:bg-violet-600 text-white text-sm font-semibold rounded-lg transition-all duration-200"
               >
                 <Plus size={16} />
                 Add Your First Entry
@@ -493,8 +449,7 @@ export default function Knowledge() {
             return (
               <div
                 key={entry.id}
-                className={`knowledge-fade-in-up group bg-white rounded-xl border border-slate-200/60 shadow-sm overflow-hidden transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 border-l-[3px] ${colors.border} ${isInactive ? 'opacity-60' : ''}`}
-                style={{ animationDelay: `${150 + index * 40}ms` }}
+                className={`group bg-white rounded-lg border border-slate-200/60 shadow-sm overflow-hidden transition-all duration-200 hover:shadow-md border-l-[3px] ${colors.border} ${isInactive ? 'opacity-60' : ''}`}
               >
                 <div className="flex items-start gap-3 px-5 py-4">
                   {/* Drag handle (cosmetic) */}
@@ -574,7 +529,7 @@ export default function Knowledge() {
 
       {/* Result count */}
       {filtered.length > 0 && (
-        <div className="knowledge-fade-in-up text-center pb-4" style={{ animationDelay: '200ms' }}>
+        <div className="text-center pb-4">
           <p className="text-xs text-slate-400">
             Showing {filtered.length} of {totalEntries} entries
           </p>

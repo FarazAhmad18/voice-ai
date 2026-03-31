@@ -85,9 +85,9 @@ function formatRelativeTime(dateStr) {
 }
 
 function getAvatarGradient(scoreLabel) {
-  if (scoreLabel === 'hot') return 'from-red-500 to-orange-500';
-  if (scoreLabel === 'warm') return 'from-amber-400 to-orange-400';
-  return 'from-slate-400 to-slate-500';
+  if (scoreLabel === 'hot') return 'bg-red-500';
+  if (scoreLabel === 'warm') return 'bg-amber-500';
+  return 'bg-slate-400';
 }
 
 function LeadCardView({ lead }) {
@@ -97,7 +97,7 @@ function LeadCardView({ lead }) {
   return (
     <Link
       to={`/leads/${lead.id}`}
-      className="group relative bg-white rounded-2xl border border-slate-100 p-5 hover:shadow-lg hover:shadow-slate-200/50 hover:-translate-y-0.5 transition-all duration-200"
+      className="group relative bg-white rounded-lg border border-slate-100 p-5 hover:shadow-lg hover:shadow-slate-200/50 hover:-translate-y-0.5 transition-all duration-200"
     >
       {lead.urgency === 'high' && (
         <div className="absolute top-4 right-4">
@@ -108,7 +108,7 @@ function LeadCardView({ lead }) {
         </div>
       )}
       <div className="flex items-start gap-3.5">
-        <div className={`w-11 h-11 bg-gradient-to-br ${gradient} rounded-xl flex items-center justify-center text-xs font-bold text-white shadow-sm flex-shrink-0`}>
+        <div className={`w-11 h-11 ${gradient} rounded-lg flex items-center justify-center text-xs font-bold text-white shadow-sm flex-shrink-0`}>
           {initials}
         </div>
         <div className="flex-1 min-w-0">
@@ -249,12 +249,12 @@ export default function Leads() {
             </div>
           </div>
           <div className="flex gap-2">
-            <div className="h-10 w-28 bg-slate-50 rounded-xl animate-pulse" />
+            <div className="h-10 w-28 bg-slate-50 rounded-lg animate-pulse" />
           </div>
         </div>
         {/* Skeleton filter bar */}
-        <div className="bg-white rounded-2xl border border-slate-100 p-5">
-          <div className="h-10 bg-slate-50 rounded-xl animate-pulse mb-3" />
+        <div className="bg-white rounded-lg border border-slate-100 p-5">
+          <div className="h-10 bg-slate-50 rounded-lg animate-pulse mb-3" />
           <div className="flex gap-2">
             {[1,2,3,4,5].map(i => (
               <div key={i} className="h-8 w-16 bg-slate-50 rounded-lg animate-pulse" />
@@ -262,10 +262,10 @@ export default function Leads() {
           </div>
         </div>
         {/* Skeleton rows */}
-        <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+        <div className="bg-white rounded-lg border border-slate-100 overflow-hidden">
           {[1,2,3,4,5,6].map(i => (
             <div key={i} className="flex items-center gap-4 px-5 py-4 border-b border-slate-50">
-              <div className="w-10 h-10 bg-slate-100 rounded-xl animate-pulse" />
+              <div className="w-10 h-10 bg-slate-100 rounded-lg animate-pulse" />
               <div className="flex-1">
                 <div className="h-4 w-32 bg-slate-100 rounded animate-pulse" />
                 <div className="h-3 w-24 bg-slate-50 rounded animate-pulse mt-2" />
@@ -282,9 +282,9 @@ export default function Leads() {
   return (
     <div className="space-y-6">
       {error && (
-        <div className="bg-red-50/80 backdrop-blur-sm border border-red-100 rounded-2xl px-5 py-4 flex items-center justify-between">
+        <div className="bg-red-50/80 backdrop-blur-sm border border-red-100 rounded-lg px-5 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0">
+            <div className="w-9 h-9 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
               <AlertCircle size={16} className="text-red-500" />
             </div>
             <div>
@@ -331,7 +331,7 @@ export default function Leads() {
           {followUpCount > 0 && (
             <Link
               to="/follow-ups"
-              className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-amber-700 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/60 rounded-xl hover:from-amber-100 hover:to-orange-100 transition-all shadow-sm"
+              className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-amber-700 bg-amber-50 border border-amber-200/60 rounded-lg hover:bg-amber-100 transition-all shadow-sm"
             >
               <Clock size={14} />
               {followUpCount} Follow Up{followUpCount !== 1 ? 's' : ''}
@@ -357,7 +357,7 @@ export default function Leads() {
           </div>
           <button
             onClick={() => exportToCSV(filtered)}
-            className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm"
+            className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm"
           >
             <Download size={15} />
             Export
@@ -366,7 +366,7 @@ export default function Leads() {
       </div>
 
       {/* Filters Bar — Glass morphism */}
-      <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-slate-200/60 shadow-sm shadow-slate-100/50 p-5 space-y-4">
+      <div className="bg-white/80 backdrop-blur-xl rounded-lg border border-slate-200/60 shadow-sm shadow-slate-100/50 p-5 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
           <div className="relative flex-1 max-w-md group">
             <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-violet-400 transition-colors" />
@@ -375,7 +375,7 @@ export default function Leads() {
               placeholder="Search by name or phone..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 text-sm bg-slate-50/80 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white placeholder:text-slate-300 transition-all"
+              className="w-full pl-11 pr-4 py-3 text-sm bg-slate-50/80 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white placeholder:text-slate-300 transition-all"
             />
           </div>
           <DateFilter value={dateRange} onChange={setDateRange} />
@@ -383,7 +383,7 @@ export default function Leads() {
 
         <div className="flex items-center justify-between gap-3 flex-wrap overflow-x-auto">
           {/* Pipeline tabs with slide indicator */}
-          <div ref={pipelineRef} className="relative flex items-center gap-0.5 bg-slate-50 rounded-xl p-1">
+          <div ref={pipelineRef} className="relative flex items-center gap-0.5 bg-slate-50 rounded-lg p-1">
             {/* Sliding active indicator */}
             <div
               className="absolute top-1 left-1 h-[calc(100%-8px)] bg-white rounded-lg shadow-sm transition-all duration-300 ease-out"
@@ -420,8 +420,8 @@ export default function Leads() {
                 onClick={() => setScoreFilter(f.key)}
                 className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition-all duration-200 ${
                   scoreFilter === f.key
-                    ? f.key === 'hot' ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-sm shadow-red-500/20'
-                    : f.key === 'warm' ? 'bg-gradient-to-r from-amber-400 to-orange-400 text-white shadow-sm shadow-amber-400/20'
+                    ? f.key === 'hot' ? 'bg-red-500 text-white shadow-sm shadow-red-500/20'
+                    : f.key === 'warm' ? 'bg-amber-500 text-white shadow-sm shadow-amber-400/20'
                     : f.key === 'cold' ? 'bg-slate-800 text-white shadow-sm'
                     : 'bg-slate-900 text-white shadow-sm'
                     : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
@@ -438,7 +438,7 @@ export default function Leads() {
 
       {/* Content */}
       {filtered.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm py-20 text-center">
+        <div className="bg-white rounded-lg border border-slate-100 shadow-sm py-20 text-center">
           <div className="relative mx-auto w-20 h-20 mb-6">
             <div className="absolute inset-0 bg-slate-100 rounded-3xl rotate-6 animate-pulse" />
             <div className="relative w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center">
@@ -450,7 +450,7 @@ export default function Leads() {
           {(pipeline !== 'all' || scoreFilter !== 'all_scores' || search) && (
             <button
               onClick={() => { setPipeline('all'); setScoreFilter('all_scores'); setSearchInput(''); setSearch(''); setDateRange('all'); }}
-              className="mt-5 px-5 py-2.5 text-sm font-medium text-violet-600 bg-violet-50 hover:bg-violet-100 rounded-xl transition-colors"
+              className="mt-5 px-5 py-2.5 text-sm font-medium text-violet-600 bg-violet-50 hover:bg-violet-100 rounded-lg transition-colors"
             >
               Clear all filters
             </button>
@@ -465,7 +465,7 @@ export default function Leads() {
         </div>
       ) : (
         /* Table View */
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm shadow-slate-100/50 overflow-hidden">
+        <div className="bg-white rounded-lg border border-slate-100 shadow-sm shadow-slate-100/50 overflow-hidden">
           <table className="w-full">
             <thead>
               <tr className="bg-slate-50/80 border-b border-slate-100">
@@ -496,7 +496,7 @@ export default function Leads() {
                     <td className="px-5 py-3.5">
                       <Link to={`/leads/${lead.id}`} className="flex items-center gap-3">
                         <div className="relative">
-                          <div className={`w-10 h-10 bg-gradient-to-br ${gradient} rounded-xl flex items-center justify-center text-[11px] font-bold text-white shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all duration-200`}>
+                          <div className={`w-10 h-10 ${gradient} rounded-lg flex items-center justify-center text-[11px] font-bold text-white shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all duration-200`}>
                             {initials}
                           </div>
                           {lead.score_label === 'hot' && (

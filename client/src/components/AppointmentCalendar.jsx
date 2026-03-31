@@ -54,12 +54,12 @@ export default function AppointmentCalendar({ appointments = [] }) {
   const selectedApts = selectedDay ? (aptsByDate[selectedDay] || []) : [];
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100/80 shadow-sm overflow-hidden">
+    <div className="bg-white rounded-lg border border-slate-100/80 shadow-sm overflow-hidden">
       <div className="flex-1 min-w-0">
       {/* Header */}
       <div className="px-6 py-5 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-violet-200/50">
+          <div className="w-10 h-10 bg-violet-500 rounded-lg flex items-center justify-center">
             <Calendar size={18} className="text-white" />
           </div>
           <div>
@@ -115,7 +115,7 @@ export default function AppointmentCalendar({ appointments = [] }) {
                   }}
                   disabled={cell.outside}
                   className={`
-                    relative flex flex-col items-center py-2.5 rounded-xl transition-all duration-150 group
+                    relative flex flex-col items-center py-2.5 rounded-lg transition-all duration-150 group
                     ${cell.outside ? 'opacity-20 cursor-default' : 'cursor-pointer'}
                     ${isSelected ? 'bg-violet-50 ring-2 ring-violet-200' : ''}
                     ${isToday && !isSelected ? 'bg-slate-50' : ''}
@@ -173,7 +173,7 @@ export default function AppointmentCalendar({ appointments = [] }) {
 
         {/* Side Panel — Appointment Details */}
         {selectedDay && (
-          <div className="w-full lg:w-80 max-h-[400px] lg:max-h-none border-t lg:border-t-0 lg:border-l border-slate-100 bg-slate-50/50 flex flex-col animate-slideIn overflow-y-auto">
+          <div className="w-full lg:w-80 max-h-[400px] lg:max-h-none border-t lg:border-t-0 lg:border-l border-slate-100 bg-slate-50/50 flex flex-col overflow-y-auto">
             {/* Panel Header */}
             <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-white">
               <div>
@@ -210,7 +210,7 @@ export default function AppointmentCalendar({ appointments = [] }) {
                       <Link
                         key={apt.id || i}
                         to={apt.lead_id ? `/leads/${apt.lead_id}` : '/appointments'}
-                        className="block bg-white rounded-xl border border-slate-100 hover:border-slate-200 hover:shadow-md transition-all p-4 group"
+                        className="block bg-white rounded-lg border border-slate-100 hover:border-slate-200 hover:shadow-md transition-all p-4 group"
                       >
                         {/* Time + Status */}
                         <div className="flex items-center justify-between mb-3">
@@ -258,15 +258,6 @@ export default function AppointmentCalendar({ appointments = [] }) {
       </div>
       </div>
 
-      <style>{`
-        @keyframes slideIn {
-          from { opacity: 0; transform: translateX(12px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
-        .animate-slideIn {
-          animation: slideIn 0.2s ease forwards;
-        }
-      `}</style>
     </div>
   );
 }

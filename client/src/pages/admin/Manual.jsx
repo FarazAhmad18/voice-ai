@@ -879,7 +879,7 @@ function SectionCard({ section, highlight, expandedItems, toggleItem }) {
   const Icon = section.icon;
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+    <div className="bg-white rounded-lg border border-slate-100 overflow-hidden">
       {/* Section header */}
       <div className={`px-6 py-5 ${colors.bg} border-b ${colors.border}`}>
         <div className="flex items-center gap-3">

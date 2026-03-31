@@ -50,11 +50,11 @@ export default function ConfirmModal({
       />
 
       {/* Modal */}
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+      <div className="relative bg-white rounded-lg shadow-2xl w-full max-w-sm overflow-hidden">
         {/* Header */}
         <div className="flex items-start justify-between px-6 pt-5 pb-4">
           <div className="flex items-start gap-3">
-            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+            <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
               danger ? 'bg-red-50' : 'bg-amber-50'
             }`}>
               <AlertTriangle size={18} className={danger ? 'text-red-500' : 'text-amber-500'} />
@@ -80,14 +80,14 @@ export default function ConfirmModal({
             ref={cancelRef}
             onClick={onCancel}
             disabled={loading}
-            className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors disabled:opacity-50"
+            className="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors disabled:opacity-50"
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
             disabled={loading}
-            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-colors disabled:opacity-50 ${
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold text-white transition-colors disabled:opacity-50 ${
               danger
                 ? 'bg-red-600 hover:bg-red-700'
                 : 'bg-amber-500 hover:bg-amber-600'

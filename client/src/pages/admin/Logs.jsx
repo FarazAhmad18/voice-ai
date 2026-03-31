@@ -219,7 +219,7 @@ export default function Logs() {
                 <ChevronDown size={12} className="text-slate-500 ml-auto" />
               </button>
               {categoryOpen && (
-                <div className="absolute top-full left-0 mt-1 w-52 bg-[#1c2128] border border-[#30363d] rounded-xl shadow-2xl z-50 overflow-hidden">
+                <div className="absolute top-full left-0 mt-1 w-52 bg-[#1c2128] border border-[#30363d] rounded-lg shadow-2xl z-50 overflow-hidden">
                   <button
                     onClick={() => { setCategory('all'); setCategoryOpen(false); }}
                     className={`w-full text-left px-3 py-2 text-xs font-medium transition-colors ${
@@ -266,7 +266,7 @@ export default function Logs() {
                 <ChevronDown size={12} className="text-slate-500 ml-auto" />
               </button>
               {clientOpen && (
-                <div className="absolute top-full left-0 mt-1 w-56 bg-[#1c2128] border border-[#30363d] rounded-xl shadow-2xl z-50 overflow-hidden max-h-64 overflow-y-auto">
+                <div className="absolute top-full left-0 mt-1 w-56 bg-[#1c2128] border border-[#30363d] rounded-lg shadow-2xl z-50 overflow-hidden max-h-64 overflow-y-auto">
                   <button
                     onClick={() => { setFirmId('all'); setClientOpen(false); }}
                     className={`w-full text-left px-3 py-2 text-xs font-medium transition-colors ${
@@ -302,7 +302,7 @@ export default function Logs() {
                 <ChevronDown size={12} className="text-slate-500 ml-auto" />
               </button>
               {levelOpen && (
-                <div className="absolute top-full left-0 mt-1 w-36 bg-[#1c2128] border border-[#30363d] rounded-xl shadow-2xl z-50 overflow-hidden">
+                <div className="absolute top-full left-0 mt-1 w-36 bg-[#1c2128] border border-[#30363d] rounded-lg shadow-2xl z-50 overflow-hidden">
                   {LEVELS.map(l => (
                     <button
                       key={l}
@@ -329,7 +329,7 @@ export default function Logs() {
                 <ChevronDown size={12} className="text-slate-500" />
               </button>
               {timeOpen && (
-                <div className="absolute top-full left-0 mt-1 w-28 bg-[#1c2128] border border-[#30363d] rounded-xl shadow-2xl z-50 overflow-hidden">
+                <div className="absolute top-full left-0 mt-1 w-28 bg-[#1c2128] border border-[#30363d] rounded-lg shadow-2xl z-50 overflow-hidden">
                   {TIME_RANGES.map(t => (
                     <button
                       key={t.key}

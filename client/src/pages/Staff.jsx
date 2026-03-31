@@ -9,70 +9,15 @@ import {
   Mail, Phone, Briefcase, Shield, Users, Sparkles,
 } from 'lucide-react';
 
-/* ─── Inject keyframe styles once ─── */
-const STYLE_ID = '__staff-premium-styles';
-if (typeof document !== 'undefined' && !document.getElementById(STYLE_ID)) {
-  const style = document.createElement('style');
-  style.id = STYLE_ID;
-  style.textContent = `
-    @keyframes staffFadeInUp {
-      from { opacity: 0; transform: translateY(16px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes staffModalIn {
-      from { opacity: 0; transform: scale(0.95) translateY(10px); }
-      to   { opacity: 1; transform: scale(1) translateY(0); }
-    }
-    @keyframes staffBackdropIn {
-      from { opacity: 0; }
-      to   { opacity: 1; }
-    }
-    @keyframes staffShimmer {
-      0%   { background-position: -200% 0; }
-      100% { background-position: 200% 0; }
-    }
-    .staff-fade-in-up {
-      animation: staffFadeInUp 0.4s ease forwards;
-      opacity: 0;
-    }
-    .staff-modal-in {
-      animation: staffModalIn 0.3s ease forwards;
-    }
-    .staff-backdrop-in {
-      animation: staffBackdropIn 0.2s ease forwards;
-    }
-    .staff-shimmer {
-      background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
-      background-size: 200% 100%;
-      animation: staffShimmer 1.5s ease-in-out infinite;
-    }
-    .staff-card-lift {
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    .staff-card-lift:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px -5px rgba(0,0,0,0.08), 0 4px 10px -6px rgba(0,0,0,0.04);
-    }
-  `;
-  document.head.appendChild(style);
-}
-
 const EMPTY_FORM = { name: '', role: '', specialization: '', email: '', phone: '' };
 
-const AVATAR_GRADIENTS = [
-  'from-violet-500 to-purple-600',
-  'from-blue-500 to-indigo-600',
-  'from-emerald-500 to-teal-600',
-  'from-amber-500 to-orange-600',
-  'from-rose-500 to-pink-600',
-  'from-cyan-500 to-blue-600',
-];
+const AVATAR_COLORS = ['bg-violet-500', 'bg-blue-500', 'bg-emerald-500', 'bg-amber-500', 'bg-rose-500', 'bg-cyan-500'];
 
-function getGradient(name) {
-  if (!name) return AVATAR_GRADIENTS[0];
+function getAvatarColor(name) {
+  if (!name) return AVATAR_COLORS[0];
   let hash = 0;
   for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  return AVATAR_GRADIENTS[Math.abs(hash) % AVATAR_GRADIENTS.length];
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 }
 
 export default function Staff() {
@@ -206,18 +151,18 @@ export default function Staff() {
               <div className="h-8 w-24 bg-slate-50 rounded-full animate-pulse" />
             </div>
           </div>
-          <div className="h-11 w-32 bg-slate-100 rounded-xl animate-pulse" />
+          <div className="h-11 w-32 bg-slate-100 rounded-lg animate-pulse" />
         </div>
         {/* Skeleton search */}
-        <div className="bg-white rounded-2xl border border-slate-100 p-5">
-          <div className="h-11 bg-slate-50 rounded-xl animate-pulse max-w-md" />
+        <div className="bg-white rounded-lg border border-slate-100 p-5">
+          <div className="h-11 bg-slate-50 rounded-lg animate-pulse max-w-md" />
         </div>
         {/* Skeleton cards */}
         <div className="space-y-3">
           {[1,2,3,4].map(i => (
-            <div key={i} className="bg-white rounded-2xl border border-slate-100 p-5">
+            <div key={i} className="bg-white rounded-lg border border-slate-100 p-5">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 staff-shimmer rounded-xl" />
+                <div className="w-12 h-12 skeleton-shimmer rounded-lg" />
                 <div className="flex-1">
                   <div className="h-4 w-36 bg-slate-100 rounded animate-pulse" />
                   <div className="h-3 w-56 bg-slate-50 rounded animate-pulse mt-2" />
@@ -275,7 +220,7 @@ export default function Staff() {
         {isAdmin && (
           <button
             onClick={openAddForm}
-            className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-xl hover:from-violet-700 hover:to-purple-700 transition-all shadow-lg shadow-violet-200/50"
+            className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-all shadow-sm"
           >
             <Plus size={15} />
             Add {labels.staff}
@@ -285,7 +230,7 @@ export default function Staff() {
 
       {/* Search */}
       {staff.length > 0 && (
-        <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-slate-200/60 shadow-sm shadow-slate-100/50 p-5">
+        <div className="bg-white/80 backdrop-blur-xl rounded-lg border border-slate-200/60 shadow-sm shadow-slate-100/50 p-5">
           <div className="relative max-w-md group">
             <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-violet-400 transition-colors" />
             <input
@@ -293,7 +238,7 @@ export default function Staff() {
               placeholder={`Search ${labels.staff.toLowerCase()}...`}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 text-sm bg-slate-50/80 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white placeholder:text-slate-300 transition-all"
+              className="w-full pl-11 pr-4 py-3 text-sm bg-slate-50/80 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white placeholder:text-slate-300 transition-all"
             />
           </div>
         </div>
@@ -301,8 +246,8 @@ export default function Staff() {
 
       {/* Staff List */}
       {filtered.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm py-20 text-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-violet-100 to-purple-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <div className="bg-white rounded-lg border border-slate-100 shadow-sm py-20 text-center">
+          <div className="w-16 h-16 bg-violet-50 rounded-lg flex items-center justify-center mx-auto mb-4">
             <UserCheck size={24} className="text-violet-300" />
           </div>
           <p className="text-sm font-semibold text-slate-600">
@@ -314,7 +259,7 @@ export default function Staff() {
           {!search && isAdmin && (
             <button
               onClick={openAddForm}
-              className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-violet-700 bg-gradient-to-r from-violet-50 to-purple-50 border border-violet-200/60 rounded-xl hover:from-violet-100 hover:to-purple-100 transition-all"
+              className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-violet-700 bg-violet-50 border border-violet-200/60 rounded-lg hover:bg-violet-100 transition-all"
             >
               <Plus size={14} />
               Add {labels.staff}
@@ -325,23 +270,22 @@ export default function Staff() {
         <div className="space-y-3">
           {filtered.map((member, index) => {
             const initials = ((member.name || 'U').split(' ').map(n => n?.[0] || '').join('').slice(0, 2).toUpperCase()) || '?';
-            const gradient = getGradient(member.name);
+            const avatarColor = getAvatarColor(member.name);
             return (
               <div
                 key={member.id}
-                className={`staff-fade-in-up bg-white rounded-2xl border shadow-sm staff-card-lift overflow-hidden ${
+                className={`bg-white rounded-lg border shadow-sm overflow-hidden ${
                   member.is_active
                     ? 'border-slate-100'
                     : 'border-slate-100 opacity-60'
                 }`}
-                style={{ animationDelay: `${index * 50}ms` }}
               >
                 <div className="flex items-center gap-4 px-5 py-4">
                   {/* Avatar */}
                   <div className="relative flex-shrink-0">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-sm font-bold shadow-sm ${
+                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center text-sm font-bold shadow-sm ${
                       member.is_active
-                        ? `bg-gradient-to-br ${gradient} text-white`
+                        ? `${avatarColor} text-white`
                         : 'bg-slate-200 text-slate-400'
                     }`}>
                       {initials}
@@ -406,7 +350,7 @@ export default function Staff() {
                     <div className="flex items-center gap-1 flex-shrink-0 flex-col sm:flex-row">
                       <button
                         onClick={() => handleToggleActive(member)}
-                        className={`p-2.5 rounded-xl transition-all ${
+                        className={`p-2.5 rounded-lg transition-all ${
                           member.is_active
                             ? 'text-amber-500 hover:bg-amber-50 hover:shadow-sm'
                             : 'text-emerald-500 hover:bg-emerald-50 hover:shadow-sm'
@@ -417,14 +361,14 @@ export default function Staff() {
                       </button>
                       <button
                         onClick={() => openEditForm(member)}
-                        className="p-2.5 rounded-xl text-slate-400 hover:text-violet-600 hover:bg-violet-50 hover:shadow-sm transition-all"
+                        className="p-2.5 rounded-lg text-slate-400 hover:text-violet-600 hover:bg-violet-50 hover:shadow-sm transition-all"
                         title="Edit"
                       >
                         <Pencil size={15} />
                       </button>
                       <button
                         onClick={() => setConfirmDelete(member)}
-                        className="p-2.5 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 hover:shadow-sm transition-all"
+                        className="p-2.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 hover:shadow-sm transition-all"
                         title="Remove"
                       >
                         <Trash2 size={15} />
@@ -441,10 +385,10 @@ export default function Staff() {
       {/* Add/Edit Modal */}
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm staff-backdrop-in" onClick={closeForm} />
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md border border-slate-200/60 overflow-hidden staff-modal-in">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={closeForm} />
+          <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-md border border-slate-200/60 overflow-hidden">
             {/* Gradient header */}
-            <div className="bg-gradient-to-r from-violet-600 to-purple-600 px-6 py-5">
+            <div className="bg-violet-600 px-6 py-5">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-base font-bold text-white">
@@ -454,7 +398,7 @@ export default function Staff() {
                     {editingId ? 'Update team member details' : 'Add a new team member'}
                   </p>
                 </div>
-                <button onClick={closeForm} className="p-2 rounded-xl hover:bg-white/10 transition-colors">
+                <button onClick={closeForm} className="p-2 rounded-lg hover:bg-white/10 transition-colors">
                   <X size={18} className="text-white/80" />
                 </button>
               </div>
@@ -469,7 +413,7 @@ export default function Staff() {
                   onChange={(e) => setForm(p => ({ ...p, name: e.target.value }))}
                   placeholder="Full name"
                   required
-                  className="w-full px-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white placeholder:text-slate-300 transition-all"
+                  className="w-full px-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white placeholder:text-slate-300 transition-all"
                 />
               </div>
 
@@ -481,7 +425,7 @@ export default function Staff() {
                     value={form.role}
                     onChange={(e) => setForm(p => ({ ...p, role: e.target.value }))}
                     placeholder="e.g. Attorney, Doctor"
-                    className="w-full px-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white placeholder:text-slate-300 transition-all"
+                    className="w-full px-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white placeholder:text-slate-300 transition-all"
                   />
                 </div>
                 <div>
@@ -491,7 +435,7 @@ export default function Staff() {
                     value={form.specialization}
                     onChange={(e) => setForm(p => ({ ...p, specialization: e.target.value }))}
                     placeholder="e.g. Family Law"
-                    className="w-full px-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white placeholder:text-slate-300 transition-all"
+                    className="w-full px-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white placeholder:text-slate-300 transition-all"
                   />
                 </div>
               </div>
@@ -504,7 +448,7 @@ export default function Staff() {
                     value={form.email}
                     onChange={(e) => setForm(p => ({ ...p, email: e.target.value }))}
                     placeholder="email@example.com"
-                    className="w-full px-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white placeholder:text-slate-300 transition-all"
+                    className="w-full px-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white placeholder:text-slate-300 transition-all"
                   />
                 </div>
                 <div>
@@ -514,7 +458,7 @@ export default function Staff() {
                     value={form.phone}
                     onChange={(e) => setForm(p => ({ ...p, phone: e.target.value }))}
                     placeholder="+1 (555) 000-0000"
-                    className="w-full px-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white placeholder:text-slate-300 transition-all"
+                    className="w-full px-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white placeholder:text-slate-300 transition-all"
                   />
                 </div>
               </div>
@@ -523,14 +467,14 @@ export default function Staff() {
                 <button
                   type="button"
                   onClick={closeForm}
-                  className="px-5 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 rounded-xl transition-colors"
+                  className="px-5 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 rounded-lg transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={saving || !form.name.trim()}
-                  className="px-6 py-2.5 text-sm font-semibold bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-xl hover:from-violet-700 hover:to-purple-700 transition-all disabled:opacity-50 shadow-lg shadow-violet-200/50"
+                  className="px-6 py-2.5 text-sm font-semibold bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-all disabled:opacity-50 shadow-sm"
                 >
                   {saving ? (
                     <span className="inline-flex items-center gap-2">

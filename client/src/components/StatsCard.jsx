@@ -9,9 +9,9 @@ export default function StatsCard({ title, value, subtitle, icon: Icon, trend, c
   };
 
   return (
-    <div className="bg-white rounded-2xl p-5 border border-slate-100">
+    <div className="bg-white rounded-lg p-5 border border-slate-100">
       <div className="flex items-start justify-between mb-4">
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${iconColors[color]}`}>
+        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${iconColors[color]}`}>
           <Icon size={18} />
         </div>
         {trend !== undefined && (

@@ -140,7 +140,7 @@ export default function ClientDetail() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-lg font-bold text-white"
+          <div className="w-12 h-12 rounded-lg flex items-center justify-center text-lg font-bold text-white"
             style={{ backgroundColor: firm.brand_color || '#6d28d9' }}>
             {firm.name?.charAt(0).toUpperCase()}
           </div>
@@ -150,14 +150,14 @@ export default function ClientDetail() {
           </div>
         </div>
         <button onClick={handleSave} disabled={saving}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-xs font-medium rounded-xl hover:bg-slate-800 transition-colors disabled:opacity-50">
+          className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-xs font-medium rounded-lg hover:bg-slate-800 transition-colors disabled:opacity-50">
           <Save size={14} />
           {saving ? 'Saving...' : saved ? 'Saved ✓' : 'Save Changes'}
         </button>
       </div>
 
       {error && (
-        <div className="flex items-center gap-2 px-4 py-3 bg-red-50 border border-red-100 rounded-xl">
+        <div className="flex items-center gap-2 px-4 py-3 bg-red-50 border border-red-100 rounded-lg">
           <AlertCircle size={15} className="text-red-500 shrink-0" />
           <p className="text-sm text-red-600">{error}</p>
         </div>
@@ -170,8 +170,8 @@ export default function ClientDetail() {
           { icon: Calendar, color: 'violet', count: firm._counts?.appointments || 0, label: 'Appointments' },
           { icon: Users, color: 'emerald', count: firm._counts?.staff || 0, label: 'Staff' },
         ].map(({ icon: Icon, color, count, label }) => (
-          <div key={label} className="bg-white rounded-2xl border border-slate-100 p-5 flex items-center gap-4">
-            <div className={`w-10 h-10 bg-${color}-50 rounded-xl flex items-center justify-center`}>
+          <div key={label} className="bg-white rounded-lg border border-slate-100 p-5 flex items-center gap-4">
+            <div className={`w-10 h-10 bg-${color}-50 rounded-lg flex items-center justify-center`}>
               <Icon size={18} className={`text-${color}-600`} />
             </div>
             <div>
@@ -187,14 +187,14 @@ export default function ClientDetail() {
         <div className="lg:col-span-2 space-y-4">
 
           {/* Company Details */}
-          <div className="bg-white rounded-2xl border border-slate-100 p-6 space-y-4">
+          <div className="bg-white rounded-lg border border-slate-100 p-6 space-y-4">
             <h3 className="text-sm font-semibold text-slate-800">Company Details</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Name" value={form.name} onChange={v => setForm(p => ({ ...p, name: v }))} />
               <div>
                 <label className="block text-xs font-medium text-slate-400 mb-1.5">Industry</label>
                 <select value={form.industry} onChange={e => setForm(p => ({ ...p, industry: e.target.value }))}
-                  className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200">
+                  className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200">
                   {INDUSTRIES.map(i => <option key={i} value={i} className="capitalize">{i.replace('_', ' ')}</option>)}
                 </select>
               </div>
@@ -209,7 +209,7 @@ export default function ClientDetail() {
           </div>
 
           {/* AI Agent Config */}
-          <div className="bg-white rounded-2xl border border-slate-100 p-6 space-y-4">
+          <div className="bg-white rounded-lg border border-slate-100 p-6 space-y-4">
             <h3 className="text-sm font-semibold text-slate-800">AI Agent Configuration</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Agent Name" value={form.agent_name} onChange={v => setForm(p => ({ ...p, agent_name: v }))} placeholder="Sarah" />
@@ -217,7 +217,7 @@ export default function ClientDetail() {
               <div className="col-span-1 sm:col-span-2">
                 <label className="block text-xs font-medium text-slate-400 mb-1.5">Prompt Template</label>
                 <select value={form.prompt_template_id} onChange={e => setForm(p => ({ ...p, prompt_template_id: e.target.value }))}
-                  className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200">
+                  className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200">
                   <option value="">No template selected</option>
                   {templates.map(t => (
                     <option key={t.id} value={t.id}>{t.name} ({t.industry})</option>
@@ -233,7 +233,7 @@ export default function ClientDetail() {
                   <input type="color" value={form.brand_color} onChange={e => setForm(p => ({ ...p, brand_color: e.target.value }))}
                     className="w-10 h-10 rounded-lg border border-slate-100 cursor-pointer" />
                   <input type="text" value={form.brand_color} onChange={e => setForm(p => ({ ...p, brand_color: e.target.value }))}
-                    className="flex-1 px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200" />
+                    className="flex-1 px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200" />
                 </div>
               </div>
             </div>
@@ -244,7 +244,7 @@ export default function ClientDetail() {
         <div className="space-y-4">
 
           {/* Agent Status */}
-          <div className="bg-white rounded-2xl border border-slate-100 p-5 space-y-4">
+          <div className="bg-white rounded-lg border border-slate-100 p-5 space-y-4">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Agent Status</h3>
 
             <div className="space-y-3">
@@ -256,12 +256,12 @@ export default function ClientDetail() {
             {isDeployed && (
               <div className="space-y-2 pt-1">
                 <button onClick={handleSync} disabled={syncing}
-                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-violet-600 text-white text-xs font-medium rounded-xl hover:bg-violet-700 disabled:opacity-50 transition-colors">
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-violet-600 text-white text-xs font-medium rounded-lg hover:bg-violet-700 disabled:opacity-50 transition-colors">
                   <RefreshCw size={13} className={syncing ? 'animate-spin' : ''} />
                   {syncing ? 'Syncing...' : 'Sync Agent'}
                 </button>
                 {syncResult && (
-                  <div className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium ${syncResult.error ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-700'}`}>
+                  <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium ${syncResult.error ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-700'}`}>
                     {syncResult.error
                       ? <><AlertCircle size={12} /> {syncResult.error}</>
                       : <><Check size={12} /> Synced — {syncResult.promptLength?.toLocaleString()} chars pushed</>
@@ -277,21 +277,21 @@ export default function ClientDetail() {
               <div className="pt-1">
                 {!showDeploy ? (
                   <button onClick={() => setShowDeploy(true)}
-                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-900 text-white text-xs font-medium rounded-xl hover:bg-slate-800 transition-colors">
+                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-900 text-white text-xs font-medium rounded-lg hover:bg-slate-800 transition-colors">
                     <Rocket size={13} /> Deploy Agent
                   </button>
                 ) : (
                   <div className="space-y-2">
                     <input type="text" placeholder="Area code (e.g. 425) — optional"
                       value={deployAreaCode} onChange={e => setDeployAreaCode(e.target.value)}
-                      className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200" />
+                      className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200" />
                     <div className="flex gap-2">
                       <button onClick={handleDeploy} disabled={deploying}
-                        className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-slate-900 text-white text-xs font-medium rounded-xl hover:bg-slate-800 disabled:opacity-50 transition-colors">
+                        className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-slate-900 text-white text-xs font-medium rounded-lg hover:bg-slate-800 disabled:opacity-50 transition-colors">
                         <Rocket size={12} /> {deploying ? 'Deploying...' : 'Deploy'}
                       </button>
                       <button onClick={() => setShowDeploy(false)}
-                        className="px-3 py-2 text-xs text-slate-500 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors">
+                        className="px-3 py-2 text-xs text-slate-500 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors">
                         Cancel
                       </button>
                     </div>
@@ -302,33 +302,33 @@ export default function ClientDetail() {
           </div>
 
           {/* Plan & Status */}
-          <div className="bg-white rounded-2xl border border-slate-100 p-5 space-y-3">
+          <div className="bg-white rounded-lg border border-slate-100 p-5 space-y-3">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Plan & Status</h3>
             <div>
               <label className="block text-xs font-medium text-slate-400 mb-1.5">Status</label>
               <select value={form.status} onChange={e => setForm(p => ({ ...p, status: e.target.value }))}
-                className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200">
+                className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200">
                 {STATUSES.map(s => <option key={s} value={s} className="capitalize">{s}</option>)}
               </select>
             </div>
             <div>
               <label className="block text-xs font-medium text-slate-400 mb-1.5">Plan</label>
               <select value={form.plan} onChange={e => setForm(p => ({ ...p, plan: e.target.value }))}
-                className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200">
+                className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200">
                 {PLANS.map(p => <option key={p} value={p} className="capitalize">{p}</option>)}
               </select>
             </div>
           </div>
 
           {/* Staff */}
-          <div className="bg-white rounded-2xl border border-slate-100 p-5">
+          <div className="bg-white rounded-lg border border-slate-100 p-5">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
               Staff ({firm.staff?.length || 0})
             </h3>
             {firm.staff?.length > 0 ? (
               <div className="space-y-2">
                 {firm.staff.map(s => (
-                  <div key={s.id} className="flex items-center justify-between px-3 py-2 bg-slate-50 rounded-xl">
+                  <div key={s.id} className="flex items-center justify-between px-3 py-2 bg-slate-50 rounded-lg">
                     <div>
                       <p className="text-sm font-medium text-slate-800">{s.name}</p>
                       <p className="text-xs text-slate-400">{s.specialization || s.role || ''}</p>
@@ -344,12 +344,12 @@ export default function ClientDetail() {
 
           {/* Current Rendered Prompt */}
           {firm.rendered_prompt && (
-            <div className="bg-white rounded-2xl border border-slate-100 p-5">
+            <div className="bg-white rounded-lg border border-slate-100 p-5">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Live Prompt</h3>
                 <span className="text-[11px] text-slate-400">{firm.rendered_prompt.length.toLocaleString()} chars</span>
               </div>
-              <pre className="text-xs text-slate-600 whitespace-pre-wrap font-sans leading-relaxed max-h-48 overflow-y-auto bg-slate-50 rounded-xl p-3">
+              <pre className="text-xs text-slate-600 whitespace-pre-wrap font-sans leading-relaxed max-h-48 overflow-y-auto bg-slate-50 rounded-lg p-3">
                 {firm.rendered_prompt}
               </pre>
             </div>
@@ -365,7 +365,7 @@ function Field({ label, value, onChange, placeholder = '' }) {
     <div>
       <label className="block text-xs font-medium text-slate-400 mb-1.5">{label}</label>
       <input type="text" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
-        className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200" />
+        className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200" />
     </div>
   );
 }

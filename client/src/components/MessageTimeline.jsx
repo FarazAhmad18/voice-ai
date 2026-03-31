@@ -86,10 +86,10 @@ function CallCard({ call }) {
   return (
     <div className="w-full">
       <div
-        className="flex items-center gap-3 p-4 bg-white rounded-xl border border-slate-100 shadow-sm cursor-pointer hover:bg-slate-50/50 transition-colors"
+        className="flex items-center gap-3 p-4 bg-white rounded-lg border border-slate-100 shadow-sm cursor-pointer hover:bg-slate-50/50 transition-colors"
         onClick={() => setExpanded(!expanded)}
       >
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${config.iconBg}`}>
+        <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${config.iconBg}`}>
           <Mic size={16} className={config.iconColor} />
         </div>
         <div className="flex-1 min-w-0">
@@ -125,21 +125,21 @@ function CallCard({ call }) {
       {expanded && (
         <div className="mt-2 space-y-3 pl-2">
           {call.summary && (
-            <div className="bg-blue-50 rounded-xl px-4 py-3">
+            <div className="bg-blue-50 rounded-lg px-4 py-3">
               <p className="text-[11px] font-bold text-blue-600 uppercase tracking-wider mb-1">AI Summary</p>
               <p className="text-sm text-blue-900 leading-relaxed">{call.summary}</p>
             </div>
           )}
 
           {call.recording_url && (
-            <div className="bg-slate-50 rounded-xl px-4 py-3">
+            <div className="bg-slate-50 rounded-lg px-4 py-3">
               <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Recording</p>
               <audio controls className="w-full h-10" src={call.recording_url} />
             </div>
           )}
 
           {call.transcript && (
-            <div className="bg-slate-50 rounded-xl overflow-hidden">
+            <div className="bg-slate-50 rounded-lg overflow-hidden">
               <div className="px-4 py-3 border-b border-slate-100">
                 <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Transcript</p>
               </div>
@@ -163,7 +163,7 @@ function MessageBubble({ message }) {
   if (isNote) {
     return (
       <div className="w-full">
-        <div className="bg-amber-50/70 border border-amber-100/50 rounded-xl px-4 py-3">
+        <div className="bg-amber-50/70 border border-amber-100/50 rounded-lg px-4 py-3">
           <div className="flex items-center gap-2 mb-1.5">
             <StickyNote size={12} className="text-amber-500" />
             <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-md ${config.badgeBg} ${config.badgeText}`}>
@@ -183,7 +183,7 @@ function MessageBubble({ message }) {
   return (
     <div className={`flex ${isOutbound ? 'justify-end' : 'justify-start'}`}>
       <div className={`max-w-[80%] ${isOutbound ? 'order-1' : 'order-1'}`}>
-        <div className={`rounded-xl px-4 py-3 ${
+        <div className={`rounded-lg px-4 py-3 ${
           isOutbound
             ? 'bg-slate-800 text-white'
             : 'bg-white border border-slate-100 shadow-sm'
@@ -271,7 +271,7 @@ export default function MessageTimeline({ messages = [], calls = [], legacyNotes
   if (items.length === 0) {
     return (
       <div className="text-center py-12">
-        <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
+        <div className="w-12 h-12 bg-slate-50 rounded-lg flex items-center justify-center mx-auto mb-3">
           <MessageSquare size={20} className="text-slate-300" />
         </div>
         <p className="text-sm font-medium text-slate-500">No activity yet</p>
@@ -290,7 +290,7 @@ export default function MessageTimeline({ messages = [], calls = [], legacyNotes
           <div key={`${item.type}_${item.data.id}`} className="flex gap-3 relative">
             {/* Timeline dot */}
             <div className="flex-shrink-0 z-10 mt-1">
-              <div className={`w-[38px] h-[38px] rounded-xl flex items-center justify-center ${
+              <div className={`w-[38px] h-[38px] rounded-lg flex items-center justify-center ${
                 item.type === 'call'
                   ? CHANNEL_CONFIG.call.iconBg
                   : (CHANNEL_CONFIG[item.data.channel] || CHANNEL_CONFIG.sms).iconBg

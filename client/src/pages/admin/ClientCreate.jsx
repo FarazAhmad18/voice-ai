@@ -133,7 +133,7 @@ export default function ClientCreate() {
   }
 
   const selectedTemplate = templates.find(t => t.id === form.prompt_template_id);
-  const inputClass = (field) => `w-full px-3.5 py-2.5 text-sm bg-slate-50 border rounded-xl focus:outline-none focus:ring-2 ${fieldErrors[field] ? 'border-red-300 focus:ring-red-200' : 'border-slate-100 focus:ring-slate-200'}`;
+  const inputClass = (field) => `w-full px-3.5 py-2.5 text-sm bg-slate-50 border rounded-lg focus:outline-none focus:ring-2 ${fieldErrors[field] ? 'border-red-300 focus:ring-red-200' : 'border-slate-100 focus:ring-slate-200'}`;
   const fieldError = (field) => fieldErrors[field] ? <p className="text-xs text-red-500 mt-1">{fieldErrors[field]}</p> : null;
 
   return (
@@ -152,14 +152,14 @@ export default function ClientCreate() {
       </div>
 
       {error && (
-        <div className="px-4 py-3 bg-red-50 border border-red-100 rounded-xl">
+        <div className="px-4 py-3 bg-red-50 border border-red-100 rounded-lg">
           <p className="text-sm text-red-600">{error}</p>
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Company Info */}
-        <div className="bg-white rounded-2xl border border-slate-100 p-6 space-y-4">
+        <div className="bg-white rounded-lg border border-slate-100 p-6 space-y-4">
           <h3 className="text-sm font-semibold text-slate-800">Company Information</h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -172,7 +172,7 @@ export default function ClientCreate() {
             <div>
               <label className="block text-xs font-medium text-slate-400 mb-1.5">Industry *</label>
               <select value={form.industry} onChange={e => updateForm('industry', e.target.value)}
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200">
+                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200">
                 {INDUSTRIES.map(i => <option key={i.value} value={i.value}>{i.label}</option>)}
               </select>
             </div>
@@ -182,51 +182,51 @@ export default function ClientCreate() {
                 <input type="color" value={form.brand_color} onChange={e => updateForm('brand_color', e.target.value)}
                   className="w-10 h-10 rounded-lg border border-slate-100 cursor-pointer" />
                 <input type="text" value={form.brand_color} onChange={e => updateForm('brand_color', e.target.value)}
-                  className="flex-1 px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200" />
+                  className="flex-1 px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200" />
               </div>
             </div>
             <div>
               <label className="block text-xs font-medium text-slate-400 mb-1.5">Email</label>
               <input type="email" value={form.email} onChange={e => updateForm('email', e.target.value)}
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200" placeholder="info@company.com" />
+                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200" placeholder="info@company.com" />
             </div>
             <div>
               <label className="block text-xs font-medium text-slate-400 mb-1.5">Phone</label>
               <input type="tel" value={form.phone} onChange={e => updateForm('phone', e.target.value)}
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200" placeholder="+1 425-555-0100" />
+                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200" placeholder="+1 425-555-0100" />
             </div>
             <div className="col-span-1 sm:col-span-2">
               <label className="block text-xs font-medium text-slate-400 mb-1.5">Address</label>
               <input type="text" value={form.address} onChange={e => updateForm('address', e.target.value)}
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200" placeholder="123 Main St, Suite 200" />
+                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200" placeholder="123 Main St, Suite 200" />
             </div>
             <div>
               <label className="block text-xs font-medium text-slate-400 mb-1.5">Website</label>
               <input type="text" value={form.website} onChange={e => updateForm('website', e.target.value)}
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200" placeholder="www.company.com" />
+                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200" placeholder="www.company.com" />
             </div>
             <div>
               <label className="block text-xs font-medium text-slate-400 mb-1.5">Business Hours</label>
               <input type="text" value={form.business_hours} onChange={e => updateForm('business_hours', e.target.value)}
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200" />
+                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200" />
             </div>
           </div>
         </div>
 
         {/* AI Agent */}
-        <div className="bg-white rounded-2xl border border-slate-100 p-6 space-y-4">
+        <div className="bg-white rounded-lg border border-slate-100 p-6 space-y-4">
           <h3 className="text-sm font-semibold text-slate-800">AI Agent Configuration</h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-slate-400 mb-1.5">Agent Name</label>
               <input type="text" value={form.agent_name} onChange={e => updateForm('agent_name', e.target.value)}
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200" placeholder="Sarah" />
+                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200" placeholder="Sarah" />
             </div>
             <div>
               <label className="block text-xs font-medium text-slate-400 mb-1.5">Prompt Template</label>
               <select value={form.prompt_template_id} onChange={e => updateForm('prompt_template_id', e.target.value)}
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200">
+                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200">
                 <option value="">Select template...</option>
                 {templates.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
               </select>
@@ -234,7 +234,7 @@ export default function ClientCreate() {
           </div>
 
           {selectedTemplate && (
-            <div className="mt-3 px-4 py-3 bg-slate-50 rounded-xl">
+            <div className="mt-3 px-4 py-3 bg-slate-50 rounded-lg">
               <p className="text-xs font-medium text-slate-500 mb-1">Prompt Preview</p>
               <pre className="text-xs text-slate-600 whitespace-pre-wrap font-sans leading-relaxed max-h-40 overflow-y-auto">
                 {selectedTemplate.body.slice(0, 500)}{selectedTemplate.body.length > 500 ? '...' : ''}
@@ -244,14 +244,14 @@ export default function ClientCreate() {
         </div>
 
         {/* Staff */}
-        <div className="bg-white rounded-2xl border border-slate-100 p-6 space-y-4">
+        <div className="bg-white rounded-lg border border-slate-100 p-6 space-y-4">
           <h3 className="text-sm font-semibold text-slate-800">Staff Members</h3>
           <p className="text-xs text-slate-400">These names will appear in the AI agent's prompt.</p>
 
           {staffList.length > 0 && (
             <div className="space-y-2">
               {staffList.map((s, i) => (
-                <div key={i} className="flex items-center justify-between px-4 py-2.5 bg-slate-50 rounded-xl">
+                <div key={i} className="flex items-center justify-between px-4 py-2.5 bg-slate-50 rounded-lg">
                   <div>
                     <span className="text-sm font-medium text-slate-800">{s.name}</span>
                     {s.specialization && <span className="text-xs text-slate-400 ml-2">({s.specialization})</span>}
@@ -266,19 +266,19 @@ export default function ClientCreate() {
 
           <div className="flex items-center gap-2">
             <input type="text" placeholder="Name" value={newStaff.name} onChange={e => setNewStaff(p => ({ ...p, name: e.target.value }))}
-              className="flex-1 px-3 py-2 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200 placeholder:text-slate-300"
+              className="flex-1 px-3 py-2 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200 placeholder:text-slate-300"
               onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addStaff())} />
             <input type="text" placeholder="Specialization" value={newStaff.specialization} onChange={e => setNewStaff(p => ({ ...p, specialization: e.target.value }))}
-              className="flex-1 px-3 py-2 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200 placeholder:text-slate-300"
+              className="flex-1 px-3 py-2 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200 placeholder:text-slate-300"
               onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addStaff())} />
-            <button type="button" onClick={addStaff} className="px-3 py-2 bg-slate-900 text-white text-xs font-medium rounded-xl hover:bg-slate-800 transition-colors">
+            <button type="button" onClick={addStaff} className="px-3 py-2 bg-slate-900 text-white text-xs font-medium rounded-lg hover:bg-slate-800 transition-colors">
               <Plus size={14} />
             </button>
           </div>
         </div>
 
         {/* Admin Login */}
-        <div className="bg-white rounded-2xl border border-slate-100 p-6 space-y-4">
+        <div className="bg-white rounded-lg border border-slate-100 p-6 space-y-4">
           <h3 className="text-sm font-semibold text-slate-800">Client Admin Login</h3>
           <p className="text-xs text-slate-400">Create a login account for this client to access their dashboard.</p>
 
@@ -305,7 +305,7 @@ export default function ClientCreate() {
         </div>
 
         {/* Plan Selection */}
-        <div className="bg-white rounded-2xl border border-slate-100 p-6 space-y-4">
+        <div className="bg-white rounded-lg border border-slate-100 p-6 space-y-4">
           <div>
             <h3 className="text-sm font-semibold text-slate-800">Plan</h3>
             <p className="text-xs text-slate-400 mt-0.5">Select the plan this client is on</p>
@@ -325,7 +325,7 @@ export default function ClientCreate() {
                   key={plan.id}
                   type="button"
                   onClick={() => updateForm('plan', plan.id)}
-                  className={`relative text-left rounded-xl border-2 p-4 transition-all ${
+                  className={`relative text-left rounded-lg border-2 p-4 transition-all ${
                     selected ? `${c.ring} ring-2 bg-slate-50` : 'border-slate-100 hover:border-slate-200'
                   }`}
                 >
@@ -372,7 +372,7 @@ export default function ClientCreate() {
             Deploy Retell agent now
           </label>
           <button type="submit" disabled={saving}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 text-white text-sm font-medium rounded-xl hover:bg-slate-800 transition-colors disabled:opacity-50">
+            className="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 text-white text-sm font-medium rounded-lg hover:bg-slate-800 transition-colors disabled:opacity-50">
             <Rocket size={16} />
             {saving ? 'Creating...' : 'Create Client'}
           </button>

@@ -3,7 +3,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { FirmProvider } from './context/FirmContext';
 import { Toaster } from 'sonner';
 import ErrorBoundary from './components/ErrorBoundary';
-import Navbar from './components/Navbar';
+import Sidebar from './components/Sidebar';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Leads from './pages/Leads';
@@ -54,9 +54,9 @@ function AdminRoute({ children }) {
 
 function AppLayout() {
   return (
-    <div className="min-h-screen bg-[#f8fafc]">
-      <Navbar />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+    <div className="min-h-screen bg-[#f8fafc] flex">
+      <Sidebar />
+      <main className="flex-1 min-w-0 overflow-y-auto px-6 py-6 md:pt-6 pt-20">
         <Routes>
           {/* Client Dashboard */}
           <Route path="/" element={<Dashboard />} />

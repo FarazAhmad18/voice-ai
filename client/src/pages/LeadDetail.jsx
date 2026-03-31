@@ -43,9 +43,9 @@ function daysSince(dateStr) {
 }
 
 function getScoreGradient(scoreLabel) {
-  if (scoreLabel === 'hot') return 'from-red-500 to-orange-500';
-  if (scoreLabel === 'warm') return 'from-amber-400 to-orange-400';
-  return 'from-slate-400 to-slate-500';
+  if (scoreLabel === 'hot') return 'bg-red-500';
+  if (scoreLabel === 'warm') return 'bg-amber-500';
+  return 'bg-slate-400';
 }
 
 function getScoreRingColor(scoreLabel) {
@@ -210,9 +210,9 @@ export default function LeadDetail() {
       <div className="space-y-6">
         <div className="h-5 w-20 bg-slate-100 rounded animate-pulse" />
         {/* Header skeleton */}
-        <div className="bg-white rounded-2xl border border-slate-100 p-6">
+        <div className="bg-white rounded-lg border border-slate-100 p-6">
           <div className="flex items-start gap-4">
-            <div className="w-16 h-16 bg-slate-100 rounded-2xl animate-pulse" />
+            <div className="w-16 h-16 bg-slate-100 rounded-lg animate-pulse" />
             <div className="flex-1">
               <div className="h-6 w-48 bg-slate-100 rounded animate-pulse" />
               <div className="flex gap-3 mt-3">
@@ -224,7 +224,7 @@ export default function LeadDetail() {
           </div>
         </div>
         {/* Pipeline skeleton */}
-        <div className="bg-white rounded-2xl border border-slate-100 p-5">
+        <div className="bg-white rounded-lg border border-slate-100 p-5">
           <div className="flex gap-2">
             {[1,2,3,4,5].map(i => (
               <div key={i} className="flex-1 h-3 bg-slate-100 rounded-full animate-pulse" />
@@ -235,7 +235,7 @@ export default function LeadDetail() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-4 space-y-5">
             {[1,2,3].map(i => (
-              <div key={i} className="bg-white rounded-2xl border border-slate-100 p-5">
+              <div key={i} className="bg-white rounded-lg border border-slate-100 p-5">
                 <div className="h-4 w-24 bg-slate-100 rounded animate-pulse mb-4" />
                 {[1,2,3].map(j => (
                   <div key={j} className="flex gap-3 mb-3">
@@ -250,8 +250,8 @@ export default function LeadDetail() {
             ))}
           </div>
           <div className="lg:col-span-8 space-y-5">
-            <div className="bg-slate-50 rounded-2xl p-5 h-24 animate-pulse" />
-            <div className="bg-white rounded-2xl border border-slate-100 p-5 h-64 animate-pulse" />
+            <div className="bg-slate-50 rounded-lg p-5 h-24 animate-pulse" />
+            <div className="bg-white rounded-lg border border-slate-100 p-5 h-64 animate-pulse" />
           </div>
         </div>
       </div>
@@ -261,7 +261,7 @@ export default function LeadDetail() {
   if (!lead) {
     return (
       <div className="text-center py-20">
-        <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <div className="w-16 h-16 bg-slate-50 rounded-lg flex items-center justify-center mx-auto mb-4">
           <User size={24} className="text-slate-300" />
         </div>
         <p className="text-base font-semibold text-slate-600">Lead not found</p>
@@ -296,14 +296,13 @@ export default function LeadDetail() {
       </nav>
 
       {/* Header Card */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm shadow-slate-100/50 overflow-hidden">
+      <div className="bg-white rounded-lg border border-slate-100 shadow-sm shadow-slate-100/50 overflow-hidden">
         <div className="p-6">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-5">
               {/* Avatar with gradient ring */}
               <div className="relative">
-                <div className={`w-16 h-16 bg-gradient-to-br ${gradient} rounded-2xl flex items-center justify-center text-xl font-extrabold text-white shadow-lg`}
-                  style={{ boxShadow: `0 8px 24px -4px ${lead.score_label === 'hot' ? 'rgba(239,68,68,0.3)' : lead.score_label === 'warm' ? 'rgba(245,158,11,0.3)' : 'rgba(100,116,139,0.2)'}` }}
+                <div className={`w-16 h-16 ${gradient} rounded-lg flex items-center justify-center text-xl font-extrabold text-white shadow-lg`}
                 >
                   {initials}
                 </div>
@@ -424,8 +423,8 @@ export default function LeadDetail() {
         {/* Left Sidebar */}
         <div className="lg:col-span-4 space-y-5">
           {/* Lead Info Card */}
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm shadow-slate-100/50 overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white">
+          <div className="bg-white rounded-lg border border-slate-100 shadow-sm shadow-slate-100/50 overflow-hidden">
+            <div className="px-5 py-4 border-b border-slate-100 bg-slate-50">
               <h3 className="text-sm font-bold text-slate-900">Lead Details</h3>
             </div>
             <div className="p-5 space-y-5">
@@ -468,8 +467,8 @@ export default function LeadDetail() {
           </div>
 
           {/* Assign Staff */}
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm shadow-slate-100/50 overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white flex items-center justify-between">
+          <div className="bg-white rounded-lg border border-slate-100 shadow-sm shadow-slate-100/50 overflow-hidden">
+            <div className="px-5 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
               <h3 className="text-sm font-bold text-slate-900">Assigned {labels.staff}</h3>
               {assignedStaffMember && (
                 <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full uppercase tracking-wider">Assigned</span>
@@ -485,13 +484,13 @@ export default function LeadDetail() {
                       <button
                         key={s.id}
                         onClick={() => handleAssignStaff(isAssigned ? null : s.id)}
-                        className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm transition-all duration-200 text-left ${
+                        className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-lg text-sm transition-all duration-200 text-left ${
                           isAssigned
-                            ? 'bg-gradient-to-r from-slate-800 to-slate-900 text-white shadow-lg shadow-slate-900/20 ring-2 ring-violet-500/30'
+                            ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/20 ring-2 ring-violet-500/30'
                             : 'hover:bg-slate-50 text-slate-600 border border-transparent hover:border-slate-100'
                         }`}
                       >
-                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-xs font-bold transition-all ${
+                        <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold transition-all ${
                           isAssigned ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
                         }`}>
                           {staffInitial}
@@ -513,7 +512,7 @@ export default function LeadDetail() {
                 </div>
               ) : (
                 <div className="px-3 py-6 text-center">
-                  <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center mx-auto mb-2">
+                  <div className="w-10 h-10 bg-slate-50 rounded-lg flex items-center justify-center mx-auto mb-2">
                     <User size={16} className="text-slate-300" />
                   </div>
                   <p className="text-sm text-slate-400">No {labels.staff.toLowerCase()} available</p>
@@ -523,8 +522,8 @@ export default function LeadDetail() {
           </div>
 
           {/* Follow-up Date */}
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm shadow-slate-100/50 overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white">
+          <div className="bg-white rounded-lg border border-slate-100 shadow-sm shadow-slate-100/50 overflow-hidden">
+            <div className="px-5 py-4 border-b border-slate-100 bg-slate-50">
               <h3 className="text-sm font-bold text-slate-900">Follow-up Reminder</h3>
             </div>
             <div className="p-5">
@@ -533,18 +532,18 @@ export default function LeadDetail() {
                   type="date"
                   value={followUpDate}
                   onChange={(e) => setFollowUpDate(e.target.value)}
-                  className="flex-1 px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 transition-all"
+                  className="flex-1 px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 transition-all"
                 />
                 <button
                   onClick={handleSetFollowUp}
                   disabled={!followUpDate}
-                  className="px-4 py-2.5 bg-slate-900 text-white text-xs font-semibold rounded-xl hover:bg-slate-800 transition-all disabled:opacity-30 shadow-sm hover:shadow-md disabled:shadow-none"
+                  className="px-4 py-2.5 bg-slate-900 text-white text-xs font-semibold rounded-lg hover:bg-slate-800 transition-all disabled:opacity-30 shadow-sm hover:shadow-md disabled:shadow-none"
                 >
                   <Bell size={14} />
                 </button>
               </div>
               {lead.follow_up_date && (
-                <div className="mt-3 flex items-center gap-2.5 px-3.5 py-2.5 bg-emerald-50 border border-emerald-100 rounded-xl">
+                <div className="mt-3 flex items-center gap-2.5 px-3.5 py-2.5 bg-emerald-50 border border-emerald-100 rounded-lg">
                   <CalendarCheck size={14} className="text-emerald-500" />
                   <p className="text-xs font-semibold text-emerald-700">Reminder set for {lead.follow_up_date}</p>
                 </div>
@@ -557,24 +556,20 @@ export default function LeadDetail() {
         <div className="lg:col-span-8 space-y-5">
           {/* AI Summary — gradient sparkle card */}
           {lead.notes && (
-            <div className="relative overflow-hidden bg-gradient-to-br from-violet-50 via-blue-50 to-indigo-50 rounded-2xl border border-violet-100/50 p-6">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-violet-200/20 to-blue-200/20 rounded-full blur-3xl" />
-              <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-indigo-200/20 to-violet-200/20 rounded-full blur-2xl" />
-              <div className="relative">
-                <div className="flex items-center gap-2.5 mb-3">
-                  <div className="w-7 h-7 bg-gradient-to-br from-violet-500 to-blue-500 rounded-lg flex items-center justify-center shadow-sm shadow-violet-500/20">
-                    <Sparkles size={13} className="text-white" />
-                  </div>
-                  <h3 className="text-xs font-extrabold text-violet-700 uppercase tracking-widest">AI Call Summary</h3>
+            <div className="bg-white border-l-4 border-l-violet-500 rounded-lg border border-slate-100 p-6">
+              <div className="flex items-center gap-2.5 mb-3">
+                <div className="w-7 h-7 bg-violet-500 rounded-lg flex items-center justify-center">
+                  <Sparkles size={13} className="text-white" />
                 </div>
-                <p className="text-sm text-slate-800 leading-relaxed font-medium">{lead.notes}</p>
+                <h3 className="text-xs font-extrabold text-violet-700 uppercase tracking-widest">AI Call Summary</h3>
               </div>
+              <p className="text-sm text-slate-800 leading-relaxed font-medium">{lead.notes}</p>
             </div>
           )}
 
           {/* Unified Activity Section */}
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm shadow-slate-100/50 overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50 to-white">
+          <div className="bg-white rounded-lg border border-slate-100 shadow-sm shadow-slate-100/50 overflow-hidden">
+            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
               <div className="flex items-center gap-2.5">
                 <div className="w-7 h-7 bg-slate-100 rounded-lg flex items-center justify-center">
                   <Activity size={14} className="text-slate-500" />
@@ -601,8 +596,8 @@ export default function LeadDetail() {
 
           {/* Intake Answers — pill-style Q&A */}
           {lead.intake_answers && lead.intake_answers.length > 0 && (
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm shadow-slate-100/50 overflow-hidden">
-              <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-2.5 bg-gradient-to-r from-slate-50 to-white">
+            <div className="bg-white rounded-lg border border-slate-100 shadow-sm shadow-slate-100/50 overflow-hidden">
+              <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-2.5 bg-slate-50">
                 <div className="w-7 h-7 bg-slate-100 rounded-lg flex items-center justify-center">
                   <FileText size={14} className="text-slate-500" />
                 </div>
@@ -635,7 +630,7 @@ export default function LeadDetail() {
 function InfoRow({ icon: Icon, label, value, iconColor, valueClass = '' }) {
   return (
     <div className="flex items-center gap-3.5 group">
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105 ${iconColor}`}>
+      <div className={`w-10 h-10 rounded-lg flex items-center justify-center transition-transform group-hover:scale-105 ${iconColor}`}>
         <Icon size={16} />
       </div>
       <div className="flex-1 min-w-0">

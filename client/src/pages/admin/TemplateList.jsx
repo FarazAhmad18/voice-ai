@@ -164,20 +164,20 @@ export default function TemplateList() {
             <p className="text-sm text-slate-400 mt-1">Manage AI agent prompts by industry</p>
           </div>
           <button onClick={startCreate}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-sm font-medium rounded-xl hover:bg-slate-800 transition-colors">
+            className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-sm font-medium rounded-lg hover:bg-slate-800 transition-colors">
             <Plus size={15} /> New Template
           </button>
         </div>
 
         {error && (
-          <div className="px-4 py-3 bg-red-50 border border-red-100 rounded-xl">
+          <div className="px-4 py-3 bg-red-50 border border-red-100 rounded-lg">
             <p className="text-sm text-red-600">{error}</p>
           </div>
         )}
 
         {/* Create/Edit Form */}
         {(creating || editing) && (
-          <div className="bg-white rounded-2xl border border-slate-100 p-6 space-y-4">
+          <div className="bg-white rounded-lg border border-slate-100 p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-slate-800">{creating ? 'New Template' : 'Edit Template'}</h3>
               <button onClick={cancel} className="p-1 text-slate-400 hover:text-slate-600"><X size={16} /></button>
@@ -187,12 +187,12 @@ export default function TemplateList() {
               <div>
                 <label className="block text-xs font-medium text-slate-400 mb-1.5">Name</label>
                 <input type="text" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
-                  className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200" placeholder="Legal - Family Law" />
+                  className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200" placeholder="Legal - Family Law" />
               </div>
               <div>
                 <label className="block text-xs font-medium text-slate-400 mb-1.5">Industry</label>
                 <select value={form.industry} onChange={e => setForm(p => ({ ...p, industry: e.target.value }))}
-                  className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200">
+                  className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200">
                   <option value="legal">Legal</option>
                   <option value="dental">Dental</option>
                   <option value="plumbing">Plumbing</option>
@@ -206,7 +206,7 @@ export default function TemplateList() {
             <div>
               <label className="block text-xs font-medium text-slate-400 mb-1.5">Case Types (comma-separated)</label>
               <input type="text" value={form.case_types} onChange={e => setForm(p => ({ ...p, case_types: e.target.value }))}
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200"
+                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200"
                 placeholder="divorce, custody, support, other" />
             </div>
 
@@ -217,13 +217,13 @@ export default function TemplateList() {
               </label>
               <textarea value={form.body} onChange={e => setForm(p => ({ ...p, body: e.target.value }))}
                 rows={14}
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200 font-mono leading-relaxed"
+                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200 font-mono leading-relaxed"
                 placeholder="You are {{agent_name}}, a professional AI assistant for {{company_name}}..." />
             </div>
 
             <div className="flex justify-end">
               <button onClick={handleSave}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-xs font-medium rounded-xl hover:bg-slate-800 transition-colors">
+                className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-xs font-medium rounded-lg hover:bg-slate-800 transition-colors">
                 <Save size={14} /> {creating ? 'Create Template' : 'Save Changes'}
               </button>
             </div>
@@ -232,18 +232,18 @@ export default function TemplateList() {
 
         {/* Template List */}
         {templates.length === 0 && !creating ? (
-          <div className="bg-white rounded-2xl border border-slate-100 py-16 text-center">
+          <div className="bg-white rounded-lg border border-slate-100 py-16 text-center">
             <FileText size={28} className="text-slate-300 mx-auto mb-3" />
             <p className="text-sm text-slate-400">No templates yet</p>
           </div>
         ) : (
           <div className="space-y-3">
             {templates.map((t) => (
-              <div key={t.id} className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+              <div key={t.id} className="bg-white rounded-lg border border-slate-100 overflow-hidden">
                 <div className="flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-slate-50/50 transition-colors"
                   onClick={() => setExpanded(expanded === t.id ? null : t.id)}>
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 bg-violet-50 rounded-xl flex items-center justify-center">
+                    <div className="w-9 h-9 bg-violet-50 rounded-lg flex items-center justify-center">
                       <FileText size={16} className="text-violet-600" />
                     </div>
                     <div>
@@ -269,7 +269,7 @@ export default function TemplateList() {
                 </div>
                 {expanded === t.id && (
                   <div className="px-5 pb-4 border-t border-slate-50">
-                    <pre className="mt-3 text-xs text-slate-600 whitespace-pre-wrap font-sans leading-relaxed bg-slate-50 rounded-xl p-4 max-h-64 overflow-y-auto">
+                    <pre className="mt-3 text-xs text-slate-600 whitespace-pre-wrap font-sans leading-relaxed bg-slate-50 rounded-lg p-4 max-h-64 overflow-y-auto">
                       {t.body}
                     </pre>
                     {t.case_types && (
@@ -291,7 +291,7 @@ export default function TemplateList() {
       {previewTemplateData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={closePreview} />
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
+          <div className="relative bg-white rounded-lg shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
               <div>
@@ -314,7 +314,7 @@ export default function TemplateList() {
                     <select
                       value={previewFirmId}
                       onChange={e => { setPreviewFirmId(e.target.value); setPreviewResult(null); }}
-                      className="w-full px-3.5 py-2.5 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200">
+                      className="w-full px-3.5 py-2.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200">
                       {firms.map(f => (
                         <option key={f.id} value={f.id}>{f.name} ({f.industry})</option>
                       ))}
@@ -324,7 +324,7 @@ export default function TemplateList() {
                 <button
                   onClick={runPreview}
                   disabled={!previewFirmId || previewLoading || firms.length === 0}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-violet-600 text-white text-sm font-medium rounded-xl hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap">
+                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-violet-600 text-white text-sm font-medium rounded-lg hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap">
                   {previewLoading ? (
                     <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Rendering...</>
                   ) : (
@@ -337,7 +337,7 @@ export default function TemplateList() {
             {/* Result */}
             <div className="flex-1 overflow-y-auto px-6 py-4">
               {previewError && (
-                <div className="flex items-start gap-2 px-4 py-3 bg-red-50 border border-red-100 rounded-xl mb-4">
+                <div className="flex items-start gap-2 px-4 py-3 bg-red-50 border border-red-100 rounded-lg mb-4">
                   <AlertCircle size={15} className="text-red-500 mt-0.5 shrink-0" />
                   <p className="text-sm text-red-600">{previewError}</p>
                 </div>
@@ -355,15 +355,15 @@ export default function TemplateList() {
                 <div className="space-y-4">
                   {/* Stats row */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div className="bg-slate-50 rounded-xl px-4 py-3 text-center">
+                    <div className="bg-slate-50 rounded-lg px-4 py-3 text-center">
                       <p className="text-lg font-semibold text-slate-800">{previewResult.prompt_length.toLocaleString()}</p>
                       <p className="text-xs text-slate-400 mt-0.5">characters</p>
                     </div>
-                    <div className="bg-slate-50 rounded-xl px-4 py-3 text-center">
+                    <div className="bg-slate-50 rounded-lg px-4 py-3 text-center">
                       <p className="text-lg font-semibold text-slate-800">{previewResult.staff_count}</p>
                       <p className="text-xs text-slate-400 mt-0.5">staff injected</p>
                     </div>
-                    <div className="bg-slate-50 rounded-xl px-4 py-3 text-center">
+                    <div className="bg-slate-50 rounded-lg px-4 py-3 text-center">
                       <p className="text-lg font-semibold text-slate-800">{previewResult.knowledge_count}</p>
                       <p className="text-xs text-slate-400 mt-0.5">FAQ entries</p>
                     </div>
@@ -379,7 +379,7 @@ export default function TemplateList() {
                         {copied ? <><Check size={12} className="text-green-500" /> Copied</> : <><Copy size={12} /> Copy</>}
                       </button>
                     </div>
-                    <pre className="text-xs text-slate-700 whitespace-pre-wrap font-sans leading-relaxed bg-slate-50 border border-slate-100 rounded-xl p-4 max-h-96 overflow-y-auto">
+                    <pre className="text-xs text-slate-700 whitespace-pre-wrap font-sans leading-relaxed bg-slate-50 border border-slate-100 rounded-lg p-4 max-h-96 overflow-y-auto">
                       {previewResult.rendered}
                     </pre>
                   </div>

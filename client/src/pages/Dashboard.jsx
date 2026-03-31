@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useFirm } from '../context/FirmContext';
@@ -12,85 +12,6 @@ import {
   ChevronRight, AlertCircle, Phone, PhoneIncoming, PhoneMissed,
   TrendingUp, ArrowUpRight, BarChart3, Zap, Activity,
 } from 'lucide-react';
-
-/* ─── Inline keyframe styles injected once ─── */
-const STYLE_ID = '__dashboard-premium-styles';
-if (typeof document !== 'undefined' && !document.getElementById(STYLE_ID)) {
-  const style = document.createElement('style');
-  style.id = STYLE_ID;
-  style.textContent = `
-    @keyframes heroGradientShift {
-      0%   { background-position: 0% 50%; }
-      50%  { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(12px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes pulseRing {
-      0%   { transform: scale(1); opacity: 1; }
-      100% { transform: scale(2.2); opacity: 0; }
-    }
-    @keyframes skeletonShimmer {
-      0%   { background-position: -200% 0; }
-      100% { background-position: 200% 0; }
-    }
-    @keyframes numberPop {
-      0%   { transform: scale(0.8); opacity: 0; }
-      60%  { transform: scale(1.05); }
-      100% { transform: scale(1); opacity: 1; }
-    }
-    .hero-gradient-animate {
-      background-size: 200% 200%;
-      animation: heroGradientShift 8s ease infinite;
-    }
-    .fade-in-up {
-      animation: fadeInUp 0.5s ease forwards;
-      opacity: 0;
-    }
-    .pulse-ring {
-      animation: pulseRing 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    }
-    .skeleton-shimmer {
-      background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
-      background-size: 200% 100%;
-      animation: skeletonShimmer 1.5s ease-in-out infinite;
-    }
-    .number-pop {
-      animation: numberPop 0.4s ease forwards;
-    }
-    .card-lift {
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    .card-lift:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px -5px rgba(0,0,0,0.08), 0 4px 10px -6px rgba(0,0,0,0.04);
-    }
-    .arrow-slide {
-      transition: transform 0.2s ease;
-    }
-    .group:hover .arrow-slide {
-      transform: translateX(3px);
-    }
-    .pipeline-segment {
-      transition: all 0.3s ease;
-      position: relative;
-    }
-    .pipeline-segment:hover {
-      filter: brightness(1.1);
-    }
-    .pipeline-tooltip {
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.15s ease;
-    }
-    .pipeline-segment:hover .pipeline-tooltip {
-      opacity: 1;
-    }
-  `;
-  document.head.appendChild(style);
-}
 
 function getGreeting() {
   const hour = new Date().getHours();
@@ -127,30 +48,30 @@ function SkeletonBlock({ className }) {
 
 function DashboardSkeleton() {
   return (
-    <div className="space-y-8 fade-in-up">
+    <div className="space-y-8">
       {/* Hero skeleton */}
-      <SkeletonBlock className="h-52 rounded-2xl" />
+      <SkeletonBlock className="h-52 rounded-lg" />
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-8 space-y-6">
-          <div className="bg-white rounded-2xl border border-slate-100 p-6 space-y-4">
+          <div className="bg-white rounded-lg border border-slate-100 p-6 space-y-4">
             <SkeletonBlock className="h-5 w-40" />
             <SkeletonBlock className="h-16 w-full" />
             <SkeletonBlock className="h-16 w-full" />
             <SkeletonBlock className="h-16 w-full" />
           </div>
-          <div className="bg-white rounded-2xl border border-slate-100 p-6 space-y-4">
+          <div className="bg-white rounded-lg border border-slate-100 p-6 space-y-4">
             <SkeletonBlock className="h-5 w-36" />
             <SkeletonBlock className="h-14 w-full" />
             <SkeletonBlock className="h-14 w-full" />
           </div>
         </div>
         <div className="lg:col-span-4 space-y-6">
-          <div className="bg-white rounded-2xl border border-slate-100 p-6 space-y-3">
+          <div className="bg-white rounded-lg border border-slate-100 p-6 space-y-3">
             <SkeletonBlock className="h-5 w-28" />
             <SkeletonBlock className="h-4 w-full" />
             <SkeletonBlock className="h-20 w-full" />
           </div>
-          <div className="bg-white rounded-2xl border border-slate-100 p-6 space-y-3">
+          <div className="bg-white rounded-lg border border-slate-100 p-6 space-y-3">
             <SkeletonBlock className="h-5 w-32" />
             <SkeletonBlock className="h-12 w-full" />
             <SkeletonBlock className="h-12 w-full" />
@@ -170,7 +91,6 @@ export default function Dashboard() {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [dataReady, setDataReady] = useState(false);
 
   async function loadData() {
     setError(null);
@@ -185,8 +105,6 @@ export default function Dashboard() {
       setError(err.message || 'Failed to load dashboard data');
     } finally {
       setLoading(false);
-      // slight delay so skeleton → content is smooth
-      setTimeout(() => setDataReady(true), 50);
     }
   }
 
@@ -270,21 +188,20 @@ export default function Dashboard() {
 
   // Pipeline stages
   const pipelineStages = [
-    { label: 'New', count: newLeads.length, color: '#10b981', gradient: 'from-emerald-400 to-emerald-500', link: '/leads?status=new' },
-    { label: 'Following Up', count: followUps.length, color: '#f59e0b', gradient: 'from-amber-400 to-amber-500', link: '/follow-ups' },
-    { label: 'Booked', count: leads.filter(l => l.status === 'booked').length, color: '#8b5cf6', gradient: 'from-violet-400 to-violet-500', link: '/leads?status=booked' },
-    { label: 'Converted', count: leads.filter(l => l.status === 'converted').length, color: '#14b8a6', gradient: 'from-teal-400 to-teal-500', link: '/leads?status=converted' },
-    { label: 'Closed', count: leads.filter(l => l.status === 'closed').length, color: '#94a3b8', gradient: 'from-slate-400 to-slate-500', link: '/leads?status=closed' },
+    { label: 'New', count: newLeads.length, color: '#10b981', link: '/leads?status=new' },
+    { label: 'Following Up', count: followUps.length, color: '#f59e0b', link: '/follow-ups' },
+    { label: 'Booked', count: leads.filter(l => l.status === 'booked').length, color: '#8b5cf6', link: '/leads?status=booked' },
+    { label: 'Converted', count: leads.filter(l => l.status === 'converted').length, color: '#14b8a6', link: '/leads?status=converted' },
+    { label: 'Closed', count: leads.filter(l => l.status === 'closed').length, color: '#94a3b8', link: '/leads?status=closed' },
   ];
   const pipelineTotal = pipelineStages.reduce((s, p) => s + p.count, 0) || 1;
 
-  // Build a clean brand gradient base — derive from brandColor
   const bc = brandColor || '#6d28d9';
 
   return (
-    <div className={`space-y-8 ${dataReady ? 'fade-in-up' : ''}`} style={{ animationDuration: '0.4s' }}>
+    <div className="space-y-8">
       {error && (
-        <div className="bg-red-50/80 backdrop-blur-sm border border-red-100 rounded-2xl px-5 py-4 flex items-center justify-between fade-in-up">
+        <div className="bg-red-50/80 backdrop-blur-sm border border-red-100 rounded-lg px-5 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
               <AlertCircle size={15} className="text-red-500" />
@@ -301,25 +218,9 @@ export default function Dashboard() {
           HERO SECTION
           ══════════════════════════════════════════════ */}
       <div
-        className="relative overflow-hidden rounded-2xl p-7 sm:p-9 hero-gradient-animate"
-        style={{
-          background: `linear-gradient(135deg, ${bc}, #0f172a 40%, ${bc}88 70%, #1e293b 100%)`,
-        }}
+        className="relative overflow-hidden rounded-lg p-7 sm:p-9"
+        style={{ backgroundColor: '#0f172a' }}
       >
-        {/* Subtle dot pattern overlay */}
-        <div className="absolute inset-0 opacity-[0.04]" style={{
-          backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)',
-          backgroundSize: '24px 24px',
-        }} />
-        {/* Soft glow from brand color */}
-        <div
-          className="absolute -top-20 -right-20 w-80 h-80 rounded-full blur-3xl opacity-20"
-          style={{ backgroundColor: bc }}
-        />
-        <div
-          className="absolute -bottom-10 -left-10 w-60 h-60 rounded-full blur-3xl opacity-10"
-          style={{ backgroundColor: bc }}
-        />
 
         <div className="relative z-10">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-5">
@@ -337,21 +238,18 @@ export default function Dashboard() {
             {/* Agent status + today's calls */}
             <div className="flex items-center gap-4">
               {/* Agent active indicator */}
-              <div className="flex items-center gap-2.5 bg-white/[0.08] backdrop-blur-xl border border-white/[0.08] rounded-xl px-4 py-2.5">
-                <div className="relative">
-                  <div className="w-2.5 h-2.5 bg-emerald-400 rounded-full" />
-                  <div className="absolute inset-0 w-2.5 h-2.5 bg-emerald-400 rounded-full pulse-ring" />
-                </div>
+              <div className="flex items-center gap-2.5 bg-white/10 border border-white/[0.08] rounded-lg px-4 py-2.5">
+                <div className="w-2.5 h-2.5 bg-emerald-400 rounded-full" />
                 <span className="text-xs font-medium text-white/70">{agentName} Active</span>
               </div>
 
               {todayLeads.length > 0 && (
-                <div className="flex items-center gap-3.5 bg-white/[0.08] backdrop-blur-xl border border-white/[0.08] rounded-xl px-5 py-3">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${bc}33` }}>
+                <div className="flex items-center gap-3.5 bg-white/10 border border-white/[0.08] rounded-lg px-5 py-3">
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${bc}33` }}>
                     <PhoneIncoming size={18} className="text-emerald-400" />
                   </div>
                   <div>
-                    <p className="text-xl font-bold text-white number-pop">{todayLeads.length}</p>
+                    <p className="text-xl font-bold text-white">{todayLeads.length}</p>
                     <p className="text-[10px] text-white/40 uppercase tracking-widest font-medium">Today's Calls</p>
                   </div>
                 </div>
@@ -377,10 +275,10 @@ export default function Dashboard() {
         <div className="lg:col-span-8 space-y-6">
 
           {/* ── Needs Attention ── */}
-          <div className="bg-white rounded-2xl border border-slate-100/80 shadow-sm">
+          <div className="bg-white rounded-lg border border-slate-100/80 shadow-sm">
             <div className="px-6 py-5 border-b border-slate-100/80 flex justify-between items-center">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl flex items-center justify-center">
+                <div className="w-9 h-9 bg-amber-50 rounded-lg flex items-center justify-center">
                   <Zap size={16} className="text-amber-500" />
                 </div>
                 <div>
@@ -389,12 +287,12 @@ export default function Dashboard() {
                 </div>
               </div>
               <Link to="/leads" className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-slate-600 transition-colors group">
-                View all <ArrowRight size={12} className="arrow-slide" />
+                View all <ArrowRight size={12} />
               </Link>
             </div>
             {needsAttention.length === 0 ? (
               <div className="py-20 text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-emerald-50 rounded-lg flex items-center justify-center mx-auto mb-4">
                   <CalendarCheck size={24} className="text-emerald-500" />
                 </div>
                 <p className="text-sm font-semibold text-slate-700">All caught up</p>
@@ -426,8 +324,7 @@ export default function Dashboard() {
                     <Link
                       key={lead.id}
                       to={`/leads/${lead.id}`}
-                      className={`flex items-center gap-4 px-6 py-4 border-l-[3px] ${borderColors[lead.reason] || 'border-l-slate-300'} hover:bg-slate-50/60 transition-all group card-lift fade-in-up`}
-                      style={{ animationDelay: `${idx * 60}ms` }}
+                      className={`flex items-center gap-4 px-6 py-4 border-l-[3px] ${borderColors[lead.reason] || 'border-l-slate-300'} hover:bg-slate-50/60 transition-all group`}
                     >
                       <div className="relative">
                         <div className={`w-11 h-11 rounded-full flex items-center justify-center text-xs font-bold ${avatarBg[lead.reason] || 'bg-slate-100 text-slate-600'} group-hover:scale-105 transition-transform`}>
@@ -456,7 +353,7 @@ export default function Dashboard() {
                         <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${reasonBgColors[lead.reason] || 'bg-slate-50 text-slate-600'}`}>
                           {lead.reason}
                         </span>
-                        <ChevronRight size={16} className="text-slate-200 group-hover:text-slate-400 arrow-slide" />
+                        <ChevronRight size={16} className="text-slate-200 group-hover:text-slate-400" />
                       </div>
                     </Link>
                   );
@@ -475,10 +372,10 @@ export default function Dashboard() {
 
           {/* ── Today's Schedule ── */}
           {todayApts.length > 0 && (
-            <div className="bg-white rounded-2xl border border-slate-100/80 shadow-sm">
+            <div className="bg-white rounded-lg border border-slate-100/80 shadow-sm">
               <div className="px-6 py-5 border-b border-slate-100/80 flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 bg-gradient-to-br from-violet-50 to-purple-50 rounded-xl flex items-center justify-center">
+                  <div className="w-9 h-9 bg-violet-50 rounded-lg flex items-center justify-center">
                     <CalendarCheck size={16} className="text-violet-500" />
                   </div>
                   <div>
@@ -487,7 +384,7 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <Link to="/appointments" className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-slate-600 transition-colors group">
-                  All appointments <ArrowRight size={12} className="arrow-slide" />
+                  All appointments <ArrowRight size={12} />
                 </Link>
               </div>
               <div className="p-4 space-y-2">
@@ -498,8 +395,7 @@ export default function Dashboard() {
                   return (
                     <div
                       key={apt.id}
-                      className={`flex items-center gap-4 px-5 py-4 rounded-xl border-l-[3px] ${timeColors[idx % 5]} bg-slate-50/50 hover:bg-slate-50 card-lift transition-all fade-in-up`}
-                      style={{ animationDelay: `${idx * 80}ms` }}
+                      className={`flex items-center gap-4 px-5 py-4 rounded-lg border-l-[3px] ${timeColors[idx % 5]} bg-slate-50/50 hover:bg-slate-50 transition-all`}
                     >
                       <div className={`px-3 py-1.5 rounded-lg text-xs font-bold ${timeBgColors[idx % 5]} min-w-[72px] text-center`}>
                         {apt.appointment_time}
@@ -527,9 +423,9 @@ export default function Dashboard() {
         <div className="lg:col-span-4 space-y-6">
 
           {/* ── Pipeline Overview (Horizontal stacked bar) ── */}
-          <div className="bg-white rounded-2xl border border-slate-100/80 shadow-sm p-6 card-lift">
+          <div className="bg-white rounded-lg border border-slate-100/80 shadow-sm p-6">
             <div className="flex items-center gap-3 mb-5">
-              <div className="w-9 h-9 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl flex items-center justify-center">
+              <div className="w-9 h-9 bg-slate-50 rounded-lg flex items-center justify-center">
                 <BarChart3 size={16} className="text-slate-600" />
               </div>
               <div>
@@ -539,7 +435,7 @@ export default function Dashboard() {
             </div>
 
             {/* Stacked horizontal bar */}
-            <div className="flex h-8 rounded-xl overflow-hidden bg-slate-100 mb-5 shadow-inner">
+            <div className="flex h-8 rounded-lg overflow-hidden bg-slate-100 mb-5 shadow-inner">
               {pipelineStages.map((stage) => {
                 const pct = (stage.count / pipelineTotal) * 100;
                 if (pct === 0) return null;
@@ -547,13 +443,13 @@ export default function Dashboard() {
                   <Link
                     key={stage.label}
                     to={stage.link}
-                    className="pipeline-segment flex items-center justify-center relative"
+                    className="group flex items-center justify-center relative"
                     style={{ width: `${pct}%`, backgroundColor: stage.color }}
                   >
                     {pct > 10 && (
                       <span className="text-[10px] font-bold text-white/90">{stage.count}</span>
                     )}
-                    <div className="pipeline-tooltip absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] font-medium px-2.5 py-1.5 rounded-lg whitespace-nowrap shadow-lg z-20">
+                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] font-medium px-2.5 py-1.5 rounded-lg whitespace-nowrap shadow-lg z-20 opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity">
                       {stage.label}: {stage.count} ({Math.round(pct)}%)
                       <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-[5px] border-r-[5px] border-t-[5px] border-transparent border-t-slate-900" />
                     </div>
@@ -576,9 +472,9 @@ export default function Dashboard() {
           </div>
 
           {/* ── Lead Quality ── */}
-          <div className="bg-white rounded-2xl border border-slate-100/80 shadow-sm p-6 card-lift">
+          <div className="bg-white rounded-lg border border-slate-100/80 shadow-sm p-6">
             <div className="flex items-center gap-3 mb-5">
-              <div className="w-9 h-9 bg-gradient-to-br from-rose-50 to-orange-50 rounded-xl flex items-center justify-center">
+              <div className="w-9 h-9 bg-rose-50 rounded-lg flex items-center justify-center">
                 <Flame size={16} className="text-rose-500" />
               </div>
               <h3 className="text-[15px] font-semibold text-slate-900">Lead Quality</h3>
@@ -587,13 +483,13 @@ export default function Dashboard() {
             {/* Segmented arc-style bar */}
             <div className="flex h-3 rounded-full overflow-hidden bg-slate-100 mb-5">
               {hotCount > 0 && (
-                <div className="bg-gradient-to-r from-red-400 to-red-500 transition-all duration-500" style={{ width: `${(hotCount / totalScored) * 100}%` }} />
+                <div className="bg-red-500 transition-all duration-500" style={{ width: `${(hotCount / totalScored) * 100}%` }} />
               )}
               {warmCount > 0 && (
-                <div className="bg-gradient-to-r from-amber-400 to-amber-500 transition-all duration-500" style={{ width: `${(warmCount / totalScored) * 100}%` }} />
+                <div className="bg-amber-500 transition-all duration-500" style={{ width: `${(warmCount / totalScored) * 100}%` }} />
               )}
               {coldCount > 0 && (
-                <div className="bg-gradient-to-r from-slate-300 to-slate-400 transition-all duration-500" style={{ width: `${(coldCount / totalScored) * 100}%` }} />
+                <div className="bg-slate-400 transition-all duration-500" style={{ width: `${(coldCount / totalScored) * 100}%` }} />
               )}
             </div>
 
@@ -605,9 +501,9 @@ export default function Dashboard() {
           </div>
 
           {/* ── Recent Activity ── */}
-          <div className="bg-white rounded-2xl border border-slate-100/80 shadow-sm p-6 card-lift">
+          <div className="bg-white rounded-lg border border-slate-100/80 shadow-sm p-6">
             <div className="flex items-center gap-3 mb-5">
-              <div className="w-9 h-9 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl flex items-center justify-center">
+              <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center">
                 <Activity size={16} className="text-blue-500" />
               </div>
               <h3 className="text-[15px] font-semibold text-slate-900">Recent Activity</h3>
@@ -621,7 +517,7 @@ export default function Dashboard() {
               ) : (
                 <div className="relative">
                   {/* Connecting timeline line */}
-                  <div className="absolute left-[17px] top-5 bottom-5 w-[1.5px] bg-gradient-to-b from-slate-200 via-slate-100 to-transparent" />
+                  <div className="absolute left-[17px] top-5 bottom-5 w-[1.5px] bg-slate-200" />
 
                   {[...leads.slice(0, 5).map(l => ({
                     id: `lead-${l.id}`,
@@ -650,19 +546,18 @@ export default function Dashboard() {
                   .map((item, idx) => {
                     const Icon = item.icon;
                     const iconStyles = {
-                      hot: 'bg-gradient-to-br from-red-50 to-rose-100 text-red-500 shadow-red-100/50',
-                      lead: 'bg-gradient-to-br from-blue-50 to-indigo-100 text-blue-500 shadow-blue-100/50',
-                      appointment: 'bg-gradient-to-br from-violet-50 to-purple-100 text-violet-500 shadow-violet-100/50',
+                      hot: 'bg-red-50 text-red-500',
+                      lead: 'bg-blue-50 text-blue-500',
+                      appointment: 'bg-violet-50 text-violet-500',
                     };
                     const Wrapper = item.link ? Link : 'div';
                     return (
                       <Wrapper
                         key={item.id}
                         {...(item.link ? { to: item.link } : {})}
-                        className="flex items-start gap-3.5 py-3.5 relative z-10 group fade-in-up"
-                        style={{ animationDelay: `${idx * 50}ms` }}
+                        className="flex items-start gap-3.5 py-3.5 relative z-10 group"
                       >
-                        <div className={`w-[34px] h-[34px] rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm ${iconStyles[item.type]} group-hover:scale-110 transition-transform`}>
+                        <div className={`w-[34px] h-[34px] rounded-lg flex items-center justify-center flex-shrink-0 ${iconStyles[item.type]}`}>
                           <Icon size={14} />
                         </div>
                         <div className="flex-1 min-w-0 pt-0.5">
@@ -689,20 +584,17 @@ export default function Dashboard() {
 /* ─── Quick Stat Card (glass morphism) ─── */
 function QuickStat({ label, value, icon: Icon, accent, trend, brandColor }) {
   return (
-    <div className={`relative overflow-hidden rounded-xl px-4 py-3.5 backdrop-blur-xl border transition-all duration-200 hover:scale-[1.02] ${
+    <div className={`relative overflow-hidden rounded-lg px-4 py-3.5 border transition-all duration-200 ${
       accent
-        ? 'bg-white/[0.15] border-white/[0.15] shadow-lg shadow-white/5'
-        : 'bg-white/[0.07] border-white/[0.06] hover:bg-white/[0.1]'
+        ? 'bg-white/[0.15] border-white/[0.15]'
+        : 'bg-white/10 border-white/[0.06]'
     }`}>
-      {accent && (
-        <div className="absolute -top-4 -right-4 w-16 h-16 rounded-full blur-2xl opacity-20" style={{ backgroundColor: brandColor }} />
-      )}
       <div className="relative">
         <div className="flex items-center gap-2 mb-1.5">
           <Icon size={13} className="text-white/40" />
           <span className="text-[10px] text-white/40 uppercase tracking-widest font-medium">{label}</span>
         </div>
-        <p className="text-2xl font-bold text-white number-pop">{value}</p>
+        <p className="text-2xl font-bold text-white">{value}</p>
         {trend && (
           <p className="text-[10px] text-white/30 mt-1 font-medium">{trend}</p>
         )}
@@ -714,11 +606,11 @@ function QuickStat({ label, value, icon: Icon, accent, trend, brandColor }) {
 /* ─── Appointment Calendar ─── inserted into the grid */
 
 /* ─── Score Row ─── */
-function ScoreRow({ label, count, total, colorFrom, colorTo, textColor }) {
+function ScoreRow({ label, count, total, colorFrom, textColor }) {
   const pct = total ? Math.round((count / total) * 100) : 0;
   return (
     <div className="flex items-center gap-3">
-      <div className="w-3 h-3 rounded-[4px] flex-shrink-0" style={{ background: `linear-gradient(135deg, ${colorFrom}, ${colorTo})` }} />
+      <div className="w-3 h-3 rounded-[4px] flex-shrink-0" style={{ backgroundColor: colorFrom }} />
       <span className="text-[13px] text-slate-600 flex-1">{label}</span>
       <span className={`text-[13px] font-bold ${textColor} tabular-nums`}>{count}</span>
       <span className="text-[11px] text-slate-300 w-10 text-right tabular-nums">{pct}%</span>

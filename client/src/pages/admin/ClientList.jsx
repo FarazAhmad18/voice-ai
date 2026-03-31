@@ -9,31 +9,6 @@ import {
   Filter, X, ArrowUpRight, Shield, Crown, PhoneCall,
 } from 'lucide-react';
 
-/* ── Admin list styles ── */
-const STYLE_ID = '__admin-client-list-styles';
-if (typeof document !== 'undefined' && !document.getElementById(STYLE_ID)) {
-  const style = document.createElement('style');
-  style.id = STYLE_ID;
-  style.textContent = `
-    @keyframes clFadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    .cl-fade-in {
-      animation: clFadeIn 0.4s ease forwards;
-      opacity: 0;
-    }
-    .cl-card-lift {
-      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-    }
-    .cl-card-lift:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 25px -6px rgba(49,46,129,0.12), 0 4px 10px -4px rgba(0,0,0,0.06);
-      border-color: rgba(99,102,241,0.25);
-    }
-  `;
-  document.head.appendChild(style);
-}
 
 const INDUSTRY_COLORS = {
   legal: { bg: 'bg-blue-50', text: 'text-blue-600', border: 'border-blue-100', label: 'Legal' },
@@ -102,10 +77,10 @@ export default function ClientList() {
   if (loading) {
     return (
       <div className="max-w-[1400px] mx-auto space-y-5">
-        <div className="h-24 bg-gradient-to-r from-indigo-50 to-violet-50 rounded-2xl animate-pulse" />
+        <div className="h-24 bg-indigo-50 rounded-lg animate-pulse" />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="h-48 bg-slate-50 rounded-2xl animate-pulse" />
+            <div key={i} className="h-48 bg-slate-50 rounded-lg animate-pulse" />
           ))}
         </div>
       </div>
@@ -135,9 +110,9 @@ export default function ClientList() {
       />
 
       {/* ── Platform Stats Bar ── */}
-      <div className="bg-gradient-to-r from-indigo-950 via-slate-900 to-indigo-950 rounded-2xl p-5 flex flex-wrap items-center gap-6 border border-indigo-900/30">
+      <div className="bg-indigo-950 rounded-lg p-5 flex flex-wrap items-center gap-6 border border-indigo-900/30">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-indigo-500/20 rounded-xl flex items-center justify-center">
+          <div className="w-9 h-9 bg-indigo-500/20 rounded-lg flex items-center justify-center">
             <Shield size={16} className="text-indigo-300" />
           </div>
           <div>
@@ -147,7 +122,7 @@ export default function ClientList() {
         </div>
         <div className="w-px h-10 bg-indigo-800/40" />
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-emerald-500/15 rounded-xl flex items-center justify-center">
+          <div className="w-9 h-9 bg-emerald-500/15 rounded-lg flex items-center justify-center">
             <Globe size={16} className="text-emerald-300" />
           </div>
           <div>
@@ -157,7 +132,7 @@ export default function ClientList() {
         </div>
         <div className="w-px h-10 bg-indigo-800/40" />
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-blue-500/15 rounded-xl flex items-center justify-center">
+          <div className="w-9 h-9 bg-blue-500/15 rounded-lg flex items-center justify-center">
             <Users size={16} className="text-blue-300" />
           </div>
           <div>
@@ -167,7 +142,7 @@ export default function ClientList() {
         </div>
         <div className="w-px h-10 bg-indigo-800/40 hidden sm:block" />
         <div className="flex items-center gap-3 hidden sm:flex">
-          <div className="w-9 h-9 bg-violet-500/15 rounded-xl flex items-center justify-center">
+          <div className="w-9 h-9 bg-violet-500/15 rounded-lg flex items-center justify-center">
             <TrendingUp size={16} className="text-violet-300" />
           </div>
           <div>
@@ -179,7 +154,7 @@ export default function ClientList() {
         <div className="ml-auto">
           <Link
             to="/admin/clients/new"
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-500 transition-colors shadow-lg shadow-indigo-900/30"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-500 transition-colors"
           >
             <Sparkles size={14} />
             Deploy Client
@@ -197,7 +172,7 @@ export default function ClientList() {
               placeholder="Search by name, industry, email..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-72 pl-9 pr-3 py-2.5 text-sm bg-white border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-200 placeholder:text-slate-300"
+              className="w-72 pl-9 pr-3 py-2.5 text-sm bg-white border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-200 placeholder:text-slate-300"
             />
             {search && (
               <button onClick={() => setSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500">
@@ -207,7 +182,7 @@ export default function ClientList() {
           </div>
 
           {/* Status filter chips */}
-          <div className="flex items-center gap-1 bg-slate-50 rounded-xl p-1">
+          <div className="flex items-center gap-1 bg-slate-50 rounded-lg p-1">
             {['all', 'active', 'paused', 'cancelled'].map(s => (
               <button
                 key={s}
@@ -223,7 +198,7 @@ export default function ClientList() {
 
           {/* Industry filter */}
           {industries.length > 1 && (
-            <div className="flex items-center gap-1 bg-slate-50 rounded-xl p-1">
+            <div className="flex items-center gap-1 bg-slate-50 rounded-lg p-1">
               <button
                 onClick={() => setIndustryFilter('all')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
@@ -270,8 +245,8 @@ export default function ClientList() {
 
       {/* ── Client Cards Grid ── */}
       {filtered.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-100 py-20 text-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-indigo-50 to-violet-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <div className="bg-white rounded-lg border border-slate-100 py-20 text-center">
+          <div className="w-16 h-16 bg-indigo-50 rounded-lg flex items-center justify-center mx-auto mb-4">
             <Building2 size={24} className="text-indigo-400" />
           </div>
           <p className="text-sm font-semibold text-slate-700">No clients found</p>
@@ -296,8 +271,7 @@ export default function ClientList() {
             return (
               <div
                 key={firm.id}
-                className="relative bg-white rounded-2xl border border-slate-100 overflow-hidden cl-card-lift cl-fade-in group"
-                style={{ animationDelay: `${idx * 40}ms` }}
+                className="relative bg-white rounded-lg border border-slate-100 overflow-hidden group"
               >
                 {/* Color accent bar */}
                 <div className="h-1" style={{ backgroundColor: firm.brand_color || '#6d28d9' }} />
@@ -306,7 +280,7 @@ export default function ClientList() {
                   {/* Header */}
                   <div className="flex items-start gap-3.5 mb-4">
                     <div
-                      className="w-11 h-11 rounded-xl flex items-center justify-center text-sm font-bold text-white flex-shrink-0 shadow-sm"
+                      className="w-11 h-11 rounded-lg flex items-center justify-center text-sm font-bold text-white flex-shrink-0 shadow-sm"
                       style={{ backgroundColor: firm.brand_color || '#6d28d9' }}
                     >
                       {firm.name?.charAt(0).toUpperCase()}

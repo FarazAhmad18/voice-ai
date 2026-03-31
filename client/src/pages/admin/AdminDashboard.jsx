@@ -7,70 +7,6 @@ import {
   PhoneCall, DollarSign, Crown, Sparkles, CheckCircle2,
 } from 'lucide-react';
 
-/* ── Inject admin-specific styles once ── */
-const STYLE_ID = '__admin-command-center-styles';
-if (typeof document !== 'undefined' && !document.getElementById(STYLE_ID)) {
-  const style = document.createElement('style');
-  style.id = STYLE_ID;
-  style.textContent = `
-    @keyframes adminGradientShift {
-      0%   { background-position: 0% 50%; }
-      50%  { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
-    @keyframes adminFadeInUp {
-      from { opacity: 0; transform: translateY(10px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes adminPulse {
-      0%   { transform: scale(1); opacity: 1; }
-      100% { transform: scale(2.4); opacity: 0; }
-    }
-    @keyframes adminSkeletonShimmer {
-      0%   { background-position: -200% 0; }
-      100% { background-position: 200% 0; }
-    }
-    @keyframes adminNumberCount {
-      0%   { transform: scale(0.7); opacity: 0; }
-      60%  { transform: scale(1.08); }
-      100% { transform: scale(1); opacity: 1; }
-    }
-    @keyframes adminGlow {
-      0%, 100% { opacity: 0.3; }
-      50%      { opacity: 0.6; }
-    }
-    .admin-gradient-animate {
-      background-size: 200% 200%;
-      animation: adminGradientShift 12s ease infinite;
-    }
-    .admin-fade-in {
-      animation: adminFadeInUp 0.5s ease forwards;
-      opacity: 0;
-    }
-    .admin-pulse-ring {
-      animation: adminPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    }
-    .admin-skeleton {
-      background: linear-gradient(90deg, #1e1b4b 25%, #312e81 50%, #1e1b4b 75%);
-      background-size: 200% 100%;
-      animation: adminSkeletonShimmer 1.5s ease-in-out infinite;
-    }
-    .admin-number-pop {
-      animation: adminNumberCount 0.5s ease forwards;
-    }
-    .admin-glow {
-      animation: adminGlow 3s ease-in-out infinite;
-    }
-    .admin-card-lift {
-      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-    }
-    .admin-card-lift:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 30px -8px rgba(49,46,129,0.15), 0 4px 12px -4px rgba(0,0,0,0.08);
-    }
-  `;
-  document.head.appendChild(style);
-}
 
 function formatRelativeTime(dateStr) {
   if (!dateStr) return '';
@@ -102,14 +38,14 @@ const INDUSTRY_COLORS = {
 function AdminSkeleton() {
   return (
     <div className="space-y-6">
-      <div className="admin-skeleton rounded-2xl h-56" />
+      <div className="skeleton-shimmer rounded-lg h-56" />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <div className="lg:col-span-2 space-y-5">
-          <div className="admin-skeleton rounded-2xl h-80" />
+          <div className="skeleton-shimmer rounded-lg h-80" />
         </div>
         <div className="space-y-5">
-          <div className="admin-skeleton rounded-2xl h-40" />
-          <div className="admin-skeleton rounded-2xl h-52" />
+          <div className="skeleton-shimmer rounded-lg h-40" />
+          <div className="skeleton-shimmer rounded-lg h-52" />
         </div>
       </div>
     </div>
@@ -180,26 +116,15 @@ export default function AdminDashboard() {
           COMMAND CENTER HERO
           ═══════════════════════════════════════════════ */}
       <div
-        className="relative overflow-hidden rounded-2xl admin-gradient-animate"
-        style={{
-          background: 'linear-gradient(135deg, #1e1b4b 0%, #0f172a 30%, #312e81 60%, #0f172a 100%)',
-        }}
+        className="relative overflow-hidden rounded-lg"
+        style={{ backgroundColor: '#0f172a' }}
       >
-        {/* Background effects */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{
-          backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)',
-          backgroundSize: '20px 20px',
-        }} />
-        <div className="absolute top-0 right-0 w-96 h-96 rounded-full blur-[120px] opacity-20 bg-indigo-500 admin-glow" />
-        <div className="absolute bottom-0 left-0 w-72 h-72 rounded-full blur-[100px] opacity-10 bg-violet-600" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-[200px] opacity-[0.05] bg-white" />
-
         <div className="relative z-10 p-7 sm:p-8">
           {/* Top bar */}
           <div className="flex items-start justify-between mb-7">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-9 h-9 bg-indigo-500/20 backdrop-blur-xl rounded-xl flex items-center justify-center border border-indigo-400/10">
+                <div className="w-9 h-9 bg-indigo-500/20 rounded-lg flex items-center justify-center border border-indigo-400/10">
                   <Shield size={16} className="text-indigo-300" />
                 </div>
                 <div>
@@ -210,10 +135,10 @@ export default function AdminDashboard() {
             </div>
 
             {/* Platform health */}
-            <div className="flex items-center gap-2.5 bg-white/[0.06] backdrop-blur-xl border border-white/[0.06] rounded-xl px-4 py-2.5">
+            <div className="flex items-center gap-2.5 bg-white/10 border border-white/[0.06] rounded-lg px-4 py-2.5">
               <div className="relative">
                 <div className={`w-2 h-2 rounded-full ${totalErrors === 0 ? 'bg-emerald-400' : totalErrors < 5 ? 'bg-amber-400' : 'bg-red-400'}`} />
-                {totalErrors === 0 && <div className="absolute inset-0 w-2 h-2 bg-emerald-400 rounded-full admin-pulse-ring" />}
+                {totalErrors === 0 && <div className="absolute inset-0 w-2 h-2 bg-emerald-400 rounded-full" />}
               </div>
               <span className="text-[11px] font-medium text-white/60">
                 {totalErrors === 0 ? 'All systems operational' : `${totalErrors} error${totalErrors !== 1 ? 's' : ''} detected`}
@@ -275,10 +200,10 @@ export default function AdminDashboard() {
         <div className="lg:col-span-8 space-y-5">
 
           {/* Top Clients by Activity */}
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm">
+          <div className="bg-white rounded-lg border border-slate-100 shadow-sm">
             <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-gradient-to-br from-indigo-50 to-violet-50 rounded-xl flex items-center justify-center">
+                <div className="w-9 h-9 bg-indigo-50 rounded-lg flex items-center justify-center">
                   <TrendingUp size={16} className="text-indigo-500" />
                 </div>
                 <div>
@@ -288,7 +213,7 @@ export default function AdminDashboard() {
               </div>
               <Link
                 to="/admin/clients/new"
-                className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 text-white text-xs font-semibold rounded-xl hover:bg-indigo-700 transition-colors shadow-sm shadow-indigo-200"
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 text-white text-xs font-semibold rounded-lg hover:bg-indigo-700 transition-colors"
               >
                 <Sparkles size={13} />
                 Deploy Client
@@ -297,7 +222,7 @@ export default function AdminDashboard() {
 
             {firms.length === 0 ? (
               <div className="py-20 text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-indigo-50 to-violet-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-indigo-50 rounded-lg flex items-center justify-center mx-auto mb-4">
                   <Building2 size={24} className="text-indigo-400" />
                 </div>
                 <p className="text-sm font-semibold text-slate-700">No clients deployed</p>
@@ -329,8 +254,7 @@ export default function AdminDashboard() {
                       <Link
                         key={firm.id}
                         to={`/admin/clients/${firm.id}`}
-                        className="px-6 py-3.5 grid grid-cols-12 gap-3 items-center hover:bg-slate-50/60 transition-all group admin-fade-in"
-                        style={{ animationDelay: `${idx * 40}ms` }}
+                        className="px-6 py-3.5 grid grid-cols-12 gap-3 items-center hover:bg-slate-50/60 transition-all group"
                       >
                         <div className="col-span-1">
                           <span className={`text-sm font-bold ${idx === 0 ? 'text-amber-500' : idx === 1 ? 'text-slate-400' : idx === 2 ? 'text-amber-700' : 'text-slate-300'}`}>
@@ -387,10 +311,10 @@ export default function AdminDashboard() {
           </div>
 
           {/* Platform Activity Feed */}
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm">
+          <div className="bg-white rounded-lg border border-slate-100 shadow-sm">
             <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl flex items-center justify-center">
+                <div className="w-9 h-9 bg-slate-50 rounded-lg flex items-center justify-center">
                   <Activity size={16} className="text-slate-600" />
                 </div>
                 <div>
@@ -415,11 +339,10 @@ export default function AdminDashboard() {
                     <Link
                       key={firm.id}
                       to={`/admin/clients/${firm.id}`}
-                      className="flex items-center gap-4 px-6 py-3.5 hover:bg-slate-50/60 transition-all group admin-fade-in"
-                      style={{ animationDelay: `${idx * 40}ms` }}
+                      className="flex items-center gap-4 px-6 py-3.5 hover:bg-slate-50/60 transition-all group"
                     >
                       <div
-                        className="w-9 h-9 rounded-xl flex items-center justify-center text-xs font-bold text-white flex-shrink-0 shadow-sm"
+                        className="w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold text-white flex-shrink-0 shadow-sm"
                         style={{ backgroundColor: firm.brand_color || '#6d28d9' }}
                       >
                         {firm.name?.charAt(0).toUpperCase()}
@@ -455,9 +378,9 @@ export default function AdminDashboard() {
         <div className="lg:col-span-4 space-y-5">
 
           {/* Revenue Overview */}
-          <div className="bg-gradient-to-br from-indigo-950 to-slate-900 rounded-2xl p-6 shadow-lg border border-indigo-900/30">
+          <div className="bg-indigo-950 rounded-lg p-6 border border-indigo-900/30">
             <div className="flex items-center gap-3 mb-5">
-              <div className="w-9 h-9 bg-indigo-500/20 rounded-xl flex items-center justify-center">
+              <div className="w-9 h-9 bg-indigo-500/20 rounded-lg flex items-center justify-center">
                 <Crown size={16} className="text-indigo-300" />
               </div>
               <div>
@@ -466,7 +389,7 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            <p className="text-3xl font-bold text-white mb-1 admin-number-pop tracking-tight">
+            <p className="text-3xl font-bold text-white mb-1 tracking-tight">
               ${estimatedMRR.toLocaleString()}
               <span className="text-sm text-indigo-300/40 font-normal ml-1">/mo</span>
             </p>
@@ -501,9 +424,9 @@ export default function AdminDashboard() {
           </div>
 
           {/* Error Monitor */}
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+          <div className="bg-white rounded-lg border border-slate-100 shadow-sm p-6">
             <div className="flex items-center gap-3 mb-5">
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+              <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${
                 totalErrors === 0 ? 'bg-emerald-50' : totalErrors < 5 ? 'bg-amber-50' : 'bg-red-50'
               }`}>
                 <Server size={16} className={
@@ -517,7 +440,7 @@ export default function AdminDashboard() {
             </div>
 
             {totalErrors === 0 ? (
-              <div className="flex items-center gap-3 py-4 px-4 bg-emerald-50/50 rounded-xl border border-emerald-100/50">
+              <div className="flex items-center gap-3 py-4 px-4 bg-emerald-50/50 rounded-lg border border-emerald-100/50">
                 <CheckCircle2 size={18} className="text-emerald-500 flex-shrink-0" />
                 <div>
                   <p className="text-sm font-medium text-emerald-800">All clear</p>
@@ -532,7 +455,7 @@ export default function AdminDashboard() {
                     <Link
                       key={cat.key}
                       to={`/admin/logs?level=error&category=${cat.key}`}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 transition-colors group"
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-50 transition-colors group"
                     >
                       <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
                         count === 0 ? 'bg-emerald-400' : count < 3 ? 'bg-amber-400' : 'bg-red-400'
@@ -550,7 +473,7 @@ export default function AdminDashboard() {
             {totalErrors > 0 && (
               <Link
                 to="/admin/logs?level=error"
-                className="mt-4 flex items-center justify-center gap-1.5 text-xs font-semibold text-red-600 hover:text-red-700 transition-colors bg-red-50 rounded-xl px-4 py-2.5"
+                className="mt-4 flex items-center justify-center gap-1.5 text-xs font-semibold text-red-600 hover:text-red-700 transition-colors bg-red-50 rounded-lg px-4 py-2.5"
               >
                 View all errors <ArrowUpRight size={12} />
               </Link>
@@ -558,25 +481,25 @@ export default function AdminDashboard() {
           </div>
 
           {/* Quick Actions */}
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+          <div className="bg-white rounded-lg border border-slate-100 shadow-sm p-6">
             <h3 className="text-[15px] font-semibold text-slate-900 mb-4">Quick Actions</h3>
             <div className="space-y-2">
-              <Link to="/admin/clients/new" className="flex items-center gap-3 px-4 py-3 rounded-xl bg-indigo-50/50 border border-indigo-100/50 hover:bg-indigo-50 transition-all group admin-card-lift">
+              <Link to="/admin/clients/new" className="flex items-center gap-3 px-4 py-3 rounded-lg bg-indigo-50/50 border border-indigo-100/50 hover:bg-indigo-50 transition-all group">
                 <Sparkles size={15} className="text-indigo-500" />
                 <span className="text-sm font-medium text-indigo-700">Deploy New Client</span>
                 <ChevronRight size={14} className="text-indigo-300 ml-auto group-hover:text-indigo-500 transition-colors" />
               </Link>
-              <Link to="/admin/templates" className="flex items-center gap-3 px-4 py-3 rounded-xl bg-violet-50/50 border border-violet-100/50 hover:bg-violet-50 transition-all group admin-card-lift">
+              <Link to="/admin/templates" className="flex items-center gap-3 px-4 py-3 rounded-lg bg-violet-50/50 border border-violet-100/50 hover:bg-violet-50 transition-all group">
                 <Zap size={15} className="text-violet-500" />
                 <span className="text-sm font-medium text-violet-700">Prompt Templates</span>
                 <ChevronRight size={14} className="text-violet-300 ml-auto group-hover:text-violet-500 transition-colors" />
               </Link>
-              <Link to="/admin/logs" className="flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-50/50 border border-slate-100/50 hover:bg-slate-100/50 transition-all group admin-card-lift">
+              <Link to="/admin/logs" className="flex items-center gap-3 px-4 py-3 rounded-lg bg-slate-50/50 border border-slate-100/50 hover:bg-slate-100/50 transition-all group">
                 <Activity size={15} className="text-slate-500" />
                 <span className="text-sm font-medium text-slate-700">System Logs</span>
                 <ChevronRight size={14} className="text-slate-300 ml-auto group-hover:text-slate-500 transition-colors" />
               </Link>
-              <Link to="/admin/clients" className="flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-50/50 border border-slate-100/50 hover:bg-slate-100/50 transition-all group admin-card-lift">
+              <Link to="/admin/clients" className="flex items-center gap-3 px-4 py-3 rounded-lg bg-slate-50/50 border border-slate-100/50 hover:bg-slate-100/50 transition-all group">
                 <Building2 size={15} className="text-slate-500" />
                 <span className="text-sm font-medium text-slate-700">All Clients</span>
                 <ChevronRight size={14} className="text-slate-300 ml-auto group-hover:text-slate-500 transition-colors" />
@@ -601,14 +524,14 @@ function HeroStat({ icon: Icon, label, value, suffix, trend, color, clickable })
   };
 
   return (
-    <div className={`relative overflow-hidden rounded-xl px-4 py-4 backdrop-blur-xl border border-white/[0.06] bg-white/[0.04] hover:bg-white/[0.08] transition-all ${clickable ? 'cursor-pointer' : ''}`}>
+    <div className={`relative overflow-hidden rounded-lg px-4 py-4 border border-white/[0.06] bg-white/10 hover:bg-white/[0.14] transition-all ${clickable ? 'cursor-pointer' : ''}`}>
       <div className="flex items-center gap-2 mb-2">
         <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${colorMap[color]}`}>
           <Icon size={13} />
         </div>
         <span className="text-[10px] text-white/35 uppercase tracking-widest font-medium">{label}</span>
       </div>
-      <p className="text-2xl font-bold text-white admin-number-pop tracking-tight">
+      <p className="text-2xl font-bold text-white tracking-tight">
         {value}
         {suffix && <span className="text-sm text-white/25 font-normal ml-1">{suffix}</span>}
       </p>

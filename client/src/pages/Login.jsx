@@ -92,7 +92,7 @@ export default function Login() {
               {features.map((f, i) => (
                 <div
                   key={f.title}
-                  className={`group p-4 rounded-2xl bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.07] hover:border-white/[0.1] transition-all duration-500 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+                  className={`group p-4 rounded-xl bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.07] hover:border-white/[0.1] transition-all duration-500 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
                   style={{ transitionDelay: `${200 + i * 100}ms` }}
                 >
                   <f.icon size={20} className="text-violet-400 mb-3" strokeWidth={1.5} />
@@ -131,7 +131,7 @@ export default function Login() {
         <div className={`w-full max-w-[380px] transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
           {/* Mobile logo (shown on small screens) */}
           <div className="lg:hidden text-center mb-10">
-            <div className="w-12 h-12 bg-[#09090b] rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <div className="w-12 h-12 bg-[#09090b] rounded-xl flex items-center justify-center mx-auto mb-4">
               <span className="text-white text-lg font-bold">V</span>
             </div>
             <h1 className="text-xl font-semibold text-zinc-900 tracking-tight">VoibixAI</h1>

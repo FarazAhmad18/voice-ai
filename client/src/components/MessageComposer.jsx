@@ -73,7 +73,7 @@ export default function MessageComposer({ leadId, onMessageSent }) {
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm shadow-slate-100/50 overflow-hidden">
+    <div className="bg-white rounded-lg border border-slate-100 shadow-sm shadow-slate-100/50 overflow-hidden">
       {/* Channel Tabs */}
       <div className="flex border-b border-slate-100">
         {CHANNELS.map(({ key, label, icon: Icon }) => (
@@ -103,7 +103,7 @@ export default function MessageComposer({ leadId, onMessageSent }) {
             onChange={(e) => setSubject(e.target.value)}
             onKeyDown={handleKeyDown}
             disabled={sending}
-            className="w-full px-4 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200 placeholder:text-slate-300 transition-all disabled:opacity-50"
+            className="w-full px-4 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200 placeholder:text-slate-300 transition-all disabled:opacity-50"
           />
         )}
 
@@ -118,12 +118,12 @@ export default function MessageComposer({ leadId, onMessageSent }) {
             onChange={(e) => setBody(e.target.value)}
             onKeyDown={handleKeyDown}
             disabled={sending}
-            className="flex-1 px-4 py-3 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200 placeholder:text-slate-300 transition-all resize-none min-h-[44px] disabled:opacity-50"
+            className="flex-1 px-4 py-3 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200 placeholder:text-slate-300 transition-all resize-none min-h-[44px] disabled:opacity-50"
           />
           <button
             onClick={handleSend}
             disabled={sending || !body.trim()}
-            className="px-4 py-3 bg-slate-900 text-white text-sm font-medium rounded-xl hover:bg-slate-800 transition-all disabled:opacity-30 shadow-sm shadow-slate-900/20 flex items-center gap-2 flex-shrink-0"
+            className="px-4 py-3 bg-slate-900 text-white text-sm font-medium rounded-lg hover:bg-slate-800 transition-all disabled:opacity-30 shadow-sm shadow-slate-900/20 flex items-center gap-2 flex-shrink-0"
           >
             {sending ? (
               <Loader2 size={15} className="animate-spin" />

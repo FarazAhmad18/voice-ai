@@ -7,40 +7,6 @@ import StatusBadge from '../components/StatusBadge';
 import ConfirmModal from '../components/ConfirmModal';
 import { CalendarCheck, Clock, Phone, User, ChevronRight, CheckCircle, XCircle, AlertCircle, Calendar, Users } from 'lucide-react';
 
-/* ─── Inject keyframe styles once ─── */
-const STYLE_ID = '__appointments-premium-styles';
-if (typeof document !== 'undefined' && !document.getElementById(STYLE_ID)) {
-  const style = document.createElement('style');
-  style.id = STYLE_ID;
-  style.textContent = `
-    @keyframes aptFadeInUp {
-      from { opacity: 0; transform: translateY(16px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes aptShimmer {
-      0%   { background-position: -200% 0; }
-      100% { background-position: 200% 0; }
-    }
-    .apt-fade-in-up {
-      animation: aptFadeInUp 0.4s ease forwards;
-      opacity: 0;
-    }
-    .apt-shimmer {
-      background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
-      background-size: 200% 100%;
-      animation: aptShimmer 1.5s ease-in-out infinite;
-    }
-    .apt-card-lift {
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    .apt-card-lift:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px -5px rgba(0,0,0,0.08), 0 4px 10px -6px rgba(0,0,0,0.04);
-    }
-  `;
-  document.head.appendChild(style);
-}
-
 const STATUS_TABS = [
   { key: 'all', label: 'All' },
   { key: 'confirmed', label: 'Upcoming' },
@@ -56,10 +22,10 @@ function getStatusBorderColor(status) {
 }
 
 function getTimeBadgeStyle(status) {
-  if (status === 'confirmed') return 'bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-lg shadow-violet-200/50';
-  if (status === 'completed') return 'bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-200/50';
-  if (status === 'cancelled') return 'bg-gradient-to-br from-slate-300 to-slate-400 text-white';
-  return 'bg-gradient-to-br from-slate-400 to-slate-500 text-white';
+  if (status === 'confirmed') return 'bg-violet-500 text-white';
+  if (status === 'completed') return 'bg-emerald-500 text-white';
+  if (status === 'cancelled') return 'bg-slate-400 text-white';
+  return 'bg-slate-400 text-white';
 }
 
 export default function Appointments() {
@@ -141,7 +107,7 @@ export default function Appointments() {
           </div>
         </div>
         {/* Skeleton filter bar */}
-        <div className="bg-white rounded-2xl border border-slate-100 p-5">
+        <div className="bg-white rounded-lg border border-slate-100 p-5">
           <div className="flex gap-2">
             {[1,2,3,4].map(i => (
               <div key={i} className="h-9 w-24 bg-slate-50 rounded-lg animate-pulse" />
@@ -151,9 +117,9 @@ export default function Appointments() {
         {/* Skeleton cards */}
         <div className="space-y-3">
           {[1,2,3,4,5].map(i => (
-            <div key={i} className="bg-white rounded-2xl border border-slate-100 border-l-4 border-l-slate-200 overflow-hidden">
+            <div key={i} className="bg-white rounded-lg border border-slate-100 border-l-4 border-l-slate-200 overflow-hidden">
               <div className="flex items-center gap-4 px-5 py-5">
-                <div className="hidden sm:block w-20 h-14 apt-shimmer rounded-xl" />
+                <div className="hidden sm:block w-20 h-14 skeleton-shimmer rounded-lg" />
                 <div className="flex-1">
                   <div className="h-4 w-36 bg-slate-100 rounded animate-pulse" />
                   <div className="h-3 w-52 bg-slate-50 rounded animate-pulse mt-2" />
@@ -184,9 +150,9 @@ export default function Appointments() {
       />
 
       {error && (
-        <div className="bg-red-50/80 backdrop-blur-sm border border-red-100 rounded-2xl px-5 py-4 flex items-center justify-between">
+        <div className="bg-red-50/80 backdrop-blur-sm border border-red-100 rounded-lg px-5 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0">
+            <div className="w-9 h-9 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
               <AlertCircle size={16} className="text-red-500" />
             </div>
             <div>
@@ -226,9 +192,9 @@ export default function Appointments() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-slate-200/60 shadow-sm shadow-slate-100/50 p-5">
+      <div className="bg-white/80 backdrop-blur-xl rounded-lg border border-slate-200/60 shadow-sm shadow-slate-100/50 p-5">
         <div className="flex items-center justify-between flex-wrap gap-3">
-          <div className="flex items-center gap-0.5 bg-slate-50 rounded-xl p-1 overflow-x-auto">
+          <div className="flex items-center gap-0.5 bg-slate-50 rounded-lg p-1 overflow-x-auto">
             {STATUS_TABS.map((t) => {
               const count = t.key === 'all' ? appointments.length : appointments.filter((a) => a.status === t.key).length;
               const isActive = tab === t.key;
@@ -254,8 +220,8 @@ export default function Appointments() {
 
       {/* List */}
       {filtered.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm py-20 text-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-violet-100 to-purple-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <div className="bg-white rounded-lg border border-slate-100 shadow-sm py-20 text-center">
+          <div className="w-16 h-16 bg-violet-50 rounded-lg flex items-center justify-center mx-auto mb-4">
             <CalendarCheck size={24} className="text-violet-300" />
           </div>
           <p className="text-sm font-semibold text-slate-600">No appointments</p>
@@ -271,18 +237,17 @@ export default function Appointments() {
             return (
               <div
                 key={apt.id}
-                className={`apt-fade-in-up bg-white rounded-2xl border border-slate-100 border-l-4 ${borderColor} shadow-sm apt-card-lift overflow-hidden`}
-                style={{ animationDelay: `${index * 50}ms` }}
+                className={`bg-white rounded-lg border border-slate-100 border-l-4 ${borderColor} shadow-sm overflow-hidden`}
               >
                 <div className="flex items-center gap-4 px-5 py-4">
                   {/* Time badge */}
-                  <div className={`hidden sm:flex flex-col items-center justify-center rounded-xl px-3.5 py-2.5 min-w-[80px] flex-shrink-0 ${timeBadge}`}>
+                  <div className={`hidden sm:flex flex-col items-center justify-center rounded-lg px-3.5 py-2.5 min-w-[80px] flex-shrink-0 ${timeBadge}`}>
                     <span className="text-sm font-bold">{apt.appointment_time}</span>
                     <span className="text-[10px] font-medium opacity-80 mt-0.5">{apt.appointment_date}</span>
                   </div>
 
                   {/* Avatar (mobile) */}
-                  <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl flex items-center justify-center text-xs font-bold text-white flex-shrink-0 sm:hidden shadow-sm">
+                  <div className="w-10 h-10 bg-violet-500 rounded-lg flex items-center justify-center text-xs font-bold text-white flex-shrink-0 sm:hidden">
                     {initials}
                   </div>
 
@@ -337,7 +302,7 @@ export default function Appointments() {
                         <button
                           onClick={() => handleStatusChange(apt.id, 'completed')}
                           disabled={actionLoading === apt.id + 'completed'}
-                          className="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold text-white bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl hover:from-emerald-600 hover:to-teal-600 transition-all shadow-sm shadow-emerald-200/50 disabled:opacity-50"
+                          className="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold text-white bg-emerald-500 rounded-lg hover:bg-emerald-600 transition-all disabled:opacity-50"
                         >
                           {actionLoading === apt.id + 'completed' ? (
                             <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -349,7 +314,7 @@ export default function Appointments() {
                         <button
                           onClick={() => setConfirmCancel(apt)}
                           disabled={actionLoading === apt.id + 'cancelled'}
-                          className="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold text-red-600 bg-red-50 rounded-xl hover:bg-red-100 transition-all ring-1 ring-red-200/60 disabled:opacity-50"
+                          className="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-all ring-1 ring-red-200/60 disabled:opacity-50"
                         >
                           {actionLoading === apt.id + 'cancelled' ? (
                             <div className="w-3.5 h-3.5 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" />
@@ -361,7 +326,7 @@ export default function Appointments() {
                       </>
                     )}
                     {apt.lead_id && (
-                      <Link to={`/leads/${apt.lead_id}`} className="p-2.5 hover:bg-slate-50 rounded-xl transition-colors group/link">
+                      <Link to={`/leads/${apt.lead_id}`} className="p-2.5 hover:bg-slate-50 rounded-lg transition-colors group/link">
                         <ChevronRight size={16} className="text-slate-300 group-hover/link:text-violet-400 transition-colors" />
                       </Link>
                     )}
