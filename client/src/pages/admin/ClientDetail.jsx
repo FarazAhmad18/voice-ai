@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { fetchFirm, updateFirm, fetchTemplates, syncFirmAgent, deployFirmAgent } from '../../services/api';
-import { ArrowLeft, Bot, Phone, Save, Users, BarChart3, Calendar, RefreshCw, Rocket, Check, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Bot, Phone, Save, Users, BarChart3, Calendar, RefreshCw, Rocket, Check, AlertCircle, ChevronRight } from 'lucide-react';
 
 const INDUSTRIES = ['legal', 'dental', 'plumbing', 'real_estate', 'medical', 'other'];
 const PLANS = ['growth', 'scale', 'enterprise'];
@@ -129,9 +129,13 @@ export default function ClientDetail() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-5">
-      <Link to="/admin/clients" className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-600 transition-colors">
-        <ArrowLeft size={15} /> Clients
-      </Link>
+      <nav className="flex items-center gap-1.5 text-sm">
+        <Link to="/admin" className="text-slate-400 hover:text-slate-600 transition-colors">Admin</Link>
+        <ChevronRight size={14} className="text-slate-300" />
+        <Link to="/admin/clients" className="text-slate-400 hover:text-slate-600 transition-colors">Clients</Link>
+        <ChevronRight size={14} className="text-slate-300" />
+        <span className="text-slate-700 font-medium truncate max-w-[200px]">{firm.name || 'Client'}</span>
+      </nav>
 
       {/* Header */}
       <div className="flex items-center justify-between">

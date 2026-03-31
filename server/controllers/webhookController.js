@@ -474,10 +474,10 @@ async function handleCallAnalyzed(call) {
  * Handle check_availability tool call.
  */
 const CASE_KEYWORDS = {
-  divorce:           ['divorce', 'separation'],
-  custody:           ['custody', 'child custody'],
-  support:           ['support', 'alimony'],
-  domestic_violence: ['domestic violence', 'domestic', 'violence', 'protective'],
+  divorce:           ['divorce', 'separation', 'family law', 'family'],
+  custody:           ['custody', 'child custody', 'visitation'],
+  support:           ['support', 'alimony', 'child support'],
+  domestic_violence: ['domestic violence', 'domestic', 'violence', 'protective', 'restraining'],
   paternity:         ['paternity'],
   adoption:          ['adoption'],
 };
@@ -759,6 +759,34 @@ async function handleBookAppointment(req, res) {
         source: 'webhookController.handleBookAppointment',
       });
     }
+  }
+
+  // Update matching lead's appointment_booked flag and assigned staff
+  try {
+    const { data: matchingLeads } = await supabase
+      .from('leads')
+      .select('id')
+      .eq('firm_id', firmId)
+      .eq('caller_phone', callerPhone)
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (matchingLeads?.[0]) {
+      const leadUpdate = { appointment_booked: true };
+      if (assignedStaffId) leadUpdate.assigned_staff_id = assignedStaffId;
+      await supabase.from('leads').update(leadUpdate).eq('id', matchingLeads[0].id);
+      // Also link appointment to lead
+      await supabase.from('appointments').update({ lead_id: matchingLeads[0].id }).eq('id', appointment.id);
+      logger.info('lead_scoring', `Updated lead ${matchingLeads[0].id}: appointment_booked=true`, {
+        firmId, callId: call?.call_id,
+        source: 'webhookController.handleBookAppointment',
+      });
+    }
+  } catch (err) {
+    logger.warn('database', `Failed to update lead after booking: ${err.message}`, {
+      firmId, callId: call?.call_id,
+      source: 'webhookController.handleBookAppointment',
+    });
   }
 
   const attorneyMsg = assignedStaff ? ` with ${assignedStaff.name}` : '';

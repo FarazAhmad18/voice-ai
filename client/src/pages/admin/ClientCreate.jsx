@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { createFirm, fetchTemplates } from '../../services/api';
-import { ArrowLeft, Plus, X, Rocket, Check, Crown, Zap, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Plus, X, Rocket, Check, Crown, Zap, TrendingUp, ChevronRight } from 'lucide-react';
 
 const PLANS = [
   {
@@ -98,11 +98,27 @@ export default function ClientCreate() {
     setStaffList(prev => prev.filter((_, i) => i !== index));
   }
 
+  const [fieldErrors, setFieldErrors] = useState({});
+
+  function validate() {
+    const errs = {};
+    if (!form.name?.trim()) errs.name = 'Company name is required';
+    if (!form.industry) errs.industry = 'Industry is required';
+    if (!form.admin_email?.trim()) errs.admin_email = 'Admin email is required';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.admin_email)) errs.admin_email = 'Invalid email address';
+    if (!form.admin_password || form.admin_password.length < 6) errs.admin_password = 'Password must be at least 6 characters';
+    if (!form.admin_name?.trim()) errs.admin_name = 'Admin name is required';
+    return errs;
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
-    setSaving(true);
+    const errs = validate();
+    setFieldErrors(errs);
+    if (Object.keys(errs).length > 0) return;
 
+    setSaving(true);
     try {
       const result = await createFirm({
         ...form,
@@ -117,12 +133,18 @@ export default function ClientCreate() {
   }
 
   const selectedTemplate = templates.find(t => t.id === form.prompt_template_id);
+  const inputClass = (field) => `w-full px-3.5 py-2.5 text-sm bg-slate-50 border rounded-xl focus:outline-none focus:ring-2 ${fieldErrors[field] ? 'border-red-300 focus:ring-red-200' : 'border-slate-100 focus:ring-slate-200'}`;
+  const fieldError = (field) => fieldErrors[field] ? <p className="text-xs text-red-500 mt-1">{fieldErrors[field]}</p> : null;
 
   return (
     <div className="max-w-3xl mx-auto space-y-5">
-      <button onClick={() => navigate('/admin/clients')} className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-600 transition-colors">
-        <ArrowLeft size={15} /> Back to Clients
-      </button>
+      <nav className="flex items-center gap-1.5 text-sm">
+        <Link to="/admin" className="text-slate-400 hover:text-slate-600 transition-colors">Admin</Link>
+        <ChevronRight size={14} className="text-slate-300" />
+        <Link to="/admin/clients" className="text-slate-400 hover:text-slate-600 transition-colors">Clients</Link>
+        <ChevronRight size={14} className="text-slate-300" />
+        <span className="text-slate-700 font-medium">New Client</span>
+      </nav>
 
       <div>
         <h2 className="text-xl font-semibold text-slate-900 tracking-tight">Create New Client</h2>
@@ -143,8 +165,9 @@ export default function ClientCreate() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="col-span-1 sm:col-span-2">
               <label className="block text-xs font-medium text-slate-400 mb-1.5">Company Name *</label>
-              <input type="text" required value={form.name} onChange={e => updateForm('name', e.target.value)}
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200" placeholder="Bright Smile Dental" />
+              <input type="text" value={form.name} onChange={e => { updateForm('name', e.target.value); setFieldErrors(p => ({ ...p, name: '' })); }}
+                className={inputClass('name')} placeholder="Bright Smile Dental" />
+              {fieldError('name')}
             </div>
             <div>
               <label className="block text-xs font-medium text-slate-400 mb-1.5">Industry *</label>
@@ -261,19 +284,22 @@ export default function ClientCreate() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">Admin Email</label>
-              <input type="email" value={form.admin_email} onChange={e => updateForm('admin_email', e.target.value)}
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200" placeholder="admin@company.com" />
+              <label className="block text-xs font-medium text-slate-400 mb-1.5">Admin Email *</label>
+              <input type="email" value={form.admin_email} onChange={e => { updateForm('admin_email', e.target.value); setFieldErrors(p => ({ ...p, admin_email: '' })); }}
+                className={inputClass('admin_email')} placeholder="admin@company.com" />
+              {fieldError('admin_email')}
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">Admin Name</label>
-              <input type="text" value={form.admin_name} onChange={e => updateForm('admin_name', e.target.value)}
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200" placeholder="Dr. Chen" />
+              <label className="block text-xs font-medium text-slate-400 mb-1.5">Admin Name *</label>
+              <input type="text" value={form.admin_name} onChange={e => { updateForm('admin_name', e.target.value); setFieldErrors(p => ({ ...p, admin_name: '' })); }}
+                className={inputClass('admin_name')} placeholder="Dr. Chen" />
+              {fieldError('admin_name')}
             </div>
             <div className="col-span-1 sm:col-span-2">
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">Password</label>
-              <input type="password" value={form.admin_password} onChange={e => updateForm('admin_password', e.target.value)}
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200" placeholder="Minimum 6 characters" />
+              <label className="block text-xs font-medium text-slate-400 mb-1.5">Password *</label>
+              <input type="password" value={form.admin_password} onChange={e => { updateForm('admin_password', e.target.value); setFieldErrors(p => ({ ...p, admin_password: '' })); }}
+                className={inputClass('admin_password')} placeholder="Minimum 6 characters" />
+              {fieldError('admin_password')}
             </div>
           </div>
         </div>

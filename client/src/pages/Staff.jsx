@@ -137,7 +137,10 @@ export default function Staff() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!form.name.trim()) return;
+    if (!form.name.trim()) {
+      toast.error('Name is required');
+      return;
+    }
     setSaving(true);
     try {
       if (editingId) {
