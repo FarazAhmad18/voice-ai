@@ -95,11 +95,12 @@ router.get('/:id', async (req, res) => {
       .eq('firm_id', lead.firm_id)
       .order('created_at', { ascending: false })
       .limit(50),
+    // Fetch appointments by lead_id OR matching phone number (fallback for unlinked appointments)
     supabase
       .from('appointments')
       .select('*, staff:assigned_staff_id(id, name, specialization)')
-      .eq('lead_id', id)
       .eq('firm_id', lead.firm_id)
+      .or(`lead_id.eq.${id}${lead.caller_phone && lead.caller_phone !== 'unknown' ? `,caller_phone.eq.${lead.caller_phone}` : ''}`)
       .order('created_at', { ascending: false })
       .limit(5),
   ]);
