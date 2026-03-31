@@ -146,13 +146,21 @@ router.patch('/:id', requireRole('admin', 'super_admin'), async (req, res) => {
 router.delete('/:id', requireRole('admin', 'super_admin'), async (req, res) => {
   if (!supabase || !req.firm) return res.status(500).json({ error: 'Database not configured' });
 
-  const { data, error } = await supabase
+  // Fetch staff name before deleting for logging
+  const { data: existing } = await supabase
     .from('staff')
-    .update({ is_active: false })
+    .select('name')
     .eq('id', req.params.id)
     .eq('firm_id', req.firm.id)
-    .select()
     .single();
+
+  const { error } = await supabase
+    .from('staff')
+    .delete()
+    .eq('id', req.params.id)
+    .eq('firm_id', req.firm.id);
+
+  const data = existing;
 
   if (error) {
     logger.error('database', `Failed to deactivate staff: ${error.message}`, {
