@@ -11,7 +11,7 @@ import {
   ArrowLeft, Phone, Mail, Briefcase, AlertTriangle, CalendarCheck,
   Clock, FileText, Send, UserCheck, Bell, User, PhoneIncoming,
   MessageSquare, Mic, ChevronDown, ChevronUp, ExternalLink, Copy,
-  Activity, Check, Sparkles, Hash, Globe,
+  Activity, Check, Sparkles, Hash, Globe, ChevronRight,
 } from 'lucide-react';
 
 const STATUS_FLOW = [
@@ -284,14 +284,16 @@ export default function LeadDetail() {
 
   return (
     <div className="space-y-6">
-      {/* Back */}
-      <Link
-        to={cameFromFollowUps ? '/follow-ups' : '/leads'}
-        className="inline-flex items-center gap-2 text-sm font-medium text-slate-400 hover:text-slate-600 transition-colors group"
-      >
-        <ArrowLeft size={15} className="group-hover:-translate-x-0.5 transition-transform" />
-        {cameFromFollowUps ? 'Follow Ups' : 'Leads'}
-      </Link>
+      {/* Breadcrumb */}
+      <nav className="flex items-center gap-1.5 text-sm">
+        <Link to="/" className="text-slate-400 hover:text-slate-600 transition-colors">Dashboard</Link>
+        <ChevronRight size={14} className="text-slate-300" />
+        <Link to={cameFromFollowUps ? '/follow-ups' : '/leads'} className="text-slate-400 hover:text-slate-600 transition-colors">
+          {cameFromFollowUps ? 'Follow Ups' : 'Leads'}
+        </Link>
+        <ChevronRight size={14} className="text-slate-300" />
+        <span className="text-slate-700 font-medium truncate max-w-[200px]">{lead?.caller_name || 'Lead'}</span>
+      </nav>
 
       {/* Header Card */}
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm shadow-slate-100/50 overflow-hidden">
