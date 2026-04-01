@@ -41,6 +41,19 @@ router.get('/', async (req, res) => {
     query = query.eq('firm_id', firmId);
   }
 
+  // Filter by staff member
+  if (req.query.assigned_staff_id) {
+    query = query.eq('assigned_staff_id', req.query.assigned_staff_id);
+  }
+
+  // Filter by date range
+  if (req.query.date_from) {
+    query = query.gte('appointment_date', req.query.date_from);
+  }
+  if (req.query.date_to) {
+    query = query.lte('appointment_date', req.query.date_to);
+  }
+
   query = query
     .order('appointment_date', { ascending: true })
     .range(offset, offset + limit - 1);

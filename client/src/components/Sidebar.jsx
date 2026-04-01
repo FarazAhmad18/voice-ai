@@ -5,7 +5,7 @@ import { useFirm } from '../context/FirmContext';
 import { fetchLeads } from '../services/api';
 import { supabase } from '../services/supabase';
 import {
-  LayoutDashboard, Users, Calendar, Settings,
+  LayoutDashboard, Users, Calendar, CalendarDays, Settings,
   Building2, FileText, Activity, LogOut, Search, Bell,
   Menu, X, Shield, BookOpen,
   PanelLeftClose, PanelLeft,
@@ -15,6 +15,7 @@ const clientNav = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/leads', label: 'Leads', icon: Users },
   { path: '/appointments', label: 'Appointments', icon: Calendar },
+  { path: '/calendar', label: 'Calendar', icon: CalendarDays },
   { path: '/staff', label: 'Staff', icon: Users, adminOnly: true },
   { path: '/settings', label: 'Settings', icon: Settings, adminOnly: true },
 ];

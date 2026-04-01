@@ -13,6 +13,7 @@ import Appointments from './pages/Appointments';
 import Staff from './pages/Staff';
 import Settings from './pages/Settings';
 import Knowledge from './pages/Knowledge';
+import CalendarPage from './pages/Calendar';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ClientList from './pages/admin/ClientList';
 import ClientCreate from './pages/admin/ClientCreate';
@@ -64,6 +65,7 @@ function AppLayout() {
           <Route path="/leads/:id" element={<LeadDetail />} />
           <Route path="/follow-ups" element={<FollowUps />} />
           <Route path="/appointments" element={<Appointments />} />
+          <Route path="/calendar" element={<CalendarPage />} />
           <Route path="/staff" element={<Staff />} />
           <Route path="/knowledge" element={<Knowledge />} />
           <Route path="/settings" element={<Settings />} />

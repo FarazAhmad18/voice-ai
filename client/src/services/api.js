@@ -113,6 +113,17 @@ export async function fetchAppointments() {
   return Array.isArray(res) ? res : (res.data || []);
 }
 
+export async function fetchAppointmentsFiltered({ staffId, dateFrom, dateTo } = {}) {
+  const params = new URLSearchParams();
+  if (staffId) params.set('assigned_staff_id', staffId);
+  if (dateFrom) params.set('date_from', dateFrom);
+  if (dateTo) params.set('date_to', dateTo);
+  params.set('limit', '500');
+  const query = params.toString();
+  const res = await apiFetch(`/appointments?${query}`);
+  return Array.isArray(res) ? res : (res.data || []);
+}
+
 export async function updateAppointment(id, updates) {
   return apiFetch(`/appointments/${id}`, {
     method: 'PATCH',
