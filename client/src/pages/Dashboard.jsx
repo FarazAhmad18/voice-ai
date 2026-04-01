@@ -157,6 +157,25 @@ export default function Dashboard() {
   const todayLeads = leads.filter(l => l.created_at?.startsWith(today));
   const conversionRate = getConversionRate(leads);
 
+  // Trend calculations — this week vs last week
+  const now = new Date();
+  const startOfWeek = new Date(now); startOfWeek.setDate(now.getDate() - now.getDay());
+  startOfWeek.setHours(0, 0, 0, 0);
+  const startOfLastWeek = new Date(startOfWeek); startOfLastWeek.setDate(startOfLastWeek.getDate() - 7);
+  const thisWeekLeads = leads.filter(l => new Date(l.created_at) >= startOfWeek);
+  const lastWeekLeads = leads.filter(l => { const d = new Date(l.created_at); return d >= startOfLastWeek && d < startOfWeek; });
+  const leadsTrend = lastWeekLeads.length > 0
+    ? Math.round(((thisWeekLeads.length - lastWeekLeads.length) / lastWeekLeads.length) * 100)
+    : thisWeekLeads.length > 0 ? 100 : 0;
+  const leadsTrendText = leadsTrend > 0 ? `+${leadsTrend}% vs last week` : leadsTrend < 0 ? `${leadsTrend}% vs last week` : 'Same as last week';
+
+  const overdueFollowUps = followUps.filter(l => l.follow_up_date && l.follow_up_date < today).length;
+  const followUpTrend = overdueFollowUps > 0 ? `${overdueFollowUps} overdue` : 'All on track';
+
+  const lastWeekConversion = getConversionRate(lastWeekLeads);
+  const convDiff = conversionRate - lastWeekConversion;
+  const convTrend = convDiff > 0 ? `+${convDiff}% vs last week` : convDiff < 0 ? `${convDiff}% vs last week` : 'Steady';
+
   // Needs attention: hot new + overdue follow-ups + today's new
   const needsAttention = [];
   newLeads.filter(l => l.score_label === 'hot').forEach(l => {
@@ -259,10 +278,10 @@ export default function Dashboard() {
 
           {/* Quick stats — glass morphism cards */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-7">
-            <QuickStat label="Total Leads" value={leads.length} icon={Users} trend="+12% this week" brandColor={bc} />
-            <QuickStat label="Follow Ups" value={followUps.length} icon={UserCheck} trend="3 overdue" brandColor={bc} accent />
-            <QuickStat label="Hot Leads" value={hotLeads.length} icon={Flame} trend="High priority" brandColor={bc} />
-            <QuickStat label="Conversion" value={`${conversionRate}%`} icon={TrendingUp} trend="vs 18% last week" brandColor={bc} />
+            <QuickStat label="Total Leads" value={leads.length} icon={Users} trend={leadsTrendText} brandColor={bc} />
+            <QuickStat label="Follow Ups" value={followUps.length} icon={UserCheck} trend={followUpTrend} brandColor={bc} accent />
+            <QuickStat label="Hot Leads" value={hotLeads.length} icon={Flame} trend={`${thisWeekLeads.filter(l => l.score_label === 'hot').length} this week`} brandColor={bc} />
+            <QuickStat label="Conversion" value={`${conversionRate}%`} icon={TrendingUp} trend={convTrend} brandColor={bc} />
           </div>
         </div>
       </div>

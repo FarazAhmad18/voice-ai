@@ -1,12 +1,13 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { fetchLeads, updateLead } from '../services/api';
+import { fetchLeads, updateLead, fetchStaff } from '../services/api';
 import { supabase } from '../services/supabase';
 import ScoreBadge from '../components/ScoreBadge';
 import StatusBadge from '../components/StatusBadge';
 import DateFilter from '../components/DateFilter';
+import { getStaffColor } from '../components/calendar/calendarUtils';
 import { toast } from 'sonner';
-import { Search, Download, PhoneIncoming, ChevronRight, ArrowRight, Users, Flame, Filter, AlertCircle, LayoutGrid, LayoutList, Columns3, TrendingUp, Zap, Clock, Phone, Mail, StickyNote } from 'lucide-react';
+import { Search, Download, PhoneIncoming, ChevronRight, ArrowRight, Users, Flame, Filter, AlertCircle, LayoutGrid, LayoutList, Columns3, TrendingUp, Zap, Clock, Phone, Mail, StickyNote, UserCheck } from 'lucide-react';
 
 const PIPELINE = [
   { key: 'all', label: 'All' },
@@ -122,7 +123,7 @@ function LeadCardView({ lead }) {
         <StatusBadge status={lead.status} />
       </div>
       <div className="mt-3 pt-3 border-t border-slate-50 flex items-center justify-between">
-        <span className="text-[11px] text-slate-400 capitalize">{lead.case_type}</span>
+        <span className="text-[11px] text-slate-400 capitalize">{lead.case_type?.replace(/_/g, ' ')}</span>
         <span className="text-[11px] text-slate-300">{formatRelativeTime(lead.created_at)}</span>
       </div>
     </Link>
@@ -216,7 +217,7 @@ function KanbanView({ leads, onStatusChange }) {
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-semibold text-slate-800 truncate group-hover:text-violet-600 transition-colors">{lead.caller_name}</p>
-                            <p className="text-[11px] text-slate-400 truncate">{lead.case_type} · {formatRelativeTime(lead.created_at)}</p>
+                            <p className="text-[11px] text-slate-400 truncate">{lead.case_type?.replace(/_/g, ' ')} · {formatRelativeTime(lead.created_at)}</p>
                           </div>
                           {lead.urgency === 'high' && (
                             <span className="relative flex h-2 w-2 flex-shrink-0">
@@ -271,6 +272,13 @@ export default function Leads() {
   const [viewMode, setViewMode] = useState('table');
   const pipelineRef = useRef(null);
   const [sliderStyle, setSliderStyle] = useState({});
+  const [staff, setStaff] = useState([]);
+
+  const staffMap = useMemo(() => {
+    const map = {};
+    staff.forEach(s => { map[s.id] = s; });
+    return map;
+  }, [staff]);
 
   useEffect(() => {
     const q = searchParams.get('search');
@@ -312,6 +320,7 @@ export default function Leads() {
 
   useEffect(() => {
     loadLeads();
+    fetchStaff().then(data => setStaff(Array.isArray(data) ? data : [])).catch(() => {});
   }, []);
 
   // Supabase Realtime: listen for new and updated leads (firm-scoped)
@@ -622,18 +631,13 @@ export default function Leads() {
           <table className="w-full">
             <thead>
               <tr className="bg-slate-50/80 border-b border-slate-100">
-                <th className="text-left px-5 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                  <span className="flex items-center gap-1.5">Client <ChevronRight size={10} className="rotate-90 opacity-40" /></span>
-                </th>
-                <th className="text-left px-5 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-400 hidden sm:table-cell">
-                  <span className="flex items-center gap-1.5">Phone <ChevronRight size={10} className="rotate-90 opacity-40" /></span>
-                </th>
-                <th className="text-left px-5 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-400 hidden md:table-cell">
-                  <span className="flex items-center gap-1.5">Case <ChevronRight size={10} className="rotate-90 opacity-40" /></span>
-                </th>
+                <th className="text-left px-5 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-400">Client</th>
+                <th className="text-left px-5 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-400 hidden sm:table-cell">Phone</th>
+                <th className="text-left px-5 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-400 hidden md:table-cell">Case</th>
                 <th className="text-left px-5 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-400">Score</th>
                 <th className="text-left px-5 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-400 hidden sm:table-cell">Status</th>
-                <th className="text-left px-5 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-400 hidden lg:table-cell">When</th>
+                <th className="text-left px-5 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-400 hidden lg:table-cell">Assigned</th>
+                <th className="text-left px-5 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-400 hidden lg:table-cell">Created</th>
                 <th className="w-10"></th>
               </tr>
             </thead>
@@ -644,9 +648,9 @@ export default function Leads() {
                 return (
                   <tr
                     key={lead.id}
-                    className={`group hover:bg-slate-50/80 hover:shadow-[0_1px_8px_-2px_rgba(0,0,0,0.06)] transition-all duration-200 ${idx % 2 === 1 ? 'bg-slate-50/30' : 'bg-white'}`}
+                    className="group hover:bg-slate-50/80 hover:shadow-[0_1px_8px_-2px_rgba(0,0,0,0.06)] transition-all duration-200 bg-white border-b border-slate-50"
                   >
-                    <td className="px-5 py-3.5">
+                    <td className="px-5 py-2.5">
                       <Link to={`/leads/${lead.id}`} className="flex items-center gap-3">
                         <div className="relative">
                           <div className={`w-10 h-10 ${gradient} rounded-lg flex items-center justify-center text-[11px] font-bold text-white shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all duration-200`}>
@@ -672,17 +676,42 @@ export default function Leads() {
                               <span className="text-[10px] font-semibold text-red-500">Urgent</span>
                             </span>
                           )}
+                          {lead.follow_up_date && (
+                            <p className={`text-[10px] mt-0.5 flex items-center gap-1 ${
+                              new Date(lead.follow_up_date) < new Date(new Date().toDateString())
+                                ? 'text-red-500 font-medium'
+                                : 'text-slate-400'
+                            }`}>
+                              <Clock size={9} />
+                              {new Date(lead.follow_up_date) < new Date(new Date().toDateString()) ? 'Overdue: ' : 'Follow-up: '}
+                              {new Date(lead.follow_up_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                            </p>
+                          )}
                         </div>
                       </Link>
                     </td>
-                    <td className="px-5 py-3.5 text-sm text-slate-500 font-mono text-[13px] hidden sm:table-cell">{lead.caller_phone}</td>
-                    <td className="px-5 py-3.5 hidden md:table-cell">
-                      <span className="text-xs font-medium text-slate-600 bg-slate-50 px-2.5 py-1 rounded-md capitalize">{lead.case_type}</span>
+                    <td className="px-5 py-2.5 text-sm text-slate-500 font-mono text-[13px] hidden sm:table-cell">{lead.caller_phone}</td>
+                    <td className="px-5 py-2.5 hidden md:table-cell">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-medium text-slate-600 bg-slate-50 px-2.5 py-1 rounded-md capitalize">{lead.case_type?.replace(/_/g, ' ')}</span>
+                        {lead.urgency === 'high' && <span className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" title="High urgency" />}
+                        {lead.urgency === 'medium' && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" title="Medium urgency" />}
+                      </div>
                     </td>
-                    <td className="px-5 py-3.5"><ScoreBadge score={lead.score} label={lead.score_label} /></td>
-                    <td className="px-5 py-3.5 hidden sm:table-cell"><StatusBadge status={lead.status} /></td>
-                    <td className="px-5 py-3.5 text-xs font-medium text-slate-400 hidden lg:table-cell">{formatRelativeTime(lead.created_at)}</td>
-                    <td className="px-3 py-3.5">
+                    <td className="px-5 py-2.5"><ScoreBadge score={lead.score} label={lead.score_label} /></td>
+                    <td className="px-5 py-2.5 hidden sm:table-cell"><StatusBadge status={lead.status} /></td>
+                    <td className="px-5 py-2.5 hidden lg:table-cell">
+                      {lead.assigned_staff_id && staffMap[lead.assigned_staff_id] ? (
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full flex-shrink-0 ${getStaffColor(lead.assigned_staff_id).dot}`} />
+                          <span className="text-xs font-medium text-slate-600 truncate max-w-[120px]">{staffMap[lead.assigned_staff_id].name}</span>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-slate-300">&mdash;</span>
+                      )}
+                    </td>
+                    <td className="px-5 py-2.5 text-xs font-medium text-slate-400 hidden lg:table-cell">{formatRelativeTime(lead.created_at)}</td>
+                    <td className="px-3 py-2.5">
                       <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                         {lead.caller_phone && (
                           <a href={`tel:${lead.caller_phone}`} className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-emerald-50 text-slate-300 hover:text-emerald-600 transition-colors" title="Call">

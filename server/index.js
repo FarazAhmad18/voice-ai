@@ -21,6 +21,7 @@ const logsRouter = require('./routes/logs');
 const messagesRouter = require('./routes/messages');
 const twilioWebhookRouter = require('./routes/twilioWebhook');
 const knowledgeRouter = require('./routes/knowledge');
+const analyticsRouter = require('./routes/analytics');
 
 const requestId = require('./middleware/requestId');
 const requestLogger = require('./middleware/requestLogger');
@@ -150,6 +151,7 @@ app.use('/api/appointments', generalApiLimiter, appointmentsRouter);
 app.use('/api/logs', generalApiLimiter, logsRouter);
 app.use('/api/messages', generalApiLimiter, messagesRouter);
 app.use('/api/knowledge', generalApiLimiter, knowledgeRouter);
+app.use('/api/analytics', generalApiLimiter, analyticsRouter);
 
 // Global error handler — catches unhandled Express errors
 app.use((err, req, res, next) => {

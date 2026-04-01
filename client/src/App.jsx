@@ -14,6 +14,7 @@ import Staff from './pages/Staff';
 import Settings from './pages/Settings';
 import Knowledge from './pages/Knowledge';
 import CalendarPage from './pages/Calendar';
+import Analytics from './pages/Analytics';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ClientList from './pages/admin/ClientList';
 import ClientCreate from './pages/admin/ClientCreate';
@@ -61,6 +62,7 @@ function AppLayout() {
         <Routes>
           {/* Client Dashboard */}
           <Route path="/" element={<Dashboard />} />
+          <Route path="/analytics" element={<Analytics />} />
           <Route path="/leads" element={<Leads />} />
           <Route path="/leads/:id" element={<LeadDetail />} />
           <Route path="/follow-ups" element={<FollowUps />} />

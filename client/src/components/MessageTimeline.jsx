@@ -1,323 +1,172 @@
-import { Phone, MessageSquare, Mail, StickyNote, Mic, ChevronDown, ChevronUp } from 'lucide-react';
+import { Phone, MessageSquare, Mail, StickyNote, Mic, ChevronDown, ChevronUp, PhoneIncoming, PhoneOutgoing } from 'lucide-react';
 import { useState } from 'react';
 
-function formatDate(dateStr) {
+function formatFullDate(dateStr) {
   if (!dateStr) return '';
-  const d = new Date(dateStr);
-  return d.toLocaleDateString('en-US', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  });
+  return new Date(dateStr).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+}
+
+function formatTime(dateStr) {
+  if (!dateStr) return '';
+  return new Date(dateStr).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 }
 
 function formatDuration(seconds) {
   if (!seconds) return '0s';
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
-  if (m === 0) return `${s}s`;
-  return `${m}m ${s}s`;
+  return m === 0 ? `${s}s` : `${m}m ${s}s`;
 }
 
-function relativeTime(dateStr) {
-  if (!dateStr) return '';
-  const now = new Date();
-  const d = new Date(dateStr);
-  const diffMs = now - d;
-  const diffMin = Math.floor(diffMs / 60000);
-  if (diffMin < 1) return 'Just now';
-  if (diffMin < 60) return `${diffMin}m ago`;
-  const diffHr = Math.floor(diffMin / 60);
-  if (diffHr < 24) return `${diffHr}h ago`;
-  const diffDay = Math.floor(diffHr / 24);
-  if (diffDay < 7) return `${diffDay}d ago`;
-  return formatDate(dateStr);
-}
-
-const CHANNEL_CONFIG = {
-  sms: {
-    icon: MessageSquare,
-    label: 'SMS',
-    badgeBg: 'bg-blue-50',
-    badgeText: 'text-blue-600',
-    iconBg: 'bg-blue-50',
-    iconColor: 'text-blue-500',
-  },
-  email: {
-    icon: Mail,
-    label: 'Email',
-    badgeBg: 'bg-violet-50',
-    badgeText: 'text-violet-600',
-    iconBg: 'bg-violet-50',
-    iconColor: 'text-violet-500',
-  },
-  note: {
-    icon: StickyNote,
-    label: 'Note',
-    badgeBg: 'bg-amber-50',
-    badgeText: 'text-amber-600',
-    iconBg: 'bg-amber-50',
-    iconColor: 'text-amber-500',
-  },
-  call: {
-    icon: Phone,
-    label: 'Call',
-    badgeBg: 'bg-emerald-50',
-    badgeText: 'text-emerald-600',
-    iconBg: 'bg-emerald-50',
-    iconColor: 'text-emerald-500',
-  },
-  legacy_note: {
-    icon: StickyNote,
-    label: 'Note',
-    badgeBg: 'bg-amber-50',
-    badgeText: 'text-amber-600',
-    iconBg: 'bg-amber-50',
-    iconColor: 'text-amber-500',
-  },
+// ── Entry type configs ──
+const TYPE_CONFIG = {
+  call_inbound:  { label: 'Inbound Call',         color: 'text-red-600',    bg: 'bg-red-50',    border: 'border-l-red-400',    icon: PhoneIncoming },
+  call_outbound: { label: 'Outbound Call',        color: 'text-blue-600',   bg: 'bg-blue-50',   border: 'border-l-blue-400',   icon: PhoneOutgoing },
+  sms_inbound:   { label: 'Inbound Text Message', color: 'text-red-600',    bg: 'bg-red-50',    border: 'border-l-red-400',    icon: MessageSquare },
+  sms_outbound:  { label: 'Outbound Text Message', color: 'text-blue-600',  bg: 'bg-blue-50',   border: 'border-l-blue-400',   icon: MessageSquare },
+  email_inbound: { label: 'Inbound Email',        color: 'text-red-600',    bg: 'bg-red-50',    border: 'border-l-red-400',    icon: Mail },
+  email_outbound:{ label: 'Email Reply',          color: 'text-blue-600',   bg: 'bg-blue-50',   border: 'border-l-blue-400',   icon: Mail },
+  note:          { label: 'Note',                  color: 'text-amber-600',  bg: 'bg-amber-50',  border: 'border-l-amber-400',  icon: StickyNote },
+  legacy_note:   { label: 'Note',                  color: 'text-amber-600',  bg: 'bg-amber-50',  border: 'border-l-amber-400',  icon: StickyNote },
 };
 
-function CallCard({ call }) {
-  const [expanded, setExpanded] = useState(false);
-  const config = CHANNEL_CONFIG.call;
+function getEntryConfig(item) {
+  if (item.type === 'call') {
+    const dir = item.data.direction === 'outbound' ? 'outbound' : 'inbound';
+    return TYPE_CONFIG[`call_${dir}`];
+  }
+  const ch = item.data.channel || 'sms';
+  if (ch === 'note' || ch === 'legacy_note') return TYPE_CONFIG.note;
+  const dir = item.data.direction === 'inbound' ? 'inbound' : 'outbound';
+  return TYPE_CONFIG[`${ch}_${dir}`] || TYPE_CONFIG.sms_outbound;
+}
+
+function CallEntry({ call }) {
+  const [showTranscript, setShowTranscript] = useState(false);
 
   return (
-    <div className="w-full">
-      <div
-        className="flex items-center gap-3 p-4 bg-white rounded-lg border border-slate-100 shadow-sm cursor-pointer hover:bg-slate-50/50 transition-colors"
-        onClick={() => setExpanded(!expanded)}
-      >
-        <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${config.iconBg}`}>
-          <Mic size={16} className={config.iconColor} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <p className="text-sm font-medium text-slate-900">Phone Call</p>
-            <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-md ${config.badgeBg} ${config.badgeText}`}>
-              {formatDuration(call.duration)}
-            </span>
-            {call.sentiment && (
-              <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-md capitalize ${
-                call.sentiment === 'positive' ? 'bg-emerald-50 text-emerald-600' :
-                call.sentiment === 'negative' || call.sentiment === 'distressed' ? 'bg-red-50 text-red-600' :
-                'bg-slate-50 text-slate-500'
-              }`}>
-                {call.sentiment}
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-2 mt-0.5">
-            <span className="text-xs text-slate-400 capitalize">{call.ended_reason?.replace(/_/g, ' ')}</span>
-            <span className="text-xs text-slate-300">·</span>
-            <span className="text-xs text-slate-400">{relativeTime(call.created_at)}</span>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {call.recording_url && (
-            <span className="text-[10px] font-medium text-blue-500 bg-blue-50 px-2 py-1 rounded-md">Recording</span>
-          )}
-          {expanded ? <ChevronUp size={16} className="text-slate-300" /> : <ChevronDown size={16} className="text-slate-300" />}
-        </div>
+    <div className="space-y-2">
+      {/* Call meta */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">{formatDuration(call.duration)}</span>
+        {call.sentiment && (
+          <span className={`text-xs font-medium px-2 py-0.5 rounded capitalize ${
+            call.sentiment === 'positive' ? 'bg-emerald-50 text-emerald-600' :
+            call.sentiment === 'negative' || call.sentiment === 'distressed' ? 'bg-red-50 text-red-600' :
+            'bg-slate-50 text-slate-500'
+          }`}>{call.sentiment}</span>
+        )}
+        <span className="text-xs text-slate-400 capitalize">{call.ended_reason?.replace(/_/g, ' ')}</span>
       </div>
 
-      {expanded && (
-        <div className="mt-2 space-y-3 pl-2">
-          {call.summary && (
-            <div className="bg-blue-50 rounded-lg px-4 py-3">
-              <p className="text-[11px] font-bold text-blue-600 uppercase tracking-wider mb-1">AI Summary</p>
-              <p className="text-sm text-blue-900 leading-relaxed">{call.summary}</p>
-            </div>
-          )}
+      {/* Summary */}
+      {call.summary && <p className="text-sm text-slate-700 leading-relaxed">{call.summary}</p>}
 
-          {call.recording_url && (
-            <div className="bg-slate-50 rounded-lg px-4 py-3">
-              <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Recording</p>
-              <audio controls className="w-full h-10" src={call.recording_url} />
-            </div>
-          )}
+      {/* Audio — always visible */}
+      {call.recording_url && (
+        <audio controls className="w-full" src={call.recording_url} style={{ height: 36, borderRadius: 8 }} />
+      )}
 
-          {call.transcript && (
-            <div className="bg-slate-50 rounded-lg overflow-hidden">
-              <div className="px-4 py-3 border-b border-slate-100">
-                <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Transcript</p>
-              </div>
-              <div className="px-4 py-3 max-h-72 overflow-y-auto">
-                <pre className="text-sm text-slate-700 whitespace-pre-wrap font-sans leading-relaxed">{call.transcript}</pre>
-              </div>
+      {/* Transcript toggle */}
+      {call.transcript && (
+        <>
+          <button
+            onClick={() => setShowTranscript(!showTranscript)}
+            className="text-[11px] font-medium text-slate-400 hover:text-slate-600 transition-colors flex items-center gap-1"
+          >
+            {showTranscript ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+            {showTranscript ? 'Hide' : 'Show'} Transcript
+          </button>
+          {showTranscript && (
+            <div className="bg-slate-50 rounded-lg p-3 max-h-64 overflow-y-auto">
+              <pre className="text-sm text-slate-600 whitespace-pre-wrap font-sans leading-relaxed">{call.transcript}</pre>
             </div>
           )}
-        </div>
+        </>
       )}
     </div>
   );
 }
 
-function MessageBubble({ message }) {
-  const isOutbound = message.direction === 'outbound';
-  const isNote = message.channel === 'note' || message.channel === 'legacy_note';
-  const config = CHANNEL_CONFIG[message.channel] || CHANNEL_CONFIG.sms;
-  const Icon = config.icon;
-
-  if (isNote) {
-    return (
-      <div className="w-full">
-        <div className="bg-amber-50/70 border border-amber-100/50 rounded-lg px-4 py-3">
-          <div className="flex items-center gap-2 mb-1.5">
-            <StickyNote size={12} className="text-amber-500" />
-            <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-md ${config.badgeBg} ${config.badgeText}`}>
-              {config.label}
-            </span>
-            {message.sender && (
-              <span className="text-[11px] font-medium text-amber-600">{message.sender}</span>
-            )}
-            <span className="text-[11px] text-amber-400 ml-auto">{relativeTime(message.created_at)}</span>
-          </div>
-          <p className="text-sm text-amber-900 leading-relaxed">{message.body}</p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className={`flex ${isOutbound ? 'justify-end' : 'justify-start'}`}>
-      <div className={`max-w-[80%] ${isOutbound ? 'order-1' : 'order-1'}`}>
-        <div className={`rounded-lg px-4 py-3 ${
-          isOutbound
-            ? 'bg-slate-800 text-white'
-            : 'bg-white border border-slate-100 shadow-sm'
-        }`}>
-          <div className="flex items-center gap-2 mb-1">
-            <Icon size={11} className={isOutbound ? 'text-slate-400' : config.iconColor} />
-            <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-md ${
-              isOutbound ? 'bg-slate-700 text-slate-300' : `${config.badgeBg} ${config.badgeText}`
-            }`}>
-              {config.label}
-            </span>
-            {message.sender && (
-              <span className={`text-[11px] font-medium ${isOutbound ? 'text-slate-400' : 'text-slate-500'}`}>
-                {message.sender}
-              </span>
-            )}
-          </div>
-          {message.subject && (
-            <p className={`text-xs font-semibold mb-1 ${isOutbound ? 'text-slate-300' : 'text-slate-700'}`}>
-              {message.subject}
-            </p>
-          )}
-          <p className={`text-sm leading-relaxed ${isOutbound ? 'text-slate-100' : 'text-slate-700'}`}>
-            {message.body}
-          </p>
-        </div>
-        <div className={`flex items-center gap-2 mt-1 px-1 ${isOutbound ? 'justify-end' : 'justify-start'}`}>
-          <span className="text-[11px] text-slate-400">{relativeTime(message.created_at)}</span>
-          {message.status && message.status !== 'sent' && message.status !== 'received' && (
-            <>
-              <span className="text-[11px] text-slate-300">·</span>
-              <span className={`text-[11px] capitalize ${
-                message.status === 'delivered' ? 'text-emerald-500' :
-                message.status === 'failed' ? 'text-red-500' :
-                'text-slate-400'
-              }`}>
-                {message.status}
-              </span>
-            </>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function MessageTimeline({ messages = [], calls = [], legacyNotes = [] }) {
-  // Merge all items into a single timeline
+  // Build unified timeline
   const items = [];
+  messages.forEach(msg => items.push({ type: 'message', data: msg, created_at: msg.created_at }));
+  calls.forEach(call => items.push({ type: 'call', data: call, created_at: call.created_at }));
+  legacyNotes.forEach(note => items.push({
+    type: 'message',
+    data: { id: `legacy_${note.created_at}`, direction: 'outbound', channel: 'legacy_note', sender: note.author || 'Staff', body: note.text, created_at: note.created_at },
+    created_at: note.created_at,
+  }));
 
-  messages.forEach((msg) => {
-    items.push({
-      type: 'message',
-      data: msg,
-      created_at: msg.created_at,
-    });
-  });
-
-  calls.forEach((call) => {
-    items.push({
-      type: 'call',
-      data: call,
-      created_at: call.created_at,
-    });
-  });
-
-  legacyNotes.forEach((note) => {
-    items.push({
-      type: 'message',
-      data: {
-        id: `legacy_${note.created_at}`,
-        direction: 'outbound',
-        channel: 'legacy_note',
-        sender: note.author || 'Staff',
-        body: note.text,
-        created_at: note.created_at,
-      },
-      created_at: note.created_at,
-    });
-  });
-
-  // Sort newest first
+  // Sort by time — newest first
   items.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
   if (items.length === 0) {
     return (
-      <div className="text-center py-12">
-        <div className="w-12 h-12 bg-slate-50 rounded-lg flex items-center justify-center mx-auto mb-3">
-          <MessageSquare size={20} className="text-slate-300" />
-        </div>
-        <p className="text-sm font-medium text-slate-500">No activity yet</p>
-        <p className="text-xs text-slate-400 mt-1">Messages, calls, and notes will appear here</p>
+      <div className="text-center py-10">
+        <MessageSquare size={20} className="text-slate-300 mx-auto mb-2" />
+        <p className="text-sm text-slate-400">No activity yet</p>
+        <p className="text-[11px] text-slate-300 mt-1">Calls, messages, and notes will appear here</p>
       </div>
     );
   }
 
   return (
-    <div className="relative">
-      {/* Timeline line */}
-      <div className="absolute left-[19px] top-4 bottom-4 w-px bg-slate-100" />
+    <div className="divide-y divide-slate-100">
+      {items.map(item => {
+        const config = getEntryConfig(item);
+        const Icon = config.icon;
+        const dateStr = item.created_at;
 
-      <div className="space-y-4">
-        {items.map((item) => (
-          <div key={`${item.type}_${item.data.id}`} className="flex gap-3 relative">
-            {/* Timeline dot */}
-            <div className="flex-shrink-0 z-10 mt-1">
-              <div className={`w-[38px] h-[38px] rounded-lg flex items-center justify-center ${
-                item.type === 'call'
-                  ? CHANNEL_CONFIG.call.iconBg
-                  : (CHANNEL_CONFIG[item.data.channel] || CHANNEL_CONFIG.sms).iconBg
-              }`}>
-                {item.type === 'call' ? (
-                  <Phone size={14} className={CHANNEL_CONFIG.call.iconColor} />
-                ) : (
-                  (() => {
-                    const cfg = CHANNEL_CONFIG[item.data.channel] || CHANNEL_CONFIG.sms;
-                    const Ic = cfg.icon;
-                    return <Ic size={14} className={cfg.iconColor} />;
-                  })()
-                )}
-              </div>
+        return (
+          <div key={`${item.type}_${item.data.id}`} className={`flex gap-4 py-3 border-l-4 ${config.border} pl-4`}>
+            {/* Timestamp — left column */}
+            <div className="flex-shrink-0 w-[70px] pt-0.5">
+              <p className="text-[11px] font-medium text-slate-500">{formatFullDate(dateStr)}</p>
+              <p className="text-[11px] text-slate-400">{formatTime(dateStr)}</p>
+            </div>
+
+            {/* Icon */}
+            <div className="flex-shrink-0 pt-0.5">
+              <Icon size={16} className={config.color} />
             </div>
 
             {/* Content */}
-            <div className="flex-1 min-w-0 pb-1">
+            <div className="flex-1 min-w-0">
+              {/* Entry header */}
+              <p className={`text-sm font-semibold ${config.color}`}>
+                {config.label}
+                {item.type === 'call' && <span className="text-slate-400 font-normal"> ({formatDuration(item.data.duration)})</span>}
+              </p>
+
+              {/* Sender/receiver info */}
+              {item.data.sender && (
+                <p className="text-xs text-slate-400 mt-0.5">
+                  {item.data.direction === 'inbound' ? 'From' : 'By'}: {item.data.sender}
+                  {item.data.channel === 'sms' && item.data.direction === 'outbound' && item.data.caller_phone && (
+                    <span> · Sent to: {item.data.caller_phone}</span>
+                  )}
+                </p>
+              )}
+
+              {/* Subject for emails */}
+              {item.data.subject && (
+                <p className="text-xs font-semibold text-slate-700 mt-1">Subject: {item.data.subject}</p>
+              )}
+
+              {/* Body / Content */}
               {item.type === 'call' ? (
-                <CallCard call={item.data} />
+                <div className="mt-2">
+                  <CallEntry call={item.data} />
+                </div>
               ) : (
-                <MessageBubble message={item.data} />
+                <p className="text-sm text-slate-700 leading-relaxed mt-1">{item.data.body}</p>
               )}
             </div>
           </div>
-        ))}
-      </div>
+        );
+      })}
     </div>
   );
 }

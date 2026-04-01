@@ -13,53 +13,49 @@ import AppointmentDetailPanel from '../components/calendar/AppointmentDetailPane
 import StaffFilter from '../components/calendar/StaffFilter';
 import { AlertCircle, CalendarDays } from 'lucide-react';
 
-function SkeletonBlock({ className }) {
-  return <div className={`skeleton-shimmer rounded-lg ${className}`} />;
-}
-
 function CalendarSkeleton() {
   return (
     <div className="space-y-4">
-      <SkeletonBlock className="h-24" />
-      <SkeletonBlock className="h-[500px]" />
+      <div className="skeleton-shimmer rounded-lg h-[72px]" />
+      <div className="skeleton-shimmer rounded-lg h-[520px]" />
     </div>
   );
 }
 
 export default function Calendar() {
   const { firm } = useAuth();
-  const [viewMode, setViewMode] = useState('month');
+  const [viewMode, setViewMode] = useState('week');
   const [isFirmView, setIsFirmView] = useState(false);
   const [selectedStaffId, setSelectedStaffId] = useState(null);
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [appointments, setAppointments] = useState([]);
+  const [allAppointments, setAllAppointments] = useState([]);
   const [staff, setStaff] = useState([]);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Build staff map
   const staffMap = useMemo(() => {
     const map = {};
     staff.forEach(s => { map[s.id] = s; });
     return map;
   }, [staff]);
 
-  // Get date range for current view
+  // Client-side filter by staff (safety net on top of server filter)
+  const appointments = useMemo(() => {
+    if (!selectedStaffId || isFirmView) return allAppointments;
+    return allAppointments.filter(a => a.assigned_staff_id === selectedStaffId);
+  }, [allAppointments, selectedStaffId, isFirmView]);
+
   function getDateRange() {
     if (viewMode === 'month') return getMonthRange(currentDate);
     if (viewMode === 'week') return getWeekRange(currentDate);
     return getDayRange(currentDate);
   }
 
-  // Load staff on mount
   useEffect(() => {
-    fetchStaff().then(data => {
-      setStaff(Array.isArray(data) ? data : []);
-    }).catch(() => {});
+    fetchStaff().then(data => setStaff(Array.isArray(data) ? data : [])).catch(() => {});
   }, []);
 
-  // Load appointments when view/date/staff changes
   useEffect(() => {
     async function load() {
       setLoading(true);
@@ -71,7 +67,7 @@ export default function Calendar() {
           dateFrom,
           dateTo,
         });
-        setAppointments(data);
+        setAllAppointments(data);
       } catch (err) {
         setError(err.message || 'Failed to load appointments');
       } finally {
@@ -81,30 +77,26 @@ export default function Calendar() {
     load();
   }, [viewMode, currentDate, selectedStaffId, isFirmView]);
 
-  // Realtime updates
   useEffect(() => {
     const firmId = firm?.id;
     const filter = firmId ? `firm_id=eq.${firmId}` : undefined;
     const channel = supabase
       .channel('calendar-realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments', filter }, () => {
-        // Reload on any appointment change
         const { dateFrom, dateTo } = getDateRange();
         fetchAppointmentsFiltered({
           staffId: isFirmView ? null : selectedStaffId,
-          dateFrom,
-          dateTo,
-        }).then(data => setAppointments(data)).catch(() => {});
+          dateFrom, dateTo,
+        }).then(data => setAllAppointments(data)).catch(() => {});
       })
       .subscribe();
-
     return () => supabase.removeChannel(channel);
   }, [viewMode, currentDate, selectedStaffId, isFirmView]);
 
   async function handleUpdateStatus(id, status) {
     try {
       await updateAppointment(id, { status });
-      setAppointments(prev => prev.map(a => a.id === id ? { ...a, status } : a));
+      setAllAppointments(prev => prev.map(a => a.id === id ? { ...a, status } : a));
       setSelectedAppointment(prev => prev?.id === id ? { ...prev, status } : prev);
       toast.success(`Appointment ${status}`);
     } catch (err) {
@@ -112,13 +104,10 @@ export default function Calendar() {
     }
   }
 
-  if (loading && appointments.length === 0) {
+  if (loading && allAppointments.length === 0) {
     return (
       <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <CalendarDays size={20} className="text-slate-400" />
-          <h1 className="text-xl font-bold text-slate-900">Calendar</h1>
-        </div>
+        <h1 className="text-lg font-bold text-slate-900">Calendar</h1>
         <CalendarSkeleton />
       </div>
     );
@@ -126,15 +115,6 @@ export default function Calendar() {
 
   return (
     <div className="space-y-4">
-      {/* Page header */}
-      <div className="flex items-center gap-3">
-        <CalendarDays size={20} className="text-slate-400" />
-        <h1 className="text-xl font-bold text-slate-900">Calendar</h1>
-        <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
-          {appointments.length} appointment{appointments.length !== 1 ? 's' : ''}
-        </span>
-      </div>
-
       {error && (
         <div className="bg-red-50 border border-red-100 rounded-lg px-4 py-3 flex items-center gap-3">
           <AlertCircle size={16} className="text-red-500" />
@@ -142,7 +122,6 @@ export default function Calendar() {
         </div>
       )}
 
-      {/* Toolbar */}
       <CalendarToolbar
         viewMode={viewMode}
         setViewMode={setViewMode}
@@ -150,22 +129,18 @@ export default function Calendar() {
         setCurrentDate={setCurrentDate}
         isFirmView={isFirmView}
         setIsFirmView={setIsFirmView}
+        appointmentCount={appointments.length}
       >
         {!isFirmView && (
-          <StaffFilter
-            staff={staff}
-            selectedStaffId={selectedStaffId}
-            onSelect={setSelectedStaffId}
-          />
+          <StaffFilter staff={staff} selectedStaffId={selectedStaffId} onSelect={setSelectedStaffId} />
         )}
       </CalendarToolbar>
 
-      {/* Calendar view */}
       {isFirmView ? (
         <FirmCalendarView
           currentDate={currentDate}
           viewMode={viewMode}
-          appointments={appointments}
+          appointments={allAppointments}
           staff={staff}
           staffMap={staffMap}
           onSelectAppointment={setSelectedAppointment}
@@ -193,7 +168,6 @@ export default function Calendar() {
         />
       )}
 
-      {/* Detail panel */}
       {selectedAppointment && (
         <AppointmentDetailPanel
           appointment={selectedAppointment}

@@ -249,6 +249,15 @@ export async function reorderKnowledge(items) {
   return apiFetch('/knowledge/reorder', { method: 'PATCH', body: JSON.stringify({ items }) });
 }
 
+// ── Analytics ─────────────────────────────────────────────
+
+export async function fetchAnalytics(period = '30d', start, end) {
+  const params = new URLSearchParams({ period });
+  if (start) params.set('start', start);
+  if (end) params.set('end', end);
+  return apiFetch(`/analytics?${params}`);
+}
+
 // ── Logs (Admin) ───────────────────────────────────────
 
 export async function fetchLogs(params = {}) {

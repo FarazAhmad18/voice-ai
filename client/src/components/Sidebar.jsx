@@ -5,15 +5,17 @@ import { useFirm } from '../context/FirmContext';
 import { fetchLeads } from '../services/api';
 import { supabase } from '../services/supabase';
 import {
-  LayoutDashboard, Users, Calendar, CalendarDays, Settings,
+  LayoutDashboard, Users, Calendar, CalendarDays, Settings, Clock,
   Building2, FileText, Activity, LogOut, Search, Bell,
-  Menu, X, Shield, BookOpen,
+  Menu, X, Shield, BookOpen, BarChart3,
   PanelLeftClose, PanelLeft,
 } from 'lucide-react';
 
 const clientNav = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard },
+  { path: '/analytics', label: 'Analytics', icon: BarChart3 },
   { path: '/leads', label: 'Leads', icon: Users },
+  { path: '/follow-ups', label: 'Follow-ups', icon: Clock },
   { path: '/appointments', label: 'Appointments', icon: Calendar },
   { path: '/calendar', label: 'Calendar', icon: CalendarDays },
   { path: '/staff', label: 'Staff', icon: Users, adminOnly: true },

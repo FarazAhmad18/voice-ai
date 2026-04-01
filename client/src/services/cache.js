@@ -14,6 +14,7 @@ const TTL_MAP = {
   '/firms':       300_000,   // 5 min
   '/templates':   300_000,   // 5 min
   '/settings':     60_000,   // 60s
+  '/analytics':   120_000,   // 2 min — analytics tolerates staleness
 };
 
 // Which cache keys to invalidate when a path is mutated
@@ -25,6 +26,7 @@ const INVALIDATE_MAP = {
   '/firms':        ['/firms'],
   '/templates':    ['/templates'],
   '/settings':     ['/settings'],
+  '/analytics':    ['/analytics'],
 };
 
 export function getTTL(path) {
