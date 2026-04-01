@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { fetchLeads } from '../services/api';
+import { fetchLeads, updateLead } from '../services/api';
 import { supabase } from '../services/supabase';
 import ScoreBadge from '../components/ScoreBadge';
 import StatusBadge from '../components/StatusBadge';
 import DateFilter from '../components/DateFilter';
-import { Search, Download, PhoneIncoming, ChevronRight, ArrowRight, Users, Flame, Filter, AlertCircle, LayoutGrid, LayoutList, TrendingUp, Zap, Clock } from 'lucide-react';
+import { toast } from 'sonner';
+import { Search, Download, PhoneIncoming, ChevronRight, ArrowRight, Users, Flame, Filter, AlertCircle, LayoutGrid, LayoutList, Columns3, TrendingUp, Zap, Clock, Phone, Mail, StickyNote } from 'lucide-react';
 
 const PIPELINE = [
   { key: 'all', label: 'All' },
@@ -125,6 +126,135 @@ function LeadCardView({ lead }) {
         <span className="text-[11px] text-slate-300">{formatRelativeTime(lead.created_at)}</span>
       </div>
     </Link>
+  );
+}
+
+const KANBAN_STAGES = [
+  { key: 'new', label: 'New', color: 'emerald', bg: 'bg-emerald-50', border: 'border-emerald-200', badge: 'bg-emerald-500' },
+  { key: 'contacted', label: 'Contacted', color: 'blue', bg: 'bg-blue-50', border: 'border-blue-200', badge: 'bg-blue-500' },
+  { key: 'booked', label: 'Booked', color: 'violet', bg: 'bg-violet-50', border: 'border-violet-200', badge: 'bg-violet-500' },
+  { key: 'converted', label: 'Converted', color: 'teal', bg: 'bg-teal-50', border: 'border-teal-200', badge: 'bg-teal-500' },
+  { key: 'closed', label: 'Closed', color: 'slate', bg: 'bg-slate-50', border: 'border-slate-200', badge: 'bg-slate-400' },
+];
+
+function KanbanView({ leads, onStatusChange }) {
+  const [draggedLead, setDraggedLead] = useState(null);
+  const [dragOverStage, setDragOverStage] = useState(null);
+
+  function handleDragStart(e, lead) {
+    setDraggedLead(lead);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', lead.id);
+  }
+
+  function handleDragOver(e, stageKey) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverStage(stageKey);
+  }
+
+  function handleDragLeave() {
+    setDragOverStage(null);
+  }
+
+  function handleDrop(e, stageKey) {
+    e.preventDefault();
+    setDragOverStage(null);
+    if (draggedLead && draggedLead.status !== stageKey) {
+      onStatusChange(draggedLead.id, stageKey);
+    }
+    setDraggedLead(null);
+  }
+
+  return (
+    <div className="flex gap-4 overflow-x-auto pb-4" style={{ minHeight: '500px' }}>
+      {KANBAN_STAGES.map(stage => {
+        const stageLeads = leads.filter(l => l.status === stage.key);
+        const isDragOver = dragOverStage === stage.key;
+        return (
+          <div
+            key={stage.key}
+            className={`flex-shrink-0 w-72 flex flex-col rounded-xl border-2 transition-all duration-200 ${
+              isDragOver ? `${stage.border} ${stage.bg} scale-[1.01]` : 'border-slate-100 bg-slate-50/50'
+            }`}
+            onDragOver={(e) => handleDragOver(e, stage.key)}
+            onDragLeave={handleDragLeave}
+            onDrop={(e) => handleDrop(e, stage.key)}
+          >
+            {/* Stage Header */}
+            <div className="px-4 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className={`w-2.5 h-2.5 rounded-full ${stage.badge}`} />
+                <span className="text-sm font-semibold text-slate-700">{stage.label}</span>
+              </div>
+              <span className="text-xs font-bold text-slate-400 bg-white px-2 py-0.5 rounded-full">{stageLeads.length}</span>
+            </div>
+
+            {/* Cards */}
+            <div className="flex-1 px-2 pb-2 space-y-2 overflow-y-auto max-h-[600px]">
+              {stageLeads.length === 0 ? (
+                <div className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${isDragOver ? stage.border : 'border-slate-200'}`}>
+                  <p className="text-xs text-slate-300">Drop here</p>
+                </div>
+              ) : (
+                stageLeads.map(lead => {
+                  const initials = ((lead.caller_name || 'U').split(' ').map(n => n?.[0] || '').join('').slice(0, 2).toUpperCase()) || '?';
+                  const gradient = getAvatarGradient(lead.score_label);
+                  const isDragging = draggedLead?.id === lead.id;
+                  return (
+                    <div
+                      key={lead.id}
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, lead)}
+                      onDragEnd={() => { setDraggedLead(null); setDragOverStage(null); }}
+                      className={`group bg-white rounded-lg border border-slate-100 p-3.5 cursor-grab active:cursor-grabbing hover:shadow-md hover:border-slate-200 transition-all ${isDragging ? 'opacity-40 scale-95' : ''}`}
+                    >
+                      <Link to={`/leads/${lead.id}`} className="block" onClick={(e) => { if (isDragging) e.preventDefault(); }}>
+                        <div className="flex items-center gap-3">
+                          <div className={`w-9 h-9 ${gradient} rounded-lg flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0`}>
+                            {initials}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-slate-800 truncate group-hover:text-violet-600 transition-colors">{lead.caller_name}</p>
+                            <p className="text-[11px] text-slate-400 truncate">{lead.case_type} · {formatRelativeTime(lead.created_at)}</p>
+                          </div>
+                          {lead.urgency === 'high' && (
+                            <span className="relative flex h-2 w-2 flex-shrink-0">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
+                            </span>
+                          )}
+                        </div>
+                        <div className="mt-2.5 flex items-center gap-2">
+                          <ScoreBadge score={lead.score} label={lead.score_label} />
+                          {lead.caller_phone && <span className="text-[10px] text-slate-300 truncate">{lead.caller_phone}</span>}
+                        </div>
+                      </Link>
+                      {/* Quick Actions */}
+                      <div className="mt-2 pt-2 border-t border-slate-50 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        {lead.caller_phone && (
+                          <a href={`tel:${lead.caller_phone}`} className="p-1.5 rounded-md hover:bg-emerald-50 text-slate-300 hover:text-emerald-600 transition-colors" title="Call" onClick={(e) => e.stopPropagation()}>
+                            <Phone size={13} />
+                          </a>
+                        )}
+                        {lead.caller_email && (
+                          <a href={`mailto:${lead.caller_email}`} className="p-1.5 rounded-md hover:bg-blue-50 text-slate-300 hover:text-blue-600 transition-colors" title="Email" onClick={(e) => e.stopPropagation()}>
+                            <Mail size={13} />
+                          </a>
+                        )}
+                        <Link to={`/leads/${lead.id}`} className="p-1.5 rounded-md hover:bg-violet-50 text-slate-300 hover:text-violet-600 transition-colors" title="View details">
+                          <StickyNote size={13} />
+                        </Link>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
@@ -354,6 +484,13 @@ export default function Leads() {
             >
               <LayoutGrid size={15} />
             </button>
+            <button
+              onClick={() => setViewMode('kanban')}
+              className={`p-2 rounded-md transition-all ${viewMode === 'kanban' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-400 hover:text-slate-600'}`}
+              title="Kanban board"
+            >
+              <Columns3 size={15} />
+            </button>
           </div>
           <button
             onClick={() => exportToCSV(filtered)}
@@ -456,6 +593,22 @@ export default function Leads() {
             </button>
           )}
         </div>
+      ) : viewMode === 'kanban' ? (
+        /* Kanban Board View */
+        <KanbanView
+          leads={visibleLeads}
+          onStatusChange={async (leadId, newStatus) => {
+            const prev = leads;
+            setLeads(l => l.map(x => x.id === leadId ? { ...x, status: newStatus } : x));
+            try {
+              await updateLead(leadId, { status: newStatus });
+              toast.success(`Lead moved to ${newStatus}`);
+            } catch (err) {
+              setLeads(prev);
+              toast.error('Failed to update status');
+            }
+          }}
+        />
       ) : viewMode === 'card' ? (
         /* Card Grid View */
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -530,11 +683,21 @@ export default function Leads() {
                     <td className="px-5 py-3.5 hidden sm:table-cell"><StatusBadge status={lead.status} /></td>
                     <td className="px-5 py-3.5 text-xs font-medium text-slate-400 hidden lg:table-cell">{formatRelativeTime(lead.created_at)}</td>
                     <td className="px-3 py-3.5">
-                      <Link to={`/leads/${lead.id}`}>
-                        <div className="w-7 h-7 rounded-lg flex items-center justify-center group-hover:bg-violet-50 transition-colors">
-                          <ChevronRight size={16} className="text-slate-200 group-hover:text-violet-500 transition-colors" />
-                        </div>
-                      </Link>
+                      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        {lead.caller_phone && (
+                          <a href={`tel:${lead.caller_phone}`} className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-emerald-50 text-slate-300 hover:text-emerald-600 transition-colors" title="Call">
+                            <Phone size={14} />
+                          </a>
+                        )}
+                        {lead.caller_email && (
+                          <a href={`mailto:${lead.caller_email}`} className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-blue-50 text-slate-300 hover:text-blue-600 transition-colors" title="Email">
+                            <Mail size={14} />
+                          </a>
+                        )}
+                        <Link to={`/leads/${lead.id}`} className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-violet-50 text-slate-300 hover:text-violet-600 transition-colors" title="View">
+                          <ChevronRight size={14} />
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 );
