@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { supabase } from '../services/supabase';
 import { clearAll as clearApiCache } from '../services/cache.js';
 
@@ -84,7 +84,7 @@ export function AuthProvider({ children }) {
     }
   }
 
-  const value = {
+  const value = useMemo(() => ({
     user,
     firm,
     industryConfig,
@@ -97,7 +97,7 @@ export function AuthProvider({ children }) {
     isSuperAdmin: user?.role === 'super_admin',
     isAdmin: user?.role === 'admin',
     isStaff: user?.role === 'staff',
-  };
+  }), [user, firm, industryConfig, session, loading]);
 
   return (
     <AuthContext.Provider value={value}>

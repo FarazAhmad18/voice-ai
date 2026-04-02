@@ -23,14 +23,14 @@ const CATEGORIES = [
 ];
 
 const CATEGORY_COLORS = {
-  general: { bg: 'bg-slate-50', text: 'text-slate-700', border: 'border-l-slate-400', ring: 'ring-slate-100', dot: 'bg-slate-400' },
-  services: { bg: 'bg-violet-50', text: 'text-violet-700', border: 'border-l-violet-500', ring: 'ring-violet-100', dot: 'bg-violet-500' },
-  pricing: { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-l-emerald-500', ring: 'ring-emerald-100', dot: 'bg-emerald-500' },
-  location: { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-l-blue-500', ring: 'ring-blue-100', dot: 'bg-blue-500' },
-  hours: { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-l-amber-500', ring: 'ring-amber-100', dot: 'bg-amber-500' },
-  insurance: { bg: 'bg-teal-50', text: 'text-teal-700', border: 'border-l-teal-500', ring: 'ring-teal-100', dot: 'bg-teal-500' },
-  policies: { bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-l-rose-500', ring: 'ring-rose-100', dot: 'bg-rose-500' },
-  other: { bg: 'bg-slate-50', text: 'text-slate-600', border: 'border-l-slate-300', ring: 'ring-slate-100', dot: 'bg-slate-400' },
+  general: { bg: 'bg-slate-50 dark:bg-zinc-900', text: 'text-slate-700 dark:text-zinc-300', border: 'border-l-slate-400', ring: 'ring-slate-100 dark:ring-zinc-800', dot: 'bg-slate-400' },
+  services: { bg: 'bg-violet-50 dark:bg-violet-900/30', text: 'text-violet-700 dark:text-violet-400', border: 'border-l-violet-500', ring: 'ring-violet-100', dot: 'bg-violet-500' },
+  pricing: { bg: 'bg-emerald-50 dark:bg-emerald-900/30', text: 'text-emerald-700 dark:text-emerald-400', border: 'border-l-emerald-500', ring: 'ring-emerald-100', dot: 'bg-emerald-500' },
+  location: { bg: 'bg-blue-50 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-400', border: 'border-l-blue-500', ring: 'ring-blue-100', dot: 'bg-blue-500' },
+  hours: { bg: 'bg-amber-50 dark:bg-amber-900/30', text: 'text-amber-700 dark:text-amber-400', border: 'border-l-amber-500', ring: 'ring-amber-100', dot: 'bg-amber-500' },
+  insurance: { bg: 'bg-teal-50 dark:bg-teal-900/30', text: 'text-teal-700 dark:text-teal-400', border: 'border-l-teal-500', ring: 'ring-teal-100', dot: 'bg-teal-500' },
+  policies: { bg: 'bg-rose-50 dark:bg-rose-900/30', text: 'text-rose-700 dark:text-rose-400', border: 'border-l-rose-500', ring: 'ring-rose-100', dot: 'bg-rose-500' },
+  other: { bg: 'bg-slate-50 dark:bg-zinc-900', text: 'text-slate-600 dark:text-zinc-500', border: 'border-l-slate-300', ring: 'ring-slate-100 dark:ring-zinc-800', dot: 'bg-slate-400' },
 };
 
 function getCategoryColor(cat) {
@@ -230,36 +230,36 @@ export default function Knowledge() {
 
       {/* Stats bar */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="bg-white rounded-lg border border-slate-200/60 shadow-sm px-5 py-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-200/60 dark:border-zinc-700 shadow-sm px-5 py-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-violet-50 rounded-lg flex items-center justify-center">
+            <div className="w-9 h-9 bg-violet-50 dark:bg-violet-900/30 rounded-lg flex items-center justify-center">
               <BookOpen size={16} className="text-violet-500" />
             </div>
             <div>
-              <p className="text-xl font-bold text-slate-900">{totalEntries}</p>
-              <p className="text-xs text-slate-400">Total Entries</p>
+              <p className="text-xl font-bold text-slate-900 dark:text-zinc-100">{totalEntries}</p>
+              <p className="text-xs text-slate-400 dark:text-zinc-500">Total Entries</p>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-lg border border-slate-200/60 shadow-sm px-5 py-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-200/60 dark:border-zinc-700 shadow-sm px-5 py-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-emerald-50 rounded-lg flex items-center justify-center">
+            <div className="w-9 h-9 bg-emerald-50 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center">
               <CheckCircle size={16} className="text-emerald-500" />
             </div>
             <div>
-              <p className="text-xl font-bold text-slate-900">{activeEntries}</p>
-              <p className="text-xs text-slate-400">Active Entries</p>
+              <p className="text-xl font-bold text-slate-900 dark:text-zinc-100">{activeEntries}</p>
+              <p className="text-xs text-slate-400 dark:text-zinc-500">Active Entries</p>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-lg border border-slate-200/60 shadow-sm px-5 py-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-200/60 dark:border-zinc-700 shadow-sm px-5 py-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center">
+            <div className="w-9 h-9 bg-blue-50 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
               <Hash size={16} className="text-blue-500" />
             </div>
             <div>
-              <p className="text-xl font-bold text-slate-900">{categoriesUsed}</p>
-              <p className="text-xs text-slate-400">Categories Used</p>
+              <p className="text-xl font-bold text-slate-900 dark:text-zinc-100">{categoriesUsed}</p>
+              <p className="text-xs text-slate-400 dark:text-zinc-500">Categories Used</p>
             </div>
           </div>
         </div>
@@ -269,18 +269,18 @@ export default function Knowledge() {
       <div className="space-y-3">
         {/* Search */}
         <div className="relative">
-          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" />
+          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 dark:text-zinc-600 pointer-events-none" />
           <input
             type="text"
             placeholder="Search questions and answers..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-11 pr-4 py-3 text-sm bg-white border border-slate-200/60 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 placeholder:text-slate-300 transition-all"
+            className="w-full pl-11 pr-4 py-3 text-sm bg-white dark:bg-zinc-900 border border-slate-200/60 dark:border-zinc-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 placeholder:text-slate-300 dark:placeholder:text-zinc-600 transition-all"
           />
           {search && (
             <button
               onClick={() => setSearch('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-300 hover:text-slate-500 transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-300 dark:text-zinc-600 hover:text-slate-500 dark:hover:text-zinc-500 transition-colors"
             >
               <X size={14} />
             </button>
@@ -301,7 +301,7 @@ export default function Knowledge() {
                     ? cat.value === 'all'
                       ? 'bg-slate-900 text-white shadow-sm'
                       : `${colors.bg} ${colors.text} ring-1 ${colors.ring}`
-                    : 'bg-white text-slate-400 hover:text-slate-600 hover:bg-slate-50 border border-slate-100'
+                    : 'bg-white dark:bg-zinc-900 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-900 border border-slate-100 dark:border-zinc-800'
                 }`}
               >
                 {cat.label}
@@ -318,7 +318,7 @@ export default function Knowledge() {
 
       {/* Add/Edit Form */}
       {showForm && (
-        <div className="bg-white rounded-lg border border-violet-200/60 shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-violet-200/60 shadow-sm overflow-hidden">
           <div className="bg-violet-500 px-6 py-4 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <div className="w-7 h-7 bg-white/15 rounded-lg flex items-center justify-center">
@@ -338,24 +338,24 @@ export default function Knowledge() {
 
           <form onSubmit={handleSubmit} className="p-6 space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-600 dark:text-zinc-500 mb-1.5">
                 Question
               </label>
               <div className="relative">
-                <MessageCircleQuestion size={14} className="absolute left-3.5 top-3.5 text-slate-300" />
+                <MessageCircleQuestion size={14} className="absolute left-3.5 top-3.5 text-slate-300 dark:text-zinc-600" />
                 <input
                   type="text"
                   value={form.question}
                   onChange={(e) => setForm(p => ({ ...p, question: e.target.value }))}
                   placeholder="e.g., What are your office hours?"
                   autoFocus
-                  className="w-full pl-10 pr-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white placeholder:text-slate-300 transition-all"
+                  className="w-full pl-10 pr-4 py-3 text-sm bg-slate-50/80 dark:bg-zinc-900/80 border border-slate-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white dark:focus:bg-zinc-900 placeholder:text-slate-300 dark:placeholder:text-zinc-600 transition-all"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-600 dark:text-zinc-500 mb-1.5">
                 Answer
               </label>
               <textarea
@@ -364,26 +364,26 @@ export default function Knowledge() {
                 onChange={handleAnswerChange}
                 placeholder="e.g., We are open Monday through Friday, 9 AM to 5 PM."
                 rows={3}
-                className="w-full px-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white placeholder:text-slate-300 transition-all resize-none"
+                className="w-full px-4 py-3 text-sm bg-slate-50/80 dark:bg-zinc-900/80 border border-slate-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white dark:focus:bg-zinc-900 placeholder:text-slate-300 dark:placeholder:text-zinc-600 transition-all resize-none"
                 style={{ minHeight: '80px' }}
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-600 dark:text-zinc-500 mb-1.5">
                 Category
               </label>
               <div className="relative">
                 <select
                   value={form.category}
                   onChange={(e) => setForm(p => ({ ...p, category: e.target.value }))}
-                  className="w-full px-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white transition-all appearance-none cursor-pointer"
+                  className="w-full px-4 py-3 text-sm bg-slate-50/80 dark:bg-zinc-900/80 border border-slate-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white dark:focus:bg-zinc-900 transition-all appearance-none cursor-pointer"
                 >
                   {CATEGORIES.filter(c => c.value !== 'all').map(c => (
                     <option key={c.value} value={c.value}>{c.label}</option>
                   ))}
                 </select>
-                <ChevronDown size={14} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                <ChevronDown size={14} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-500 pointer-events-none" />
               </div>
             </div>
 
@@ -391,7 +391,7 @@ export default function Knowledge() {
               <button
                 type="button"
                 onClick={cancelForm}
-                className="px-5 py-2.5 text-sm font-medium text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded-lg transition-all"
+                className="px-5 py-2.5 text-sm font-medium text-slate-500 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-900 rounded-lg transition-all"
               >
                 Cancel
               </button>
@@ -414,14 +414,14 @@ export default function Knowledge() {
 
       {/* Entry list */}
       {filtered.length === 0 ? (
-        <div className="bg-white rounded-lg border border-slate-200/60 shadow-sm px-8 py-16 text-center">
-          <div className="w-16 h-16 bg-violet-50 rounded-lg flex items-center justify-center mx-auto mb-4">
+        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-200/60 dark:border-zinc-700 shadow-sm px-8 py-16 text-center">
+          <div className="w-16 h-16 bg-violet-50 dark:bg-violet-900/30 rounded-lg flex items-center justify-center mx-auto mb-4">
             <Brain size={28} className="text-violet-300" />
           </div>
           {entries.length === 0 ? (
             <>
-              <h3 className="text-base font-semibold text-slate-700 mb-2">No knowledge entries yet</h3>
-              <p className="text-sm text-slate-400 max-w-md mx-auto mb-6">
+              <h3 className="text-base font-semibold text-slate-700 dark:text-zinc-300 mb-2">No knowledge entries yet</h3>
+              <p className="text-sm text-slate-400 dark:text-zinc-500 max-w-md mx-auto mb-6">
                 Add questions and answers to help your AI assistant respond to callers with accurate information about your business.
               </p>
               <button
@@ -434,8 +434,8 @@ export default function Knowledge() {
             </>
           ) : (
             <>
-              <h3 className="text-base font-semibold text-slate-700 mb-2">No matches found</h3>
-              <p className="text-sm text-slate-400">
+              <h3 className="text-base font-semibold text-slate-700 dark:text-zinc-300 mb-2">No matches found</h3>
+              <p className="text-sm text-slate-400 dark:text-zinc-500">
                 Try adjusting your search or category filter.
               </p>
             </>
@@ -449,22 +449,22 @@ export default function Knowledge() {
             return (
               <div
                 key={entry.id}
-                className={`group bg-white rounded-lg border border-slate-200/60 shadow-sm overflow-hidden transition-all duration-200 hover:shadow-md border-l-[3px] ${colors.border} ${isInactive ? 'opacity-60' : ''}`}
+                className={`group bg-white dark:bg-zinc-900 rounded-lg border border-slate-200/60 dark:border-zinc-700 shadow-sm overflow-hidden transition-all duration-200 hover:shadow-md border-l-[3px] ${colors.border} ${isInactive ? 'opacity-60' : ''}`}
               >
                 <div className="flex items-start gap-3 px-5 py-4">
                   {/* Drag handle (cosmetic) */}
                   <div className="flex-shrink-0 pt-1 opacity-0 group-hover:opacity-40 transition-opacity cursor-grab">
-                    <GripVertical size={14} className="text-slate-400" />
+                    <GripVertical size={14} className="text-slate-400 dark:text-zinc-500" />
                   </div>
 
                   {/* Content */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
-                        <p className={`text-sm font-semibold text-slate-800 ${isInactive ? 'line-through' : ''}`}>
+                        <p className={`text-sm font-semibold text-slate-800 dark:text-zinc-200 ${isInactive ? 'line-through' : ''}`}>
                           {entry.question}
                         </p>
-                        <p className="text-sm text-slate-500 mt-1 leading-relaxed whitespace-pre-wrap">
+                        <p className="text-sm text-slate-500 dark:text-zinc-500 mt-1 leading-relaxed whitespace-pre-wrap">
                           {entry.answer}
                         </p>
                       </div>
@@ -473,7 +473,7 @@ export default function Knowledge() {
                       <div className="flex items-center gap-1 flex-shrink-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={() => openEditForm(entry)}
-                          className="p-2 text-slate-400 hover:text-violet-500 hover:bg-violet-50 rounded-lg transition-all"
+                          className="p-2 text-slate-400 dark:text-zinc-500 hover:text-violet-500 hover:bg-violet-50 dark:hover:bg-violet-900/30 rounded-lg transition-all"
                           title="Edit"
                         >
                           <Edit3 size={14} />
@@ -481,7 +481,7 @@ export default function Knowledge() {
                         <button
                           onClick={() => setConfirmDeleteEntry(entry)}
                           disabled={deletingId === entry.id}
-                          className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all disabled:opacity-50"
+                          className="p-2 text-slate-400 dark:text-zinc-500 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg transition-all disabled:opacity-50"
                           title="Delete"
                         >
                           {deletingId === entry.id ? (
@@ -494,7 +494,7 @@ export default function Knowledge() {
                     </div>
 
                     {/* Bottom: category badge + toggle */}
-                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-100">
+                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-100 dark:border-zinc-800">
                       <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold capitalize ${colors.bg} ${colors.text} ring-1 ${colors.ring}`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${colors.dot}`} />
                         {entry.category || 'general'}
@@ -505,8 +505,8 @@ export default function Knowledge() {
                         disabled={togglingId === entry.id}
                         className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-200 ${
                           isInactive
-                            ? 'text-slate-400 bg-slate-50 hover:bg-slate-100'
-                            : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100'
+                            ? 'text-slate-400 dark:text-zinc-500 bg-slate-50 dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800/50'
+                            : 'text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/40'
                         } disabled:opacity-50`}
                       >
                         {togglingId === entry.id ? (
@@ -530,7 +530,7 @@ export default function Knowledge() {
       {/* Result count */}
       {filtered.length > 0 && (
         <div className="text-center pb-4">
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-slate-400 dark:text-zinc-500">
             Showing {filtered.length} of {totalEntries} entries
           </p>
         </div>

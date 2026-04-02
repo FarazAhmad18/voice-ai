@@ -53,25 +53,25 @@ function DashboardSkeleton() {
       <SkeletonBlock className="h-52 rounded-lg" />
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-8 space-y-6">
-          <div className="bg-white rounded-lg border border-slate-100 p-6 space-y-4">
+          <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-100 dark:border-zinc-800 p-6 space-y-4">
             <SkeletonBlock className="h-5 w-40" />
             <SkeletonBlock className="h-16 w-full" />
             <SkeletonBlock className="h-16 w-full" />
             <SkeletonBlock className="h-16 w-full" />
           </div>
-          <div className="bg-white rounded-lg border border-slate-100 p-6 space-y-4">
+          <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-100 dark:border-zinc-800 p-6 space-y-4">
             <SkeletonBlock className="h-5 w-36" />
             <SkeletonBlock className="h-14 w-full" />
             <SkeletonBlock className="h-14 w-full" />
           </div>
         </div>
         <div className="lg:col-span-4 space-y-6">
-          <div className="bg-white rounded-lg border border-slate-100 p-6 space-y-3">
+          <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-100 dark:border-zinc-800 p-6 space-y-3">
             <SkeletonBlock className="h-5 w-28" />
             <SkeletonBlock className="h-4 w-full" />
             <SkeletonBlock className="h-20 w-full" />
           </div>
-          <div className="bg-white rounded-lg border border-slate-100 p-6 space-y-3">
+          <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-100 dark:border-zinc-800 p-6 space-y-3">
             <SkeletonBlock className="h-5 w-32" />
             <SkeletonBlock className="h-12 w-full" />
             <SkeletonBlock className="h-12 w-full" />
@@ -220,14 +220,14 @@ export default function Dashboard() {
   return (
     <div className="space-y-8">
       {error && (
-        <div className="bg-red-50/80 backdrop-blur-sm border border-red-100 rounded-lg px-5 py-4 flex items-center justify-between">
+        <div className="bg-red-50/80 dark:bg-red-900/30 backdrop-blur-sm border border-red-100 dark:border-red-800 rounded-lg px-5 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 bg-red-100 dark:bg-red-900/40 rounded-lg flex items-center justify-center flex-shrink-0">
               <AlertCircle size={15} className="text-red-500" />
             </div>
-            <p className="text-sm text-red-700 font-medium">{error}</p>
+            <p className="text-sm text-red-700 dark:text-red-400 font-medium">{error}</p>
           </div>
-          <button onClick={loadData} className="text-xs font-semibold text-red-600 hover:text-red-700 bg-red-100 hover:bg-red-200 px-3 py-1.5 rounded-lg transition-colors">
+          <button onClick={loadData} className="text-xs font-semibold text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-400 bg-red-100 dark:bg-red-900/40 hover:bg-red-200 px-3 py-1.5 rounded-lg transition-colors">
             Retry
           </button>
         </div>
@@ -294,31 +294,31 @@ export default function Dashboard() {
         <div className="lg:col-span-8 space-y-6">
 
           {/* ── Needs Attention ── */}
-          <div className="bg-white rounded-lg border border-slate-100/80 shadow-sm">
-            <div className="px-6 py-5 border-b border-slate-100/80 flex justify-between items-center">
+          <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-100/80 dark:border-zinc-800 shadow-sm">
+            <div className="px-6 py-5 border-b border-slate-100/80 dark:border-zinc-800 flex justify-between items-center">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-amber-50 rounded-lg flex items-center justify-center">
+                <div className="w-9 h-9 bg-amber-50 dark:bg-amber-900/30 rounded-lg flex items-center justify-center">
                   <Zap size={16} className="text-amber-500" />
                 </div>
                 <div>
-                  <h3 className="text-[15px] font-semibold text-slate-900">Needs Attention</h3>
-                  <p className="text-xs text-slate-400 mt-0.5">Leads requiring immediate action</p>
+                  <h3 className="text-[15px] font-semibold text-slate-900 dark:text-zinc-100">Needs Attention</h3>
+                  <p className="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">Leads requiring immediate action</p>
                 </div>
               </div>
-              <Link to="/leads" className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-slate-600 transition-colors group">
+              <Link to="/leads" className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-400 transition-colors group">
                 View all <ArrowRight size={12} />
               </Link>
             </div>
             {needsAttention.length === 0 ? (
               <div className="py-20 text-center">
-                <div className="w-16 h-16 bg-emerald-50 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-emerald-50 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center mx-auto mb-4">
                   <CalendarCheck size={24} className="text-emerald-500" />
                 </div>
-                <p className="text-sm font-semibold text-slate-700">All caught up</p>
-                <p className="text-xs text-slate-400 mt-1.5 max-w-xs mx-auto">No leads need immediate attention right now. New leads will appear here automatically.</p>
+                <p className="text-sm font-semibold text-slate-700 dark:text-zinc-300">All caught up</p>
+                <p className="text-xs text-slate-400 dark:text-zinc-500 mt-1.5 max-w-xs mx-auto">No leads need immediate attention right now. New leads will appear here automatically.</p>
               </div>
             ) : (
-              <div className="divide-y divide-slate-50/80">
+              <div className="divide-y divide-slate-50 dark:divide-zinc-800/40">
                 {needsAttention.slice(0, 6).map((lead, idx) => {
                   const initials = ((lead.caller_name || 'U').split(' ').map(n => n?.[0] || '').join('').slice(0, 2).toUpperCase()) || '?';
                   const borderColors = {
@@ -328,57 +328,57 @@ export default function Dashboard() {
                     'New lead': 'border-l-blue-500',
                   };
                   const reasonBgColors = {
-                    'Hot lead': 'bg-red-50 text-red-600 ring-1 ring-red-100',
-                    'Overdue follow-up': 'bg-amber-50 text-amber-700 ring-1 ring-amber-100',
-                    'Needs follow-up': 'bg-orange-50 text-orange-600 ring-1 ring-orange-100',
-                    'New lead': 'bg-blue-50 text-blue-600 ring-1 ring-blue-100',
+                    'Hot lead': 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 ring-1 ring-red-100',
+                    'Overdue follow-up': 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 ring-1 ring-amber-100',
+                    'Needs follow-up': 'bg-orange-50 dark:bg-orange-900/30 text-orange-600 ring-1 ring-orange-100',
+                    'New lead': 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 ring-1 ring-blue-100',
                   };
                   const avatarBg = {
-                    'Hot lead': 'bg-red-50 text-red-600',
-                    'Overdue follow-up': 'bg-amber-50 text-amber-600',
-                    'Needs follow-up': 'bg-orange-50 text-orange-600',
-                    'New lead': 'bg-blue-50 text-blue-600',
+                    'Hot lead': 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400',
+                    'Overdue follow-up': 'bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400',
+                    'Needs follow-up': 'bg-orange-50 dark:bg-orange-900/30 text-orange-600',
+                    'New lead': 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
                   };
                   return (
                     <Link
                       key={lead.id}
                       to={`/leads/${lead.id}`}
-                      className={`flex items-center gap-4 px-6 py-4 border-l-[3px] ${borderColors[lead.reason] || 'border-l-slate-300'} hover:bg-slate-50/60 transition-all group`}
+                      className={`flex items-center gap-4 px-6 py-4 border-l-[3px] ${borderColors[lead.reason] || 'border-l-slate-300'} hover:bg-slate-50 dark:hover:bg-zinc-800/30 transition-all group`}
                     >
                       <div className="relative">
-                        <div className={`w-11 h-11 rounded-full flex items-center justify-center text-xs font-bold ${avatarBg[lead.reason] || 'bg-slate-100 text-slate-600'} group-hover:scale-105 transition-transform`}>
+                        <div className={`w-11 h-11 rounded-full flex items-center justify-center text-xs font-bold ${avatarBg[lead.reason] || 'bg-slate-100 dark:bg-zinc-800/50 text-slate-600 dark:text-zinc-500'} group-hover:scale-105 transition-transform`}>
                           {initials}
                         </div>
                         {lead.reason === 'Hot lead' && (
-                          <div className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-white flex items-center justify-center">
+                          <div className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-white dark:border-zinc-900 flex items-center justify-center">
                             <Flame size={7} className="text-white" />
                           </div>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2.5">
-                          <p className="text-sm font-semibold text-slate-900 group-hover:text-blue-600 transition-colors truncate">{lead.caller_name}</p>
+                          <p className="text-sm font-semibold text-slate-900 dark:text-zinc-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">{lead.caller_name}</p>
                           <ScoreBadge score={lead.score} label={lead.score_label} />
                         </div>
-                        <p className="text-xs text-slate-400 mt-0.5">
+                        <p className="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">
                           <span className="capitalize">{lead.case_type}</span>
-                          <span className="mx-1.5 text-slate-200">&#183;</span>
+                          <span className="mx-1.5 text-slate-200 dark:text-zinc-700">&#183;</span>
                           {lead.caller_phone}
-                          <span className="mx-1.5 text-slate-200">&#183;</span>
+                          <span className="mx-1.5 text-slate-200 dark:text-zinc-700">&#183;</span>
                           {formatRelativeTime(lead.created_at)}
                         </p>
                       </div>
                       <div className="flex items-center gap-3 flex-shrink-0">
-                        <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${reasonBgColors[lead.reason] || 'bg-slate-50 text-slate-600'}`}>
+                        <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${reasonBgColors[lead.reason] || 'bg-slate-50 dark:bg-zinc-900 text-slate-600 dark:text-zinc-500'}`}>
                           {lead.reason}
                         </span>
-                        <ChevronRight size={16} className="text-slate-200 group-hover:text-slate-400" />
+                        <ChevronRight size={16} className="text-slate-200 dark:text-zinc-700 group-hover:text-slate-400 dark:group-hover:text-zinc-500" />
                       </div>
                     </Link>
                   );
                 })}
                 {needsAttention.length > 6 && (
-                  <Link to="/leads" className="flex items-center justify-center gap-1.5 px-6 py-3.5 text-xs font-semibold text-blue-600 hover:bg-blue-50/50 transition-colors">
+                  <Link to="/leads" className="flex items-center justify-center gap-1.5 px-6 py-3.5 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-colors">
                     View {needsAttention.length - 6} more <ArrowUpRight size={12} />
                   </Link>
                 )}
@@ -391,18 +391,18 @@ export default function Dashboard() {
 
           {/* ── Today's Schedule ── */}
           {todayApts.length > 0 && (
-            <div className="bg-white rounded-lg border border-slate-100/80 shadow-sm">
-              <div className="px-6 py-5 border-b border-slate-100/80 flex justify-between items-center">
+            <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-100/80 dark:border-zinc-800 shadow-sm">
+              <div className="px-6 py-5 border-b border-slate-100/80 dark:border-zinc-800 flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 bg-violet-50 rounded-lg flex items-center justify-center">
+                  <div className="w-9 h-9 bg-violet-50 dark:bg-violet-900/30 rounded-lg flex items-center justify-center">
                     <CalendarCheck size={16} className="text-violet-500" />
                   </div>
                   <div>
-                    <h3 className="text-[15px] font-semibold text-slate-900">Today's Schedule</h3>
-                    <p className="text-xs text-slate-400 mt-0.5">{todayApts.length} appointment{todayApts.length !== 1 ? 's' : ''} today</p>
+                    <h3 className="text-[15px] font-semibold text-slate-900 dark:text-zinc-100">Today's Schedule</h3>
+                    <p className="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">{todayApts.length} appointment{todayApts.length !== 1 ? 's' : ''} today</p>
                   </div>
                 </div>
-                <Link to="/appointments" className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-slate-600 transition-colors group">
+                <Link to="/appointments" className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-400 transition-colors group">
                   All appointments <ArrowRight size={12} />
                 </Link>
               </div>
@@ -410,22 +410,22 @@ export default function Dashboard() {
                 {todayApts.map((apt, idx) => {
                   const initials = ((apt.caller_name || 'U').split(' ').map(n => n?.[0] || '').join('').slice(0, 2).toUpperCase()) || '?';
                   const timeColors = ['border-l-violet-400', 'border-l-blue-400', 'border-l-emerald-400', 'border-l-amber-400', 'border-l-rose-400'];
-                  const timeBgColors = ['bg-violet-50 text-violet-700', 'bg-blue-50 text-blue-700', 'bg-emerald-50 text-emerald-700', 'bg-amber-50 text-amber-700', 'bg-rose-50 text-rose-700'];
+                  const timeBgColors = ['bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400', 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400', 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400', 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400', 'bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400'];
                   return (
                     <div
                       key={apt.id}
-                      className={`flex items-center gap-4 px-5 py-4 rounded-lg border-l-[3px] ${timeColors[idx % 5]} bg-slate-50/50 hover:bg-slate-50 transition-all`}
+                      className={`flex items-center gap-4 px-5 py-4 rounded-lg border-l-[3px] ${timeColors[idx % 5]} bg-slate-50/50 dark:bg-zinc-900/50 hover:bg-slate-50 dark:hover:bg-zinc-900 transition-all`}
                     >
                       <div className={`px-3 py-1.5 rounded-lg text-xs font-bold ${timeBgColors[idx % 5]} min-w-[72px] text-center`}>
                         {apt.appointment_time}
                       </div>
-                      <div className="w-px h-8 bg-slate-200/60" />
-                      <div className="w-9 h-9 bg-white rounded-full flex items-center justify-center text-xs font-bold text-violet-600 border border-slate-100 flex-shrink-0 shadow-sm">
+                      <div className="w-px h-8 bg-slate-200 dark:bg-zinc-700/60" />
+                      <div className="w-9 h-9 bg-white dark:bg-zinc-900 rounded-full flex items-center justify-center text-xs font-bold text-violet-600 dark:text-violet-400 border border-slate-100 dark:border-zinc-800 flex-shrink-0 shadow-sm">
                         {initials}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-slate-800">{apt.caller_name}</p>
-                        <p className="text-xs text-slate-400 capitalize mt-0.5">{apt.case_type}</p>
+                        <p className="text-sm font-semibold text-slate-800 dark:text-zinc-200">{apt.caller_name}</p>
+                        <p className="text-xs text-slate-400 dark:text-zinc-500 capitalize mt-0.5">{apt.case_type}</p>
                       </div>
                       <StatusBadge status={apt.status} />
                     </div>
@@ -442,19 +442,19 @@ export default function Dashboard() {
         <div className="lg:col-span-4 space-y-6">
 
           {/* ── Pipeline Overview (Horizontal stacked bar) ── */}
-          <div className="bg-white rounded-lg border border-slate-100/80 shadow-sm p-6">
+          <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-100/80 dark:border-zinc-800 shadow-sm p-6">
             <div className="flex items-center gap-3 mb-5">
-              <div className="w-9 h-9 bg-slate-50 rounded-lg flex items-center justify-center">
-                <BarChart3 size={16} className="text-slate-600" />
+              <div className="w-9 h-9 bg-slate-50 dark:bg-zinc-900 rounded-lg flex items-center justify-center">
+                <BarChart3 size={16} className="text-slate-600 dark:text-zinc-500" />
               </div>
               <div>
-                <h3 className="text-[15px] font-semibold text-slate-900">Pipeline</h3>
-                <p className="text-xs text-slate-400">{leads.length} total leads</p>
+                <h3 className="text-[15px] font-semibold text-slate-900 dark:text-zinc-100">Pipeline</h3>
+                <p className="text-xs text-slate-400 dark:text-zinc-500">{leads.length} total leads</p>
               </div>
             </div>
 
             {/* Stacked horizontal bar */}
-            <div className="flex h-8 rounded-lg overflow-hidden bg-slate-100 mb-5 shadow-inner">
+            <div className="flex h-8 rounded-lg overflow-hidden bg-slate-100 dark:bg-zinc-800/50 mb-5 shadow-inner">
               {pipelineStages.map((stage) => {
                 const pct = (stage.count / pipelineTotal) * 100;
                 if (pct === 0) return null;
@@ -482,25 +482,25 @@ export default function Dashboard() {
               {pipelineStages.map(stage => (
                 <Link key={stage.label} to={stage.link} className="flex items-center gap-3 group py-0.5">
                   <div className="w-3 h-3 rounded-[4px] flex-shrink-0" style={{ backgroundColor: stage.color }} />
-                  <span className="text-[13px] text-slate-600 group-hover:text-slate-900 transition-colors flex-1">{stage.label}</span>
-                  <span className="text-[13px] font-bold text-slate-900 tabular-nums">{stage.count}</span>
-                  <span className="text-[11px] text-slate-300 w-10 text-right tabular-nums">{leads.length ? Math.round((stage.count / leads.length) * 100) : 0}%</span>
+                  <span className="text-[13px] text-slate-600 dark:text-zinc-500 group-hover:text-slate-900 dark:hover:text-zinc-100 transition-colors flex-1">{stage.label}</span>
+                  <span className="text-[13px] font-bold text-slate-900 dark:text-zinc-100 tabular-nums">{stage.count}</span>
+                  <span className="text-[11px] text-slate-300 dark:text-zinc-600 w-10 text-right tabular-nums">{leads.length ? Math.round((stage.count / leads.length) * 100) : 0}%</span>
                 </Link>
               ))}
             </div>
           </div>
 
           {/* ── Lead Quality ── */}
-          <div className="bg-white rounded-lg border border-slate-100/80 shadow-sm p-6">
+          <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-100/80 dark:border-zinc-800 shadow-sm p-6">
             <div className="flex items-center gap-3 mb-5">
-              <div className="w-9 h-9 bg-rose-50 rounded-lg flex items-center justify-center">
+              <div className="w-9 h-9 bg-rose-50 dark:bg-rose-900/30 rounded-lg flex items-center justify-center">
                 <Flame size={16} className="text-rose-500" />
               </div>
-              <h3 className="text-[15px] font-semibold text-slate-900">Lead Quality</h3>
+              <h3 className="text-[15px] font-semibold text-slate-900 dark:text-zinc-100">Lead Quality</h3>
             </div>
 
             {/* Segmented arc-style bar */}
-            <div className="flex h-3 rounded-full overflow-hidden bg-slate-100 mb-5">
+            <div className="flex h-3 rounded-full overflow-hidden bg-slate-100 dark:bg-zinc-800/50 mb-5">
               {hotCount > 0 && (
                 <div className="bg-red-500 transition-all duration-500" style={{ width: `${(hotCount / totalScored) * 100}%` }} />
               )}
@@ -513,30 +513,30 @@ export default function Dashboard() {
             </div>
 
             <div className="space-y-3.5">
-              <ScoreRow label="Hot" count={hotCount} total={leads.length} colorFrom="#ef4444" colorTo="#dc2626" textColor="text-red-600" />
-              <ScoreRow label="Warm" count={warmCount} total={leads.length} colorFrom="#f59e0b" colorTo="#d97706" textColor="text-amber-600" />
-              <ScoreRow label="Cold" count={coldCount} total={leads.length} colorFrom="#94a3b8" colorTo="#64748b" textColor="text-slate-500" />
+              <ScoreRow label="Hot" count={hotCount} total={leads.length} colorFrom="#ef4444" colorTo="#dc2626" textColor="text-red-600 dark:text-red-400" />
+              <ScoreRow label="Warm" count={warmCount} total={leads.length} colorFrom="#f59e0b" colorTo="#d97706" textColor="text-amber-600 dark:text-amber-400" />
+              <ScoreRow label="Cold" count={coldCount} total={leads.length} colorFrom="#94a3b8" colorTo="#64748b" textColor="text-slate-500 dark:text-zinc-500" />
             </div>
           </div>
 
           {/* ── Recent Activity ── */}
-          <div className="bg-white rounded-lg border border-slate-100/80 shadow-sm p-6">
+          <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-100/80 dark:border-zinc-800 shadow-sm p-6">
             <div className="flex items-center gap-3 mb-5">
-              <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center">
+              <div className="w-9 h-9 bg-blue-50 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
                 <Activity size={16} className="text-blue-500" />
               </div>
-              <h3 className="text-[15px] font-semibold text-slate-900">Recent Activity</h3>
+              <h3 className="text-[15px] font-semibold text-slate-900 dark:text-zinc-100">Recent Activity</h3>
             </div>
             <div>
               {leads.length === 0 && appointments.length === 0 ? (
                 <div className="text-center py-8">
                   <div className="text-3xl mb-2 opacity-30">&#9201;</div>
-                  <p className="text-sm text-slate-400">No activity yet</p>
+                  <p className="text-sm text-slate-400 dark:text-zinc-500">No activity yet</p>
                 </div>
               ) : (
                 <div className="relative">
                   {/* Connecting timeline line */}
-                  <div className="absolute left-[17px] top-5 bottom-5 w-[1.5px] bg-slate-200" />
+                  <div className="absolute left-[17px] top-5 bottom-5 w-[1.5px] bg-slate-200 dark:bg-zinc-700" />
 
                   {[...leads.slice(0, 5).map(l => ({
                     id: `lead-${l.id}`,
@@ -565,9 +565,9 @@ export default function Dashboard() {
                   .map((item, idx) => {
                     const Icon = item.icon;
                     const iconStyles = {
-                      hot: 'bg-red-50 text-red-500',
-                      lead: 'bg-blue-50 text-blue-500',
-                      appointment: 'bg-violet-50 text-violet-500',
+                      hot: 'bg-red-50 dark:bg-red-900/30 text-red-500',
+                      lead: 'bg-blue-50 dark:bg-blue-900/30 text-blue-500',
+                      appointment: 'bg-violet-50 dark:bg-violet-900/30 text-violet-500',
                     };
                     const Wrapper = item.link ? Link : 'div';
                     return (
@@ -580,12 +580,12 @@ export default function Dashboard() {
                           <Icon size={14} />
                         </div>
                         <div className="flex-1 min-w-0 pt-0.5">
-                          <p className="text-[13px] text-slate-800 font-semibold truncate group-hover:text-blue-600 transition-colors">{item.title}</p>
-                          <p className="text-[11px] text-slate-400 capitalize mt-0.5">{item.sub}</p>
+                          <p className="text-[13px] text-slate-800 dark:text-zinc-200 font-semibold truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{item.title}</p>
+                          <p className="text-[11px] text-slate-400 dark:text-zinc-500 capitalize mt-0.5">{item.sub}</p>
                         </div>
                         <div className="flex flex-col items-end pt-0.5 flex-shrink-0">
-                          <span className="text-[10px] font-medium text-slate-300">{item.time}</span>
-                          <span className="text-[9px] text-slate-200 opacity-0 group-hover:opacity-100 transition-opacity mt-0.5 whitespace-nowrap">{item.fullTime}</span>
+                          <span className="text-[10px] font-medium text-slate-300 dark:text-zinc-600">{item.time}</span>
+                          <span className="text-[9px] text-slate-200 dark:text-zinc-700 opacity-0 group-hover:opacity-100 transition-opacity mt-0.5 whitespace-nowrap">{item.fullTime}</span>
                         </div>
                       </Wrapper>
                     );
@@ -630,9 +630,9 @@ function ScoreRow({ label, count, total, colorFrom, textColor }) {
   return (
     <div className="flex items-center gap-3">
       <div className="w-3 h-3 rounded-[4px] flex-shrink-0" style={{ backgroundColor: colorFrom }} />
-      <span className="text-[13px] text-slate-600 flex-1">{label}</span>
+      <span className="text-[13px] text-slate-600 dark:text-zinc-500 flex-1">{label}</span>
       <span className={`text-[13px] font-bold ${textColor} tabular-nums`}>{count}</span>
-      <span className="text-[11px] text-slate-300 w-10 text-right tabular-nums">{pct}%</span>
+      <span className="text-[11px] text-slate-300 dark:text-zinc-600 w-10 text-right tabular-nums">{pct}%</span>
     </div>
   );
 }

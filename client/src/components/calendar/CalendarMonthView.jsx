@@ -16,11 +16,11 @@ export default function CalendarMonthView({ currentDate, appointments, staffMap,
   return (
     <div className="flex gap-4">
       {/* Calendar grid */}
-      <div className="flex-1 bg-white rounded-lg border border-slate-200 overflow-hidden">
+      <div className="flex-1 bg-white dark:bg-zinc-900 rounded-lg border border-slate-200 dark:border-zinc-700 overflow-hidden">
         {/* Weekday headers */}
-        <div className="grid grid-cols-7 border-b border-slate-100">
+        <div className="grid grid-cols-7 border-b border-slate-100 dark:border-zinc-800">
           {WEEKDAYS.map(d => (
-            <div key={d} className="px-2 py-2.5 text-center text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+            <div key={d} className="px-2 py-2.5 text-center text-[11px] font-semibold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">
               {d}
             </div>
           ))}
@@ -37,12 +37,12 @@ export default function CalendarMonthView({ currentDate, appointments, staffMap,
               <button
                 key={idx}
                 onClick={() => setSelectedDate(isSelected ? null : cell.dateStr)}
-                className={`min-h-[80px] p-1.5 border-b border-r border-slate-50 text-left transition-colors relative ${
-                  !cell.isCurrentMonth ? 'bg-slate-50/50' : 'bg-white hover:bg-slate-50/50'
-                } ${isSelected ? 'ring-2 ring-inset ring-violet-500/30 bg-violet-50/30' : ''}`}
+                className={`min-h-[80px] p-1.5 border-b border-r border-slate-50 dark:border-zinc-800/50 text-left transition-colors relative ${
+                  !cell.isCurrentMonth ? 'bg-slate-50/50 dark:bg-zinc-950/50' : 'bg-white dark:bg-zinc-900 hover:bg-slate-50 dark:hover:bg-zinc-800/30'
+                } ${isSelected ? 'ring-2 ring-inset ring-violet-500/30 bg-violet-50/30 dark:bg-violet-900/20' : ''}`}
               >
                 <span className={`inline-flex items-center justify-center w-6 h-6 text-xs font-medium rounded-full ${
-                  today ? 'bg-slate-900 text-white' : cell.isCurrentMonth ? 'text-slate-700' : 'text-slate-300'
+                  today ? 'bg-slate-900 text-white' : cell.isCurrentMonth ? 'text-slate-700 dark:text-zinc-300' : 'text-slate-300 dark:text-zinc-600'
                 }`}>
                   {cell.date.getDate()}
                 </span>
@@ -59,7 +59,7 @@ export default function CalendarMonthView({ currentDate, appointments, staffMap,
                       );
                     })}
                     {dayApts.length > 3 && (
-                      <p className="text-[9px] text-slate-400 px-1">+{dayApts.length - 3} more</p>
+                      <p className="text-[9px] text-slate-400 dark:text-zinc-500 px-1">+{dayApts.length - 3} more</p>
                     )}
                   </div>
                 )}
@@ -71,22 +71,22 @@ export default function CalendarMonthView({ currentDate, appointments, staffMap,
 
       {/* Side panel — selected day */}
       {selectedDate && (
-        <div className="w-72 bg-white rounded-lg border border-slate-200 flex flex-col max-h-[600px] flex-shrink-0">
-          <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+        <div className="w-72 bg-white dark:bg-zinc-900 rounded-lg border border-slate-200 dark:border-zinc-700 flex flex-col max-h-[600px] flex-shrink-0">
+          <div className="px-4 py-3 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between">
             <div>
-              <p className="text-sm font-semibold text-slate-900">
+              <p className="text-sm font-semibold text-slate-900 dark:text-zinc-100">
                 {new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
               </p>
-              <p className="text-xs text-slate-400 mt-0.5">{selectedApts.length} appointment{selectedApts.length !== 1 ? 's' : ''}</p>
+              <p className="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">{selectedApts.length} appointment{selectedApts.length !== 1 ? 's' : ''}</p>
             </div>
-            <button onClick={() => setSelectedDate(null)} className="p-1 rounded-lg hover:bg-slate-100 text-slate-400">
+            <button onClick={() => setSelectedDate(null)} className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800/50 text-slate-400 dark:text-zinc-500">
               <X size={14} />
             </button>
           </div>
 
           <div className="flex-1 overflow-y-auto p-3 space-y-2">
             {selectedApts.length === 0 ? (
-              <p className="text-sm text-slate-400 text-center py-8">No appointments</p>
+              <p className="text-sm text-slate-400 dark:text-zinc-500 text-center py-8">No appointments</p>
             ) : (
               selectedApts.map(apt => {
                 const color = getStaffColor(apt.assigned_staff_id);
@@ -95,22 +95,22 @@ export default function CalendarMonthView({ currentDate, appointments, staffMap,
                   <button
                     key={apt.id}
                     onClick={() => onSelectAppointment(apt)}
-                    className={`w-full text-left p-3 rounded-lg border-l-[3px] ${color.border} bg-slate-50/50 hover:bg-slate-50 transition-colors`}
+                    className={`w-full text-left p-3 rounded-lg border-l-[3px] ${color.border} bg-slate-50/50 dark:bg-zinc-900/50 hover:bg-slate-50 dark:hover:bg-zinc-900 transition-colors`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-slate-700">{apt.appointment_time}</span>
+                      <span className="text-xs font-semibold text-slate-700 dark:text-zinc-300">{apt.appointment_time}</span>
                       <StatusBadge status={apt.status} />
                     </div>
-                    <p className="text-sm font-medium text-slate-900 mt-1 truncate">{apt.caller_name}</p>
+                    <p className="text-sm font-medium text-slate-900 dark:text-zinc-100 mt-1 truncate">{apt.caller_name}</p>
                     <div className="flex items-center gap-2 mt-1">
                       {staff && (
-                        <span className="flex items-center gap-1 text-[10px] text-slate-400">
+                        <span className="flex items-center gap-1 text-[10px] text-slate-400 dark:text-zinc-500">
                           <span className={`w-1.5 h-1.5 rounded-full ${color.dot}`} />
                           {staff.name}
                         </span>
                       )}
                       {apt.case_type && (
-                        <span className="text-[10px] text-slate-400 capitalize">{apt.case_type}</span>
+                        <span className="text-[10px] text-slate-400 dark:text-zinc-500 capitalize">{apt.case_type}</span>
                       )}
                     </div>
                   </button>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useTheme } from '../context/ThemeContext';
 import { fetchAnalytics } from '../services/api';
 import {
   BarChart3, TrendingUp, TrendingDown, Users, Phone, CalendarCheck,
@@ -34,13 +35,13 @@ const PIE_COLORS = [COLORS.primary, COLORS.blue, COLORS.emerald, COLORS.amber, C
 function ChartTooltip({ active, payload, label, formatter }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-white border border-slate-200 rounded-lg shadow-lg px-3 py-2 text-xs">
-      <p className="font-medium text-slate-700 mb-1">{label}</p>
+    <div className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-lg shadow-lg px-3 py-2 text-xs">
+      <p className="font-medium text-slate-700 dark:text-zinc-300 mb-1">{label}</p>
       {payload.map((entry, i) => (
         <div key={i} className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
-          <span className="text-slate-500">{entry.name}:</span>
-          <span className="font-semibold text-slate-800">
+          <span className="text-slate-500 dark:text-zinc-500">{entry.name}:</span>
+          <span className="font-semibold text-slate-800 dark:text-zinc-200">
             {formatter ? formatter(entry.value, entry.name) : entry.value}
           </span>
         </div>
@@ -52,10 +53,10 @@ function ChartTooltip({ active, payload, label, formatter }) {
 // ── Card Wrapper ───────────────────────────────────────────
 function ChartCard({ title, subtitle, children, className = '', fullWidth }) {
   return (
-    <div className={`bg-white rounded-xl border border-slate-100/80 shadow-sm p-5 ${fullWidth ? 'lg:col-span-2' : ''} ${className}`}>
+    <div className={`bg-white dark:bg-zinc-900 rounded-xl border border-slate-100/80 dark:border-zinc-800 shadow-sm p-5 ${fullWidth ? 'lg:col-span-2' : ''} ${className}`}>
       <div className="mb-4">
-        <h3 className="text-sm font-semibold text-slate-800">{title}</h3>
-        {subtitle && <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>}
+        <h3 className="text-sm font-semibold text-slate-800 dark:text-zinc-200">{title}</h3>
+        {subtitle && <p className="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">{subtitle}</p>}
       </div>
       {children}
     </div>
@@ -67,25 +68,25 @@ function KPICard({ title, value, delta, icon: Icon, suffix = '' }) {
   const isPositive = delta > 0;
   const isNeutral = delta === 0;
   return (
-    <div className="bg-white rounded-xl border border-slate-100/80 shadow-sm p-5">
+    <div className="bg-white dark:bg-zinc-900 rounded-xl border border-slate-100/80 dark:border-zinc-800 shadow-sm p-5">
       <div className="flex items-center justify-between mb-3">
-        <div className="w-9 h-9 rounded-lg bg-violet-50 flex items-center justify-center">
-          <Icon size={18} className="text-violet-600" />
+        <div className="w-9 h-9 rounded-lg bg-violet-50 dark:bg-violet-900/30 flex items-center justify-center">
+          <Icon size={18} className="text-violet-600 dark:text-violet-400" />
         </div>
         {!isNeutral && (
-          <span className={`inline-flex items-center gap-0.5 text-xs font-medium px-2 py-0.5 rounded-full ${isPositive ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
+          <span className={`inline-flex items-center gap-0.5 text-xs font-medium px-2 py-0.5 rounded-full ${isPositive ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' : 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400'}`}>
             {isPositive ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
             {Math.abs(delta)}%
           </span>
         )}
         {isNeutral && (
-          <span className="inline-flex items-center gap-0.5 text-xs font-medium px-2 py-0.5 rounded-full bg-slate-50 text-slate-400">
+          <span className="inline-flex items-center gap-0.5 text-xs font-medium px-2 py-0.5 rounded-full bg-slate-50 dark:bg-zinc-900 text-slate-400 dark:text-zinc-500">
             <Minus size={12} /> 0%
           </span>
         )}
       </div>
-      <p className="text-2xl font-bold text-slate-900">{value}{suffix}</p>
-      <p className="text-xs text-slate-400 mt-1">{title}</p>
+      <p className="text-2xl font-bold text-slate-900 dark:text-zinc-100">{value}{suffix}</p>
+      <p className="text-xs text-slate-400 dark:text-zinc-500 mt-1">{title}</p>
     </div>
   );
 }
@@ -93,7 +94,7 @@ function KPICard({ title, value, delta, icon: Icon, suffix = '' }) {
 // ── Empty State ────────────────────────────────────────────
 function EmptyChart({ message = 'No data for this period' }) {
   return (
-    <div className="flex items-center justify-center h-48 text-sm text-slate-400">
+    <div className="flex items-center justify-center h-48 text-sm text-slate-400 dark:text-zinc-500">
       {message}
     </div>
   );
@@ -116,15 +117,15 @@ function FunnelChart({ data }) {
         return (
           <div key={stage}>
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs font-medium text-slate-600">{labels[stage]}</span>
+              <span className="text-xs font-medium text-slate-600 dark:text-zinc-500">{labels[stage]}</span>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-slate-800">{val}</span>
+                <span className="text-xs font-bold text-slate-800 dark:text-zinc-200">{val}</span>
                 {dropoff !== null && dropoff > 0 && (
                   <span className="text-[10px] text-red-400">-{dropoff}%</span>
                 )}
               </div>
             </div>
-            <div className="h-7 bg-slate-50 rounded-md overflow-hidden">
+            <div className="h-7 bg-slate-50 dark:bg-zinc-900 rounded-md overflow-hidden">
               <div
                 className="h-full rounded-md transition-all duration-500"
                 style={{ width: `${pct}%`, backgroundColor: STATUS_COLORS[stage] }}
@@ -170,8 +171,8 @@ function DonutChart({ data, nameKey, valueKey, colors = PIE_COLORS, height = 220
         {data.slice(0, 8).map((d, i) => (
           <div key={i} className="flex items-center gap-2 text-xs">
             <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: colors[i % colors.length] }} />
-            <span className="text-slate-500 truncate">{d[nameKey]}</span>
-            <span className="font-semibold text-slate-700 ml-auto">{d[valueKey]}</span>
+            <span className="text-slate-500 dark:text-zinc-500 truncate">{d[nameKey]}</span>
+            <span className="font-semibold text-slate-700 dark:text-zinc-300 ml-auto">{d[valueKey]}</span>
           </div>
         ))}
       </div>
@@ -210,12 +211,18 @@ function formatOutcome(key) {
 
 // ── Main Component ─────────────────────────────────────────
 export default function Analytics() {
+  const { isDark } = useTheme();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [period, setPeriod] = useState('30d');
   const [customStart, setCustomStart] = useState('');
   const [customEnd, setCustomEnd] = useState('');
+
+  // Chart theme colors
+  const gridColor = isDark ? '#27272a' : '#f1f5f9';
+  const tickColor = isDark ? '#71717a' : '#94a3b8';
+  const radialBg = isDark ? '#27272a' : '#f1f5f9';
 
   async function loadData() {
     setLoading(true);
@@ -258,22 +265,22 @@ export default function Analytics() {
     return (
       <div className="max-w-[1400px] mx-auto">
         <div className="flex items-center justify-between mb-6">
-          <div className="h-8 w-32 bg-slate-200 rounded-lg animate-pulse" />
-          <div className="h-9 w-64 bg-slate-200 rounded-lg animate-pulse" />
+          <div className="h-8 w-32 bg-slate-200 dark:bg-zinc-700 rounded-lg animate-pulse" />
+          <div className="h-9 w-64 bg-slate-200 dark:bg-zinc-700 rounded-lg animate-pulse" />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="bg-white rounded-xl border border-slate-100/80 shadow-sm p-5 h-28 animate-pulse">
-              <div className="h-4 w-16 bg-slate-200 rounded mb-3" />
-              <div className="h-7 w-20 bg-slate-200 rounded" />
+            <div key={i} className="bg-white dark:bg-zinc-900 rounded-xl border border-slate-100/80 dark:border-zinc-800 shadow-sm p-5 h-28 animate-pulse">
+              <div className="h-4 w-16 bg-slate-200 dark:bg-zinc-700 rounded mb-3" />
+              <div className="h-7 w-20 bg-slate-200 dark:bg-zinc-700 rounded" />
             </div>
           ))}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className={`bg-white rounded-xl border border-slate-100/80 shadow-sm p-5 h-72 animate-pulse ${i === 0 ? 'lg:col-span-2' : ''}`}>
-              <div className="h-4 w-32 bg-slate-200 rounded mb-4" />
-              <div className="h-48 bg-slate-100 rounded" />
+            <div key={i} className={`bg-white dark:bg-zinc-900 rounded-xl border border-slate-100/80 dark:border-zinc-800 shadow-sm p-5 h-72 animate-pulse ${i === 0 ? 'lg:col-span-2' : ''}`}>
+              <div className="h-4 w-32 bg-slate-200 dark:bg-zinc-700 rounded mb-4" />
+              <div className="h-48 bg-slate-100 dark:bg-zinc-800/50 rounded" />
             </div>
           ))}
         </div>
@@ -286,12 +293,12 @@ export default function Analytics() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-            <BarChart3 size={22} className="text-violet-600" />
+          <h1 className="text-xl font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
+            <BarChart3 size={22} className="text-violet-600 dark:text-violet-400" />
             Analytics
           </h1>
           {data?.period && (
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-slate-400 dark:text-zinc-500 mt-1">
               {formatDate(data.period.start)} — {formatDate(data.period.end)} ({data.period.days} days)
             </p>
           )}
@@ -299,15 +306,15 @@ export default function Analytics() {
 
         <div className="flex items-center gap-2">
           {/* Period pills */}
-          <div className="flex bg-slate-100 rounded-lg p-0.5">
+          <div className="flex bg-slate-100 dark:bg-zinc-800/50 rounded-lg p-0.5">
             {['7d', '30d', '90d', 'custom'].map(p => (
               <button
                 key={p}
                 onClick={() => setPeriod(p)}
                 className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
                   period === p
-                    ? 'bg-white text-slate-900 shadow-sm'
-                    : 'text-slate-500 hover:text-slate-700'
+                    ? 'bg-white dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 shadow-sm'
+                    : 'text-slate-500 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-300'
                 }`}
               >
                 {p === 'custom' ? 'Custom' : p.toUpperCase()}
@@ -322,14 +329,14 @@ export default function Analytics() {
                 type="date"
                 value={customStart}
                 onChange={(e) => setCustomStart(e.target.value)}
-                className="text-xs border border-slate-200 rounded-md px-2 py-1.5 text-slate-700"
+                className="text-xs border border-slate-200 dark:border-zinc-700 rounded-md px-2 py-1.5 text-slate-700 dark:text-zinc-300"
               />
-              <span className="text-xs text-slate-400">to</span>
+              <span className="text-xs text-slate-400 dark:text-zinc-500">to</span>
               <input
                 type="date"
                 value={customEnd}
                 onChange={(e) => setCustomEnd(e.target.value)}
-                className="text-xs border border-slate-200 rounded-md px-2 py-1.5 text-slate-700"
+                className="text-xs border border-slate-200 dark:border-zinc-700 rounded-md px-2 py-1.5 text-slate-700 dark:text-zinc-300"
               />
             </div>
           )}
@@ -338,7 +345,7 @@ export default function Analytics() {
           <button
             onClick={loadData}
             disabled={loading}
-            className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+            className="p-2 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800/50 rounded-lg transition-colors"
           >
             <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
           </button>
@@ -347,9 +354,9 @@ export default function Analytics() {
 
       {/* Error banner */}
       {error && (
-        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-600 flex items-center justify-between">
+        <div className="mb-6 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-lg px-4 py-3 text-sm text-red-600 dark:text-red-400 flex items-center justify-between">
           <span>Failed to load analytics: {error}</span>
-          <button onClick={loadData} className="text-red-700 font-medium hover:underline text-xs">Retry</button>
+          <button onClick={loadData} className="text-red-700 dark:text-red-400 font-medium hover:underline text-xs">Retry</button>
         </div>
       )}
 
@@ -397,9 +404,9 @@ export default function Analytics() {
                         <stop offset="95%" stopColor={COLORS.primary} stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                    <XAxis dataKey="date" tickFormatter={formatDate} tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                    <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} width={35} />
+                    <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+                    <XAxis dataKey="date" tickFormatter={formatDate} tick={{ fontSize: 11, fill: tickColor }} axisLine={false} tickLine={false} />
+                    <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: tickColor }} axisLine={false} tickLine={false} width={35} />
                     <Tooltip content={<ChartTooltip formatter={(v) => `${v} leads`} />} />
                     <Area type="monotone" dataKey="count" name="Leads" stroke={COLORS.primary} strokeWidth={2} fill="url(#leadGradient)" />
                   </AreaChart>
@@ -429,12 +436,12 @@ export default function Analytics() {
                       endAngle={0}
                       data={[{ value: data.lead_to_appointment_rate, fill: COLORS.emerald }]}
                     >
-                      <RadialBar background={{ fill: '#f1f5f9' }} dataKey="value" cornerRadius={8} />
+                      <RadialBar background={{ fill: radialBg }} dataKey="value" cornerRadius={8} />
                     </RadialBarChart>
                   </ResponsiveContainer>
                   <div className="absolute inset-0 flex flex-col items-center justify-center -mt-4">
-                    <span className="text-2xl font-bold text-slate-900">{data.lead_to_appointment_rate}%</span>
-                    <span className="text-[10px] text-slate-400">Booking Rate</span>
+                    <span className="text-2xl font-bold text-slate-900 dark:text-zinc-100">{data.lead_to_appointment_rate}%</span>
+                    <span className="text-[10px] text-slate-400 dark:text-zinc-500">Booking Rate</span>
                   </div>
                 </div>
                 {/* Appointment outcomes donut */}
@@ -455,9 +462,9 @@ export default function Analytics() {
               {data.call_duration_avg.length > 0 ? (
                 <ResponsiveContainer width="100%" height={240}>
                   <BarChart data={data.call_duration_avg}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                    <XAxis dataKey="date" tickFormatter={formatDate} tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                    <YAxis tickFormatter={(v) => `${Math.floor(v / 60)}m`} tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} width={35} />
+                    <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+                    <XAxis dataKey="date" tickFormatter={formatDate} tick={{ fontSize: 11, fill: tickColor }} axisLine={false} tickLine={false} />
+                    <YAxis tickFormatter={(v) => `${Math.floor(v / 60)}m`} tick={{ fontSize: 11, fill: tickColor }} axisLine={false} tickLine={false} width={35} />
                     <Tooltip content={<ChartTooltip formatter={(v) => formatDuration(v)} />} />
                     <Bar dataKey="avg_seconds" name="Avg Duration" fill={COLORS.blue} radius={[4, 4, 0, 0]} maxBarSize={40} />
                   </BarChart>
@@ -482,9 +489,9 @@ export default function Analytics() {
               {data.call_sentiment.length > 0 ? (
                 <ResponsiveContainer width="100%" height={260}>
                   <BarChart data={data.call_sentiment}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                    <XAxis dataKey="week" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                    <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} width={35} />
+                    <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+                    <XAxis dataKey="week" tick={{ fontSize: 11, fill: tickColor }} axisLine={false} tickLine={false} />
+                    <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: tickColor }} axisLine={false} tickLine={false} width={35} />
                     <Tooltip content={<ChartTooltip />} />
                     <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '11px' }} />
                     <Bar dataKey="positive" name="Positive" stackId="a" fill={SENTIMENT_COLORS.positive} radius={[0, 0, 0, 0]} />
@@ -501,9 +508,9 @@ export default function Analytics() {
               {data.staff_appointments.length > 0 ? (
                 <ResponsiveContainer width="100%" height={Math.max(160, data.staff_appointments.length * 44)}>
                   <BarChart data={data.staff_appointments} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
-                    <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                    <YAxis type="category" dataKey="staff_name" tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} width={100} />
+                    <CartesianGrid strokeDasharray="3 3" stroke={gridColor} horizontal={false} />
+                    <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: tickColor }} axisLine={false} tickLine={false} />
+                    <YAxis type="category" dataKey="staff_name" tick={{ fontSize: 11, fill: tickColor }} axisLine={false} tickLine={false} width={100} />
                     <Tooltip content={<ChartTooltip formatter={(v) => `${v} appointments`} />} />
                     <Bar dataKey="count" name="Appointments" fill={COLORS.violet} radius={[0, 4, 4, 0]} maxBarSize={28} />
                   </BarChart>
@@ -516,9 +523,9 @@ export default function Analytics() {
               {data.staff_leads.length > 0 ? (
                 <ResponsiveContainer width="100%" height={Math.max(160, data.staff_leads.length * 44)}>
                   <BarChart data={data.staff_leads} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
-                    <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                    <YAxis type="category" dataKey="staff_name" tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} width={100} />
+                    <CartesianGrid strokeDasharray="3 3" stroke={gridColor} horizontal={false} />
+                    <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: tickColor }} axisLine={false} tickLine={false} />
+                    <YAxis type="category" dataKey="staff_name" tick={{ fontSize: 11, fill: tickColor }} axisLine={false} tickLine={false} width={100} />
                     <Tooltip content={<ChartTooltip />} />
                     <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '11px' }} />
                     <Bar dataKey="new" name="New" stackId="a" fill={STATUS_COLORS.new} />
@@ -550,9 +557,9 @@ export default function Analytics() {
               {data.avg_time_to_first_contact.length > 0 ? (
                 <ResponsiveContainer width="100%" height={260}>
                   <LineChart data={data.avg_time_to_first_contact}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                    <XAxis dataKey="date" tickFormatter={formatDate} tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                    <YAxis tickFormatter={(v) => `${v}h`} tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} width={35} />
+                    <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+                    <XAxis dataKey="date" tickFormatter={formatDate} tick={{ fontSize: 11, fill: tickColor }} axisLine={false} tickLine={false} />
+                    <YAxis tickFormatter={(v) => `${v}h`} tick={{ fontSize: 11, fill: tickColor }} axisLine={false} tickLine={false} width={35} />
                     <Tooltip content={<ChartTooltip formatter={(v) => `${v} hours`} />} />
                     <Line type="monotone" dataKey="avg_hours" name="Avg Hours" stroke={COLORS.amber} strokeWidth={2} dot={{ r: 3, fill: COLORS.amber }} />
                   </LineChart>
@@ -575,9 +582,9 @@ export default function Analytics() {
                         <stop offset="95%" stopColor={COLORS.emerald} stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                    <XAxis dataKey="date" tickFormatter={formatDate} tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                    <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} width={35} />
+                    <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+                    <XAxis dataKey="date" tickFormatter={formatDate} tick={{ fontSize: 11, fill: tickColor }} axisLine={false} tickLine={false} />
+                    <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: tickColor }} axisLine={false} tickLine={false} width={35} />
                     <Tooltip content={<ChartTooltip />} />
                     <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '11px' }} />
                     <Area type="monotone" dataKey="inbound" name="Inbound" stroke={COLORS.blue} strokeWidth={2} fill="url(#inboundGrad)" />
@@ -606,9 +613,9 @@ export default function Analytics() {
                         <stop offset="95%" stopColor={SCORE_COLORS.cold} stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                    <XAxis dataKey="date" tickFormatter={formatDate} tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                    <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} width={35} />
+                    <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+                    <XAxis dataKey="date" tickFormatter={formatDate} tick={{ fontSize: 11, fill: tickColor }} axisLine={false} tickLine={false} />
+                    <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: tickColor }} axisLine={false} tickLine={false} width={35} />
                     <Tooltip content={<ChartTooltip />} />
                     <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '11px' }} />
                     <Area type="monotone" dataKey="hot" name="Hot" stroke={SCORE_COLORS.hot} strokeWidth={2} fill="url(#hotGrad)" stackId="1" />
@@ -624,9 +631,9 @@ export default function Analytics() {
               {data.appointment_show_rate_trend.length > 0 ? (
                 <ResponsiveContainer width="100%" height={260}>
                   <LineChart data={data.appointment_show_rate_trend}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                    <XAxis dataKey="week" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                    <YAxis domain={[0, 100]} tickFormatter={(v) => `${v}%`} tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} width={40} />
+                    <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+                    <XAxis dataKey="week" tick={{ fontSize: 11, fill: tickColor }} axisLine={false} tickLine={false} />
+                    <YAxis domain={[0, 100]} tickFormatter={(v) => `${v}%`} tick={{ fontSize: 11, fill: tickColor }} axisLine={false} tickLine={false} width={40} />
                     <Tooltip content={<ChartTooltip formatter={(v) => `${v}%`} />} />
                     <Line type="monotone" dataKey="rate" name="Show Rate" stroke={COLORS.emerald} strokeWidth={2.5} dot={{ r: 4, fill: COLORS.emerald, stroke: '#fff', strokeWidth: 2 }} />
                   </LineChart>

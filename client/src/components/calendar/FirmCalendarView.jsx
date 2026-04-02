@@ -18,9 +18,9 @@ export default function FirmCalendarView({ currentDate, viewMode, appointments, 
 
   if (viewMode === 'month') {
     return (
-      <div className="bg-white rounded-lg border border-slate-200 p-8 text-center">
-        <p className="text-sm text-slate-500">Team view works best in Week or Day mode.</p>
-        <p className="text-xs text-slate-400 mt-1">Switch to see all staff side-by-side.</p>
+      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-200 dark:border-zinc-700 p-8 text-center">
+        <p className="text-sm text-slate-500 dark:text-zinc-500">Team view works best in Week or Day mode.</p>
+        <p className="text-xs text-slate-400 dark:text-zinc-500 mt-1">Switch to see all staff side-by-side.</p>
       </div>
     );
   }
@@ -46,24 +46,24 @@ export default function FirmCalendarView({ currentDate, viewMode, appointments, 
   }
 
   return (
-    <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+    <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-200 dark:border-zinc-700 overflow-hidden">
       <div className="overflow-x-auto">
         <div style={{ minWidth: 72 + colCount * 180 }}>
           {/* Staff headers */}
-          <div className="grid border-b border-slate-200 sticky top-0 bg-white z-10" style={{ gridTemplateColumns: `52px repeat(${colCount}, minmax(180px, 1fr))` }}>
-            <div className="border-r border-slate-100" />
+          <div className="grid border-b border-slate-200 dark:border-zinc-700 sticky top-0 bg-white dark:bg-zinc-900 z-10" style={{ gridTemplateColumns: `52px repeat(${colCount}, minmax(180px, 1fr))` }}>
+            <div className="border-r border-slate-100 dark:border-zinc-800" />
             {activeStaff.map(s => {
               const color = getStaffColor(s.id);
               const count = (byStaff[s.id] || []).length;
               return (
-                <div key={s.id} className="px-3 py-2.5 border-r border-slate-100 last:border-r-0">
+                <div key={s.id} className="px-3 py-2.5 border-r border-slate-100 dark:border-zinc-800 last:border-r-0">
                   <div className="flex items-center gap-2">
                     <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-bold text-white ${color.dot}`}>
                       {getInitials(s.name)}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-semibold text-slate-700 truncate">{s.name}</p>
-                      <p className="text-[10px] text-slate-400">{count} appt{count !== 1 ? 's' : ''}</p>
+                      <p className="text-xs font-semibold text-slate-700 dark:text-zinc-300 truncate">{s.name}</p>
+                      <p className="text-[10px] text-slate-400 dark:text-zinc-500">{count} appt{count !== 1 ? 's' : ''}</p>
                     </div>
                   </div>
                 </div>
@@ -73,7 +73,7 @@ export default function FirmCalendarView({ currentDate, viewMode, appointments, 
               <div className="px-3 py-2.5">
                 <div className="flex items-center gap-2">
                   <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-bold text-white bg-slate-400">?</div>
-                  <p className="text-xs font-semibold text-slate-500">Unassigned</p>
+                  <p className="text-xs font-semibold text-slate-500 dark:text-zinc-500">Unassigned</p>
                 </div>
               </div>
             )}
@@ -83,9 +83,9 @@ export default function FirmCalendarView({ currentDate, viewMode, appointments, 
           <div className="overflow-y-auto" style={{ maxHeight: 520 }}>
             <div className="grid relative" style={{ gridTemplateColumns: `52px repeat(${colCount}, minmax(180px, 1fr))`, height: totalHeight }}>
               {/* Time gutter */}
-              <div className="border-r border-slate-100 relative">
+              <div className="border-r border-slate-100 dark:border-zinc-800 relative">
                 {hours.map(({ label, hour }) => (
-                  <div key={hour} className="absolute right-2 -translate-y-1/2 text-[10px] text-slate-400 font-medium whitespace-nowrap" style={{ top: (hour - START_HOUR) * HOUR_HEIGHT }}>
+                  <div key={hour} className="absolute right-2 -translate-y-1/2 text-[10px] text-slate-400 dark:text-zinc-500 font-medium whitespace-nowrap" style={{ top: (hour - START_HOUR) * HOUR_HEIGHT }}>
                     {label}
                   </div>
                 ))}
@@ -96,9 +96,9 @@ export default function FirmCalendarView({ currentDate, viewMode, appointments, 
                 const color = getStaffColor(s.id);
                 const staffApts = byStaff[s.id] || [];
                 return (
-                  <div key={s.id} className="border-r border-slate-100 last:border-r-0 relative">
+                  <div key={s.id} className="border-r border-slate-100 dark:border-zinc-800 last:border-r-0 relative">
                     {hours.map(({ hour }) => (
-                      <div key={hour} className="absolute left-0 right-0 border-t border-slate-100/80" style={{ top: (hour - START_HOUR) * HOUR_HEIGHT }} />
+                      <div key={hour} className="absolute left-0 right-0 border-t border-slate-100/80 dark:border-zinc-800" style={{ top: (hour - START_HOUR) * HOUR_HEIGHT }} />
                     ))}
                     {staffApts.map(apt => {
                       const top = timeToTop(apt.appointment_time);
@@ -110,7 +110,7 @@ export default function FirmCalendarView({ currentDate, viewMode, appointments, 
                           style={{ top, height: HOUR_HEIGHT / 2 - 2 }}
                         >
                           <p className={`text-[10px] font-semibold ${color.text} truncate`}>{apt.appointment_time}</p>
-                          <p className="text-[9px] text-slate-600 truncate">{apt.caller_name}</p>
+                          <p className="text-[9px] text-slate-600 dark:text-zinc-500 truncate">{apt.caller_name}</p>
                         </button>
                       );
                     })}
@@ -123,7 +123,7 @@ export default function FirmCalendarView({ currentDate, viewMode, appointments, 
               {hasUnassigned && (
                 <div className="relative">
                   {hours.map(({ hour }) => (
-                    <div key={hour} className="absolute left-0 right-0 border-t border-slate-100/80" style={{ top: (hour - START_HOUR) * HOUR_HEIGHT }} />
+                    <div key={hour} className="absolute left-0 right-0 border-t border-slate-100/80 dark:border-zinc-800" style={{ top: (hour - START_HOUR) * HOUR_HEIGHT }} />
                   ))}
                   {byStaff['_unassigned'].map(apt => {
                     const top = timeToTop(apt.appointment_time);
@@ -131,11 +131,11 @@ export default function FirmCalendarView({ currentDate, viewMode, appointments, 
                       <button
                         key={apt.id}
                         onClick={() => onSelectAppointment(apt)}
-                        className="absolute left-0.5 right-0.5 rounded px-1.5 py-1 overflow-hidden cursor-pointer border-l-2 border-slate-300 bg-slate-100 hover:brightness-95 transition-all z-10 text-left"
+                        className="absolute left-0.5 right-0.5 rounded px-1.5 py-1 overflow-hidden cursor-pointer border-l-2 border-slate-300 dark:border-zinc-600 bg-slate-100 dark:bg-zinc-800/50 hover:brightness-95 transition-all z-10 text-left"
                         style={{ top, height: HOUR_HEIGHT / 2 - 2 }}
                       >
-                        <p className="text-[10px] font-semibold text-slate-600 truncate">{apt.appointment_time}</p>
-                        <p className="text-[9px] text-slate-500 truncate">{apt.caller_name}</p>
+                        <p className="text-[10px] font-semibold text-slate-600 dark:text-zinc-500 truncate">{apt.appointment_time}</p>
+                        <p className="text-[9px] text-slate-500 dark:text-zinc-500 truncate">{apt.caller_name}</p>
                       </button>
                     );
                   })}

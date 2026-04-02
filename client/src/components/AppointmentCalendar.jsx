@@ -6,10 +6,10 @@ const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 const STATUS_STYLE = {
-  confirmed: { bar: 'bg-violet-500', badge: 'bg-violet-50 text-violet-700 ring-violet-200', dot: 'bg-violet-500' },
-  completed: { bar: 'bg-emerald-500', badge: 'bg-emerald-50 text-emerald-700 ring-emerald-200', dot: 'bg-emerald-500' },
-  cancelled: { bar: 'bg-red-400', badge: 'bg-red-50 text-red-600 ring-red-200', dot: 'bg-red-400' },
-  no_show: { bar: 'bg-slate-400', badge: 'bg-slate-50 text-slate-600 ring-slate-200', dot: 'bg-slate-400' },
+  confirmed: { bar: 'bg-violet-500', badge: 'bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400 ring-violet-200', dot: 'bg-violet-500' },
+  completed: { bar: 'bg-emerald-500', badge: 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 ring-emerald-200', dot: 'bg-emerald-500' },
+  cancelled: { bar: 'bg-red-400', badge: 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 ring-red-200', dot: 'bg-red-400' },
+  no_show: { bar: 'bg-slate-400', badge: 'bg-slate-50 dark:bg-zinc-900 text-slate-600 dark:text-zinc-500 ring-slate-200 dark:ring-zinc-700', dot: 'bg-slate-400' },
 };
 
 export default function AppointmentCalendar({ appointments = [] }) {
@@ -46,15 +46,16 @@ export default function AppointmentCalendar({ appointments = [] }) {
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
     cells.push({ day: d, outside: false, dateStr, apts: aptsByDate[dateStr] || [] });
   }
-  const remaining = 7 - (cells.length % 7);
-  if (remaining < 7) {
-    for (let i = 1; i <= remaining; i++) cells.push({ day: i, outside: true });
+  // Only pad to complete the last row, don't force extra rows
+  const remainder = cells.length % 7;
+  if (remainder > 0) {
+    for (let i = 1; i <= 7 - remainder; i++) cells.push({ day: i, outside: true });
   }
 
   const selectedApts = selectedDay ? (aptsByDate[selectedDay] || []) : [];
 
   return (
-    <div className="bg-white rounded-lg border border-slate-100/80 shadow-sm overflow-hidden">
+    <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-100/80 dark:border-zinc-800 shadow-sm overflow-hidden">
       <div className="flex-1 min-w-0">
       {/* Header */}
       <div className="px-6 py-5 flex items-center justify-between">
@@ -63,23 +64,23 @@ export default function AppointmentCalendar({ appointments = [] }) {
             <Calendar size={18} className="text-white" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-slate-900">{MONTHS[month]} {year}</h3>
-            <p className="text-xs text-slate-400 mt-0.5">{monthAptCount} appointment{monthAptCount !== 1 ? 's' : ''} this month</p>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100">{MONTHS[month]} {year}</h3>
+            <p className="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">{monthAptCount} appointment{monthAptCount !== 1 ? 's' : ''} this month</p>
           </div>
         </div>
         <div className="flex items-center gap-1">
           <button
             onClick={() => setCurrentDate(new Date())}
-            className="px-3.5 py-2 text-xs font-semibold text-violet-600 hover:bg-violet-50 rounded-lg transition-colors"
+            className="px-3.5 py-2 text-xs font-semibold text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/30 rounded-lg transition-colors"
           >
             Today
           </button>
-          <div className="w-px h-5 bg-slate-100 mx-1" />
-          <button onClick={() => setCurrentDate(new Date(year, month - 1, 1))} className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-slate-50 transition-colors">
-            <ChevronLeft size={18} className="text-slate-400" />
+          <div className="w-px h-5 bg-slate-100 dark:bg-zinc-800/50 mx-1" />
+          <button onClick={() => setCurrentDate(new Date(year, month - 1, 1))} className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-slate-50 dark:hover:bg-zinc-900 transition-colors">
+            <ChevronLeft size={18} className="text-slate-400 dark:text-zinc-500" />
           </button>
-          <button onClick={() => setCurrentDate(new Date(year, month + 1, 1))} className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-slate-50 transition-colors">
-            <ChevronRight size={18} className="text-slate-400" />
+          <button onClick={() => setCurrentDate(new Date(year, month + 1, 1))} className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-slate-50 dark:hover:bg-zinc-900 transition-colors">
+            <ChevronRight size={18} className="text-slate-400 dark:text-zinc-500" />
           </button>
         </div>
       </div>
@@ -90,7 +91,7 @@ export default function AppointmentCalendar({ appointments = [] }) {
           {/* Day headers */}
           <div className="grid grid-cols-7 px-4">
             {DAYS.map(d => (
-              <div key={d} className="text-center text-[11px] font-semibold text-slate-400 uppercase tracking-wider py-2.5">
+              <div key={d} className="text-center text-[11px] font-semibold text-slate-400 dark:text-zinc-500 uppercase tracking-wider py-2.5">
                 {d}
               </div>
             ))}
@@ -117,32 +118,32 @@ export default function AppointmentCalendar({ appointments = [] }) {
                   className={`
                     relative flex flex-col items-center py-2.5 rounded-lg transition-all duration-150 group
                     ${cell.outside ? 'opacity-20 cursor-default' : 'cursor-pointer'}
-                    ${isSelected ? 'bg-violet-50 ring-2 ring-violet-200' : ''}
-                    ${isToday && !isSelected ? 'bg-slate-50' : ''}
-                    ${!cell.outside && !isSelected ? 'hover:bg-slate-50' : ''}
+                    ${isSelected ? 'bg-violet-50 dark:bg-violet-900/30 ring-2 ring-violet-200' : ''}
+                    ${isToday && !isSelected ? 'bg-slate-50 dark:bg-zinc-900' : ''}
+                    ${!cell.outside && !isSelected ? 'hover:bg-slate-50 dark:hover:bg-zinc-900' : ''}
                   `}
                 >
                   {/* Day number */}
                   <span className={`
                     text-sm font-medium w-8 h-8 flex items-center justify-center rounded-full transition-colors
                     ${isToday ? 'bg-violet-600 text-white font-bold shadow-sm shadow-violet-200' : ''}
-                    ${isSelected && !isToday ? 'text-violet-700 font-bold' : ''}
-                    ${!isToday && !isSelected && !cell.outside ? (isWeekend ? 'text-slate-400' : 'text-slate-700') : ''}
+                    ${isSelected && !isToday ? 'text-violet-700 dark:text-violet-400 font-bold' : ''}
+                    ${!isToday && !isSelected && !cell.outside ? (isWeekend ? 'text-slate-400 dark:text-zinc-500' : 'text-slate-700 dark:text-zinc-300') : ''}
                   `}>
                     {cell.day}
                   </span>
 
                   {/* Appointment indicators */}
                   {hasApts && (
-                    <div className="flex items-center gap-1 mt-1.5">
+                    <div className="flex items-center gap-1 mt-1">
                       {cell.apts.slice(0, 4).map((apt, i) => {
                         const st = STATUS_STYLE[apt.status] || STATUS_STYLE.confirmed;
                         return (
-                          <div key={i} className={`w-[6px] h-[6px] rounded-full ${st.dot} ${isSelected ? 'scale-110' : 'group-hover:scale-110'} transition-transform`} />
+                          <div key={i} className={`w-1.5 h-1.5 rounded-full ${st.dot} transition-transform`} />
                         );
                       })}
                       {cell.apts.length > 4 && (
-                        <span className="text-[9px] font-bold text-slate-400">+{cell.apts.length - 4}</span>
+                        <span className="text-[9px] font-bold text-slate-400 dark:text-zinc-500">+{cell.apts.length - 4}</span>
                       )}
                     </div>
                   )}
@@ -152,7 +153,7 @@ export default function AppointmentCalendar({ appointments = [] }) {
           </div>
 
           {/* Legend */}
-          <div className="px-6 py-3.5 border-t border-slate-50 flex items-center gap-5">
+          <div className="px-6 py-3.5 border-t border-slate-50 dark:border-zinc-800/50 flex items-center gap-5">
             {[
               { label: 'Confirmed', dot: 'bg-violet-500' },
               { label: 'Completed', dot: 'bg-emerald-500' },
@@ -165,7 +166,7 @@ export default function AppointmentCalendar({ appointments = [] }) {
                 ) : (
                   <div className={`w-2.5 h-2.5 rounded-full ${l.dot}`} />
                 )}
-                <span className="text-[11px] text-slate-400 font-medium">{l.label}</span>
+                <span className="text-[11px] text-slate-400 dark:text-zinc-500 font-medium">{l.label}</span>
               </div>
             ))}
           </div>
@@ -173,22 +174,22 @@ export default function AppointmentCalendar({ appointments = [] }) {
 
         {/* Side Panel — Appointment Details */}
         {selectedDay && (
-          <div className="w-full lg:w-80 max-h-[400px] lg:max-h-none border-t lg:border-t-0 lg:border-l border-slate-100 bg-slate-50/50 flex flex-col overflow-y-auto">
+          <div className="w-full lg:w-80 max-h-[400px] lg:max-h-none border-t lg:border-t-0 lg:border-l border-slate-100 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900/50 flex flex-col overflow-y-auto">
             {/* Panel Header */}
-            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-white">
+            <div className="px-5 py-4 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between bg-white dark:bg-zinc-900">
               <div>
-                <p className="text-sm font-bold text-slate-900">
+                <p className="text-sm font-bold text-slate-900 dark:text-zinc-100">
                   {new Date(selectedDay + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
                 </p>
-                <p className="text-[11px] text-slate-400 mt-0.5">
+                <p className="text-[11px] text-slate-400 dark:text-zinc-500 mt-0.5">
                   {selectedApts.length} appointment{selectedApts.length !== 1 ? 's' : ''}
                 </p>
               </div>
               <button
                 onClick={() => setSelectedDay(null)}
-                className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-100 transition-colors"
+                className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800/50 transition-colors"
               >
-                <X size={14} className="text-slate-400" />
+                <X size={14} className="text-slate-400 dark:text-zinc-500" />
               </button>
             </div>
 
@@ -196,8 +197,8 @@ export default function AppointmentCalendar({ appointments = [] }) {
             <div className="flex-1 overflow-y-auto p-3 space-y-2">
               {selectedApts.length === 0 ? (
                 <div className="text-center py-10">
-                  <Calendar size={24} className="text-slate-200 mx-auto mb-2" />
-                  <p className="text-sm text-slate-400">No appointments</p>
+                  <Calendar size={24} className="text-slate-200 dark:text-zinc-700 mx-auto mb-2" />
+                  <p className="text-sm text-slate-400 dark:text-zinc-500">No appointments</p>
                 </div>
               ) : (
                 selectedApts
@@ -210,13 +211,13 @@ export default function AppointmentCalendar({ appointments = [] }) {
                       <Link
                         key={apt.id || i}
                         to={apt.lead_id ? `/leads/${apt.lead_id}` : '/appointments'}
-                        className="block bg-white rounded-lg border border-slate-100 hover:border-slate-200 hover:shadow-md transition-all p-4 group"
+                        className="block bg-white dark:bg-zinc-900 rounded-lg border border-slate-100 dark:border-zinc-800 hover:border-slate-200 dark:hover:border-zinc-700 hover:shadow-md transition-all p-4 group"
                       >
                         {/* Time + Status */}
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-2">
                             <Clock size={13} className="text-violet-400" />
-                            <span className="text-sm font-bold text-slate-900">{apt.appointment_time || 'TBD'}</span>
+                            <span className="text-sm font-bold text-slate-900 dark:text-zinc-100">{apt.appointment_time || 'TBD'}</span>
                           </div>
                           <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ring-1 capitalize ${st.badge}`}>
                             {apt.status}
@@ -229,24 +230,24 @@ export default function AppointmentCalendar({ appointments = [] }) {
                             {initials}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-slate-800 group-hover:text-violet-600 transition-colors truncate">
+                            <p className="text-sm font-semibold text-slate-800 dark:text-zinc-200 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors truncate">
                               {apt.caller_name}
                             </p>
-                            <p className="text-xs text-slate-400 capitalize mt-0.5 truncate">{apt.case_type}</p>
+                            <p className="text-xs text-slate-400 dark:text-zinc-500 capitalize mt-0.5 truncate">{apt.case_type}</p>
                           </div>
                         </div>
 
                         {/* Contact */}
                         {apt.caller_phone && (
-                          <div className="flex items-center gap-1.5 mt-2.5 pt-2.5 border-t border-slate-50">
-                            <Phone size={11} className="text-slate-300" />
-                            <span className="text-[11px] text-slate-400">{apt.caller_phone}</span>
+                          <div className="flex items-center gap-1.5 mt-2.5 pt-2.5 border-t border-slate-50 dark:border-zinc-800/50">
+                            <Phone size={11} className="text-slate-300 dark:text-zinc-600" />
+                            <span className="text-[11px] text-slate-400 dark:text-zinc-500">{apt.caller_phone}</span>
                           </div>
                         )}
 
                         {/* Notes preview */}
                         {apt.notes && (
-                          <p className="text-[11px] text-slate-400 mt-2 line-clamp-2 leading-relaxed">{apt.notes}</p>
+                          <p className="text-[11px] text-slate-400 dark:text-zinc-500 mt-2 line-clamp-2 leading-relaxed">{apt.notes}</p>
                         )}
                       </Link>
                     );

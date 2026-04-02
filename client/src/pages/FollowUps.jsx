@@ -119,33 +119,33 @@ export default function FollowUps() {
       <div className="space-y-6">
         {/* Skeleton header */}
         <div>
-          <div className="h-9 w-44 bg-slate-100 rounded-lg animate-pulse" />
-          <div className="h-4 w-64 bg-slate-50 rounded animate-pulse mt-3" />
+          <div className="h-9 w-44 bg-slate-100 dark:bg-zinc-800/50 rounded-lg animate-pulse" />
+          <div className="h-4 w-64 bg-slate-50 dark:bg-zinc-900 rounded animate-pulse mt-3" />
         </div>
         {/* Skeleton summary cards */}
         <div className="grid grid-cols-3 gap-4">
           {[1,2,3].map(i => (
-            <div key={i} className="rounded-lg p-5 border border-slate-100 bg-white">
+            <div key={i} className="rounded-lg p-5 border border-slate-100 dark:border-zinc-800 bg-white dark:bg-zinc-900">
               <div className="h-8 w-12 skeleton-shimmer rounded-lg mb-2" />
               <div className="h-3 w-20 skeleton-shimmer rounded" />
             </div>
           ))}
         </div>
         {/* Skeleton filter bar */}
-        <div className="bg-white rounded-lg border border-slate-100 p-5">
-          <div className="h-11 bg-slate-50 rounded-lg animate-pulse" />
+        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-100 dark:border-zinc-800 p-5">
+          <div className="h-11 bg-slate-50 dark:bg-zinc-900 rounded-lg animate-pulse" />
         </div>
         {/* Skeleton cards */}
         <div className="space-y-3">
           {[1,2,3,4,5].map(i => (
-            <div key={i} className="bg-white rounded-lg border border-slate-100 p-5">
+            <div key={i} className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-100 dark:border-zinc-800 p-5">
               <div className="flex items-center gap-4">
-                <div className="w-11 h-11 bg-slate-100 rounded-lg animate-pulse" />
+                <div className="w-11 h-11 bg-slate-100 dark:bg-zinc-800/50 rounded-lg animate-pulse" />
                 <div className="flex-1">
-                  <div className="h-4 w-36 bg-slate-100 rounded animate-pulse" />
-                  <div className="h-3 w-52 bg-slate-50 rounded animate-pulse mt-2" />
+                  <div className="h-4 w-36 bg-slate-100 dark:bg-zinc-800/50 rounded animate-pulse" />
+                  <div className="h-3 w-52 bg-slate-50 dark:bg-zinc-900 rounded animate-pulse mt-2" />
                 </div>
-                <div className="h-7 w-24 bg-slate-50 rounded-lg animate-pulse" />
+                <div className="h-7 w-24 bg-slate-50 dark:bg-zinc-900 rounded-lg animate-pulse" />
               </div>
             </div>
           ))}
@@ -157,17 +157,17 @@ export default function FollowUps() {
   return (
     <div className="space-y-6">
       {error && (
-        <div className="bg-red-50/80 backdrop-blur-sm border border-red-100 rounded-lg px-5 py-4 flex items-center justify-between">
+        <div className="bg-red-50/80 dark:bg-red-900/30 backdrop-blur-sm border border-red-100 dark:border-red-800 rounded-lg px-5 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
+            <div className="w-9 h-9 bg-red-100 dark:bg-red-900/40 rounded-lg flex items-center justify-center flex-shrink-0">
               <AlertCircle size={16} className="text-red-500" />
             </div>
             <div>
-              <p className="text-sm font-medium text-red-800">Failed to load follow-ups</p>
-              <p className="text-xs text-red-600 mt-0.5">{error}</p>
+              <p className="text-sm font-medium text-red-800 dark:text-red-300">Failed to load follow-ups</p>
+              <p className="text-xs text-red-600 dark:text-red-400 mt-0.5">{error}</p>
             </div>
           </div>
-          <button onClick={loadLeads} className="px-4 py-2 text-xs font-semibold text-red-600 bg-red-100 hover:bg-red-200 rounded-lg transition-colors">
+          <button onClick={loadLeads} className="px-4 py-2 text-xs font-semibold text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/40 hover:bg-red-200 rounded-lg transition-colors">
             Retry
           </button>
         </div>
@@ -176,13 +176,13 @@ export default function FollowUps() {
       {/* Header */}
       <div>
         <div className="flex items-center gap-3">
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Follow Ups</h1>
-          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200/60 px-3 py-1.5 rounded-full">
+          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-zinc-100 tracking-tight">Follow Ups</h1>
+          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700/60 px-3 py-1.5 rounded-full">
             <Clock size={12} />
             {leads.length}
           </span>
         </div>
-        <p className="text-sm text-slate-400 mt-2">
+        <p className="text-sm text-slate-400 dark:text-zinc-500 mt-2">
           Leads you've contacted that need follow-up action
         </p>
       </div>
@@ -194,22 +194,22 @@ export default function FollowUps() {
             className={`relative overflow-hidden rounded-lg p-5 cursor-default ${
               overdue.length > 0
                 ? 'bg-red-500 text-white'
-                : 'bg-white border border-slate-100'
+                : 'bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800'
             }`}
           >
             {overdue.length > 0 && (
               <div className="absolute top-3 right-3">
                 <span className="relative flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-40" />
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white dark:bg-zinc-900 opacity-40" />
                   <span className="relative inline-flex rounded-full h-3 w-3 bg-white/80" />
                 </span>
               </div>
             )}
             <div className="flex items-center gap-2 mb-1">
-              <AlertTriangle size={14} className={overdue.length > 0 ? 'text-white/80' : 'text-slate-300'} />
-              <span className={`text-xs font-semibold uppercase tracking-wider ${overdue.length > 0 ? 'text-white/70' : 'text-slate-400'}`}>Overdue</span>
+              <AlertTriangle size={14} className={overdue.length > 0 ? 'text-white/80' : 'text-slate-300 dark:text-zinc-600'} />
+              <span className={`text-xs font-semibold uppercase tracking-wider ${overdue.length > 0 ? 'text-white/70' : 'text-slate-400 dark:text-zinc-500'}`}>Overdue</span>
             </div>
-            <p className={`text-3xl font-extrabold ${overdue.length > 0 ? 'text-white' : 'text-slate-300'}`}>{overdue.length}</p>
+            <p className={`text-3xl font-extrabold ${overdue.length > 0 ? 'text-white' : 'text-slate-300 dark:text-zinc-600'}`}>{overdue.length}</p>
           </div>
 
           <div className="relative overflow-hidden rounded-lg p-5 bg-amber-400 text-white cursor-default">
@@ -231,24 +231,24 @@ export default function FollowUps() {
       )}
 
       {/* Controls */}
-      <div className="bg-white/80 backdrop-blur-xl rounded-lg border border-slate-200/60 shadow-sm shadow-slate-100/50 p-5">
+      <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-lg border border-slate-200/60 dark:border-zinc-700 shadow-sm shadow-slate-100/50 dark:shadow-black/30 p-5">
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
           <div className="relative flex-1 max-w-md group">
-            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-violet-400 transition-colors" />
+            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 dark:text-zinc-600 group-focus-within:text-violet-400 transition-colors" />
             <input
               type="text"
               placeholder="Search follow-ups..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 text-sm bg-slate-50/80 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white placeholder:text-slate-300 transition-all"
+              className="w-full pl-11 pr-4 py-3 text-sm bg-slate-50/80 dark:bg-zinc-900/80 border border-slate-100 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white dark:focus:bg-zinc-900 placeholder:text-slate-300 dark:placeholder:text-zinc-600 transition-all"
             />
           </div>
           <DateFilter value={dateRange} onChange={setDateRange} />
-          <div className="flex items-center gap-1 bg-slate-50 rounded-lg p-1">
+          <div className="flex items-center gap-1 bg-slate-50 dark:bg-zinc-900 rounded-lg p-1">
             {[
               { key: 'all', label: 'All' },
-              { key: 'hot', label: 'Hot', icon: Flame, color: 'text-red-600' },
-              { key: 'warm', label: 'Warm', icon: TrendingUp, color: 'text-amber-600' },
+              { key: 'hot', label: 'Hot', icon: Flame, color: 'text-red-600 dark:text-red-400' },
+              { key: 'warm', label: 'Warm', icon: TrendingUp, color: 'text-amber-600 dark:text-amber-400' },
               { key: 'cold', label: 'Cold' },
             ].map(f => {
               const isActive = scoreFilter === f.key;
@@ -258,8 +258,8 @@ export default function FollowUps() {
                   onClick={() => setScoreFilter(f.key)}
                   className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
                     isActive
-                      ? 'bg-white text-slate-900 shadow-sm'
-                      : 'text-slate-400 hover:text-slate-600'
+                      ? 'bg-white dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 shadow-sm'
+                      : 'text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-400'
                   }`}
                 >
                   {f.icon && isActive && <f.icon size={11} className={f.color} />}
@@ -273,12 +273,12 @@ export default function FollowUps() {
 
       {/* List */}
       {filtered.length === 0 ? (
-        <div className="bg-white rounded-lg border border-slate-100 shadow-sm py-20 text-center">
-          <div className="w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-            <UserCheck size={24} className="text-slate-300" />
+        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-100 dark:border-zinc-800 shadow-sm py-20 text-center">
+          <div className="w-16 h-16 bg-slate-100 dark:bg-zinc-800/50 rounded-lg flex items-center justify-center mx-auto mb-4">
+            <UserCheck size={24} className="text-slate-300 dark:text-zinc-600" />
           </div>
-          <p className="text-sm font-semibold text-slate-600">No follow-ups</p>
-          <p className="text-xs text-slate-400 mt-1.5">Contacted leads will appear here</p>
+          <p className="text-sm font-semibold text-slate-600 dark:text-zinc-500">No follow-ups</p>
+          <p className="text-xs text-slate-400 dark:text-zinc-500 mt-1.5">Contacted leads will appear here</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -296,8 +296,8 @@ export default function FollowUps() {
                 to={`/leads/${lead.id}?from=follow-ups`}
                 className={`block rounded-lg border shadow-sm transition-all group overflow-hidden ${
                   isOverdue
-                    ? 'bg-red-50/30 border-red-200/60 hover:border-red-300'
-                    : 'bg-white border-slate-100 hover:border-slate-200'
+                    ? 'bg-red-50/30 border-red-200 dark:border-red-700/60 hover:border-red-300'
+                    : 'bg-white dark:bg-zinc-900 border-slate-100 dark:border-zinc-800 hover:border-slate-200 dark:hover:border-zinc-700'
                 }`}
                 style={{ borderLeft: isOverdue ? '4px solid rgb(239, 68, 68)' : undefined }}
               >
@@ -311,7 +311,7 @@ export default function FollowUps() {
                       <div className="absolute -top-1 -right-1">
                         <span className="relative flex h-3 w-3">
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
-                          <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500 border-2 border-white" />
+                          <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500 border-2 border-white dark:border-zinc-900" />
                         </span>
                       </div>
                     )}
@@ -320,20 +320,20 @@ export default function FollowUps() {
                   {/* Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-semibold text-slate-900 group-hover:text-violet-600 transition-colors truncate">
+                      <p className="text-sm font-semibold text-slate-900 dark:text-zinc-100 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors truncate">
                         {lead.caller_name}
                       </p>
                       <ScoreBadge score={lead.score} label={lead.score_label} />
                     </div>
-                    <div className="flex items-center gap-2 mt-1 text-xs text-slate-400">
+                    <div className="flex items-center gap-2 mt-1 text-xs text-slate-400 dark:text-zinc-500">
                       <span className="capitalize">{lead.case_type}</span>
-                      <span className="text-slate-200">|</span>
+                      <span className="text-slate-200 dark:text-zinc-700">|</span>
                       <span>{lead.caller_phone}</span>
-                      <span className="text-slate-200">|</span>
+                      <span className="text-slate-200 dark:text-zinc-700">|</span>
                       <span>Contacted {days}d ago</span>
                       {hasNotes && (
                         <>
-                          <span className="text-slate-200">|</span>
+                          <span className="text-slate-200 dark:text-zinc-700">|</span>
                           <span className="inline-flex items-center gap-1 text-violet-400">
                             <MessageSquare size={10} />
                             Notes
@@ -348,10 +348,10 @@ export default function FollowUps() {
                     {lead.follow_up_date ? (
                       <div className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg ${
                         isOverdue
-                          ? 'bg-red-100 text-red-700 ring-1 ring-red-200'
+                          ? 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-400 ring-1 ring-red-200'
                           : daysLeft <= 1
-                            ? 'bg-amber-100 text-amber-700 ring-1 ring-amber-200'
-                            : 'bg-slate-100 text-slate-600'
+                            ? 'bg-amber-100 text-amber-700 dark:text-amber-400 ring-1 ring-amber-200'
+                            : 'bg-slate-100 dark:bg-zinc-800/50 text-slate-600 dark:text-zinc-500'
                       }`}>
                         {isOverdue && (
                           <span className="relative flex h-2 w-2 mr-0.5">
@@ -362,7 +362,7 @@ export default function FollowUps() {
                         {isOverdue ? `${Math.abs(daysLeft)}d overdue` : daysLeft === 0 ? 'Today' : daysLeft === 1 ? 'Tomorrow' : `In ${daysLeft}d`}
                       </div>
                     ) : (
-                      <span className="flex items-center gap-1.5 text-xs text-slate-300 px-3 py-1.5">
+                      <span className="flex items-center gap-1.5 text-xs text-slate-300 dark:text-zinc-600 px-3 py-1.5">
                         <Clock size={12} />
                         No date
                       </span>
@@ -370,19 +370,19 @@ export default function FollowUps() {
 
                     <button
                       onClick={(e) => handleMarkBooked(e, lead.id)}
-                      className="px-3.5 py-1.5 text-xs font-semibold text-violet-700 bg-violet-50 rounded-lg hover:bg-violet-100 transition-all ring-1 ring-violet-200/60"
+                      className="px-3.5 py-1.5 text-xs font-semibold text-violet-700 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30 rounded-lg hover:bg-violet-100 dark:hover:bg-violet-900/40 transition-all ring-1 ring-violet-200/60"
                     >
                       Book
                     </button>
 
-                    <ChevronRight size={16} className="text-slate-200 group-hover:text-violet-400 transition-colors" />
+                    <ChevronRight size={16} className="text-slate-200 dark:text-zinc-700 group-hover:text-violet-400 transition-colors" />
                   </div>
                 </div>
 
                 {/* AI summary preview */}
                 {lead.notes && (
                   <div className="px-5 pb-4 -mt-1">
-                    <p className="text-xs text-slate-400 bg-slate-50/80 rounded-lg px-3 py-2 line-clamp-2 leading-relaxed border border-slate-100/50">
+                    <p className="text-xs text-slate-400 dark:text-zinc-500 bg-slate-50/80 dark:bg-zinc-900/80 rounded-lg px-3 py-2 line-clamp-2 leading-relaxed border border-slate-100/50">
                       {lead.notes}
                     </p>
                   </div>

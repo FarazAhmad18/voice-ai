@@ -119,8 +119,8 @@ export default function ClientDetail() {
   if (!firm) {
     return (
       <div className="text-center py-16">
-        <p className="text-sm font-medium text-slate-500">Client not found</p>
-        <Link to="/admin/clients" className="text-sm text-blue-600 mt-2 inline-block">Back to Clients</Link>
+        <p className="text-sm font-medium text-slate-500 dark:text-zinc-500">Client not found</p>
+        <Link to="/admin/clients" className="text-sm text-blue-600 dark:text-blue-400 mt-2 inline-block">Back to Clients</Link>
       </div>
     );
   }
@@ -130,11 +130,11 @@ export default function ClientDetail() {
   return (
     <div className="max-w-6xl mx-auto space-y-5">
       <nav className="flex items-center gap-1.5 text-sm">
-        <Link to="/admin" className="text-slate-400 hover:text-slate-600 transition-colors">Admin</Link>
-        <ChevronRight size={14} className="text-slate-300" />
-        <Link to="/admin/clients" className="text-slate-400 hover:text-slate-600 transition-colors">Clients</Link>
-        <ChevronRight size={14} className="text-slate-300" />
-        <span className="text-slate-700 font-medium truncate max-w-[200px]">{firm.name || 'Client'}</span>
+        <Link to="/admin" className="text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-400 transition-colors">Admin</Link>
+        <ChevronRight size={14} className="text-slate-300 dark:text-zinc-600" />
+        <Link to="/admin/clients" className="text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-400 transition-colors">Clients</Link>
+        <ChevronRight size={14} className="text-slate-300 dark:text-zinc-600" />
+        <span className="text-slate-700 dark:text-zinc-300 font-medium truncate max-w-[200px]">{firm.name || 'Client'}</span>
       </nav>
 
       {/* Header */}
@@ -145,8 +145,8 @@ export default function ClientDetail() {
             {firm.name?.charAt(0).toUpperCase()}
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-slate-900 tracking-tight">{firm.name}</h1>
-            <p className="text-sm text-slate-400 capitalize">{firm.industry} · {firm.status}</p>
+            <h1 className="text-xl font-semibold text-slate-900 dark:text-zinc-100 tracking-tight">{firm.name}</h1>
+            <p className="text-sm text-slate-400 dark:text-zinc-500 capitalize">{firm.industry} · {firm.status}</p>
           </div>
         </div>
         <button onClick={handleSave} disabled={saving}
@@ -157,9 +157,9 @@ export default function ClientDetail() {
       </div>
 
       {error && (
-        <div className="flex items-center gap-2 px-4 py-3 bg-red-50 border border-red-100 rounded-lg">
+        <div className="flex items-center gap-2 px-4 py-3 bg-red-50 dark:bg-red-900/30 border border-red-100 dark:border-red-800 rounded-lg">
           <AlertCircle size={15} className="text-red-500 shrink-0" />
-          <p className="text-sm text-red-600">{error}</p>
+          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
         </div>
       )}
 
@@ -170,13 +170,13 @@ export default function ClientDetail() {
           { icon: Calendar, color: 'violet', count: firm._counts?.appointments || 0, label: 'Appointments' },
           { icon: Users, color: 'emerald', count: firm._counts?.staff || 0, label: 'Staff' },
         ].map(({ icon: Icon, color, count, label }) => (
-          <div key={label} className="bg-white rounded-lg border border-slate-100 p-5 flex items-center gap-4">
+          <div key={label} className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-100 dark:border-zinc-800 p-5 flex items-center gap-4">
             <div className={`w-10 h-10 bg-${color}-50 rounded-lg flex items-center justify-center`}>
               <Icon size={18} className={`text-${color}-600`} />
             </div>
             <div>
-              <p className="text-2xl font-semibold text-slate-900">{count}</p>
-              <p className="text-sm text-slate-400">{label}</p>
+              <p className="text-2xl font-semibold text-slate-900 dark:text-zinc-100">{count}</p>
+              <p className="text-sm text-slate-400 dark:text-zinc-500">{label}</p>
             </div>
           </div>
         ))}
@@ -187,14 +187,14 @@ export default function ClientDetail() {
         <div className="lg:col-span-2 space-y-4">
 
           {/* Company Details */}
-          <div className="bg-white rounded-lg border border-slate-100 p-6 space-y-4">
-            <h3 className="text-sm font-semibold text-slate-800">Company Details</h3>
+          <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-100 dark:border-zinc-800 p-6 space-y-4">
+            <h3 className="text-sm font-semibold text-slate-800 dark:text-zinc-200">Company Details</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Name" value={form.name} onChange={v => setForm(p => ({ ...p, name: v }))} />
               <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1.5">Industry</label>
+                <label className="block text-xs font-medium text-slate-400 dark:text-zinc-500 mb-1.5">Industry</label>
                 <select value={form.industry} onChange={e => setForm(p => ({ ...p, industry: e.target.value }))}
-                  className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200">
+                  className="w-full px-3.5 py-2.5 text-sm bg-slate-50 dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200 dark:focus:ring-zinc-700">
                   {INDUSTRIES.map(i => <option key={i} value={i} className="capitalize">{i.replace('_', ' ')}</option>)}
                 </select>
               </div>
@@ -209,31 +209,31 @@ export default function ClientDetail() {
           </div>
 
           {/* AI Agent Config */}
-          <div className="bg-white rounded-lg border border-slate-100 p-6 space-y-4">
-            <h3 className="text-sm font-semibold text-slate-800">AI Agent Configuration</h3>
+          <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-100 dark:border-zinc-800 p-6 space-y-4">
+            <h3 className="text-sm font-semibold text-slate-800 dark:text-zinc-200">AI Agent Configuration</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Agent Name" value={form.agent_name} onChange={v => setForm(p => ({ ...p, agent_name: v }))} placeholder="Sarah" />
               <Field label="Voice ID" value={form.agent_voice_id} onChange={v => setForm(p => ({ ...p, agent_voice_id: v }))} placeholder="retell-Cimo" />
               <div className="col-span-1 sm:col-span-2">
-                <label className="block text-xs font-medium text-slate-400 mb-1.5">Prompt Template</label>
+                <label className="block text-xs font-medium text-slate-400 dark:text-zinc-500 mb-1.5">Prompt Template</label>
                 <select value={form.prompt_template_id} onChange={e => setForm(p => ({ ...p, prompt_template_id: e.target.value }))}
-                  className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200">
+                  className="w-full px-3.5 py-2.5 text-sm bg-slate-50 dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200 dark:focus:ring-zinc-700">
                   <option value="">No template selected</option>
                   {templates.map(t => (
                     <option key={t.id} value={t.id}>{t.name} ({t.industry})</option>
                   ))}
                 </select>
                 {form.prompt_template_id && form.prompt_template_id !== firm.prompt_template_id && (
-                  <p className="text-xs text-amber-600 mt-1.5">Template changed — save then click Sync Agent to push to Retell.</p>
+                  <p className="text-xs text-amber-600 dark:text-amber-400 mt-1.5">Template changed — save then click Sync Agent to push to Retell.</p>
                 )}
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1.5">Brand Color</label>
+                <label className="block text-xs font-medium text-slate-400 dark:text-zinc-500 mb-1.5">Brand Color</label>
                 <div className="flex items-center gap-2">
                   <input type="color" value={form.brand_color} onChange={e => setForm(p => ({ ...p, brand_color: e.target.value }))}
-                    className="w-10 h-10 rounded-lg border border-slate-100 cursor-pointer" />
+                    className="w-10 h-10 rounded-lg border border-slate-100 dark:border-zinc-800 cursor-pointer" />
                   <input type="text" value={form.brand_color} onChange={e => setForm(p => ({ ...p, brand_color: e.target.value }))}
-                    className="flex-1 px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200" />
+                    className="flex-1 px-3.5 py-2.5 text-sm bg-slate-50 dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200 dark:focus:ring-zinc-700" />
                 </div>
               </div>
             </div>
@@ -244,8 +244,8 @@ export default function ClientDetail() {
         <div className="space-y-4">
 
           {/* Agent Status */}
-          <div className="bg-white rounded-lg border border-slate-100 p-5 space-y-4">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Agent Status</h3>
+          <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-100 dark:border-zinc-800 p-5 space-y-4">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-zinc-500">Agent Status</h3>
 
             <div className="space-y-3">
               <InfoRow icon={Bot} label="Agent ID" value={firm.retell_agent_id || 'Not deployed'} muted={!firm.retell_agent_id} />
@@ -261,14 +261,14 @@ export default function ClientDetail() {
                   {syncing ? 'Syncing...' : 'Sync Agent'}
                 </button>
                 {syncResult && (
-                  <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium ${syncResult.error ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-700'}`}>
+                  <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium ${syncResult.error ? 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400' : 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'}`}>
                     {syncResult.error
                       ? <><AlertCircle size={12} /> {syncResult.error}</>
                       : <><Check size={12} /> Synced — {syncResult.promptLength?.toLocaleString()} chars pushed</>
                     }
                   </div>
                 )}
-                <p className="text-[11px] text-slate-400 text-center">Re-renders prompt + pushes to Retell LLM</p>
+                <p className="text-[11px] text-slate-400 dark:text-zinc-500 text-center">Re-renders prompt + pushes to Retell LLM</p>
               </div>
             )}
 
@@ -284,14 +284,14 @@ export default function ClientDetail() {
                   <div className="space-y-2">
                     <input type="text" placeholder="Area code (e.g. 425) — optional"
                       value={deployAreaCode} onChange={e => setDeployAreaCode(e.target.value)}
-                      className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200" />
+                      className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200 dark:focus:ring-zinc-700" />
                     <div className="flex gap-2">
                       <button onClick={handleDeploy} disabled={deploying}
                         className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-slate-900 text-white text-xs font-medium rounded-lg hover:bg-slate-800 disabled:opacity-50 transition-colors">
                         <Rocket size={12} /> {deploying ? 'Deploying...' : 'Deploy'}
                       </button>
                       <button onClick={() => setShowDeploy(false)}
-                        className="px-3 py-2 text-xs text-slate-500 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors">
+                        className="px-3 py-2 text-xs text-slate-500 dark:text-zinc-500 bg-slate-100 dark:bg-zinc-800/50 rounded-lg hover:bg-slate-200 dark:hover:bg-zinc-700 transition-colors">
                         Cancel
                       </button>
                     </div>
@@ -302,54 +302,54 @@ export default function ClientDetail() {
           </div>
 
           {/* Plan & Status */}
-          <div className="bg-white rounded-lg border border-slate-100 p-5 space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Plan & Status</h3>
+          <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-100 dark:border-zinc-800 p-5 space-y-3">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-zinc-500">Plan & Status</h3>
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">Status</label>
+              <label className="block text-xs font-medium text-slate-400 dark:text-zinc-500 mb-1.5">Status</label>
               <select value={form.status} onChange={e => setForm(p => ({ ...p, status: e.target.value }))}
-                className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200">
+                className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200 dark:focus:ring-zinc-700">
                 {STATUSES.map(s => <option key={s} value={s} className="capitalize">{s}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">Plan</label>
+              <label className="block text-xs font-medium text-slate-400 dark:text-zinc-500 mb-1.5">Plan</label>
               <select value={form.plan} onChange={e => setForm(p => ({ ...p, plan: e.target.value }))}
-                className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200">
+                className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200 dark:focus:ring-zinc-700">
                 {PLANS.map(p => <option key={p} value={p} className="capitalize">{p}</option>)}
               </select>
             </div>
           </div>
 
           {/* Staff */}
-          <div className="bg-white rounded-lg border border-slate-100 p-5">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
+          <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-100 dark:border-zinc-800 p-5">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-zinc-500 mb-3">
               Staff ({firm.staff?.length || 0})
             </h3>
             {firm.staff?.length > 0 ? (
               <div className="space-y-2">
                 {firm.staff.map(s => (
-                  <div key={s.id} className="flex items-center justify-between px-3 py-2 bg-slate-50 rounded-lg">
+                  <div key={s.id} className="flex items-center justify-between px-3 py-2 bg-slate-50 dark:bg-zinc-900 rounded-lg">
                     <div>
-                      <p className="text-sm font-medium text-slate-800">{s.name}</p>
-                      <p className="text-xs text-slate-400">{s.specialization || s.role || ''}</p>
+                      <p className="text-sm font-medium text-slate-800 dark:text-zinc-200">{s.name}</p>
+                      <p className="text-xs text-slate-400 dark:text-zinc-500">{s.specialization || s.role || ''}</p>
                     </div>
                     <span className={`w-2 h-2 rounded-full ${s.is_active ? 'bg-emerald-500' : 'bg-slate-300'}`} />
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-slate-400">No staff members</p>
+              <p className="text-sm text-slate-400 dark:text-zinc-500">No staff members</p>
             )}
           </div>
 
           {/* Current Rendered Prompt */}
           {firm.rendered_prompt && (
-            <div className="bg-white rounded-lg border border-slate-100 p-5">
+            <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-100 dark:border-zinc-800 p-5">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Live Prompt</h3>
-                <span className="text-[11px] text-slate-400">{firm.rendered_prompt.length.toLocaleString()} chars</span>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-zinc-500">Live Prompt</h3>
+                <span className="text-[11px] text-slate-400 dark:text-zinc-500">{firm.rendered_prompt.length.toLocaleString()} chars</span>
               </div>
-              <pre className="text-xs text-slate-600 whitespace-pre-wrap font-sans leading-relaxed max-h-48 overflow-y-auto bg-slate-50 rounded-lg p-3">
+              <pre className="text-xs text-slate-600 dark:text-zinc-500 whitespace-pre-wrap font-sans leading-relaxed max-h-48 overflow-y-auto bg-slate-50 dark:bg-zinc-900 rounded-lg p-3">
                 {firm.rendered_prompt}
               </pre>
             </div>
@@ -363,9 +363,9 @@ export default function ClientDetail() {
 function Field({ label, value, onChange, placeholder = '' }) {
   return (
     <div>
-      <label className="block text-xs font-medium text-slate-400 mb-1.5">{label}</label>
+      <label className="block text-xs font-medium text-slate-400 dark:text-zinc-500 mb-1.5">{label}</label>
       <input type="text" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
-        className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200" />
+        className="w-full px-3.5 py-2.5 text-sm bg-slate-50 dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200 dark:focus:ring-zinc-700" />
     </div>
   );
 }
@@ -373,12 +373,12 @@ function Field({ label, value, onChange, placeholder = '' }) {
 function InfoRow({ icon: Icon, label, value, muted = false }) {
   return (
     <div className="flex items-center gap-3">
-      <div className="w-8 h-8 bg-slate-50 rounded-lg flex items-center justify-center shrink-0">
-        <Icon size={14} className="text-slate-500" />
+      <div className="w-8 h-8 bg-slate-50 dark:bg-zinc-900 rounded-lg flex items-center justify-center shrink-0">
+        <Icon size={14} className="text-slate-500 dark:text-zinc-500" />
       </div>
       <div className="min-w-0">
-        <p className="text-[11px] text-slate-400">{label}</p>
-        <p className={`text-sm font-medium break-all ${muted ? 'text-slate-400 italic' : 'text-slate-800'}`}>{value}</p>
+        <p className="text-[11px] text-slate-400 dark:text-zinc-500">{label}</p>
+        <p className={`text-sm font-medium break-all ${muted ? 'text-slate-400 dark:text-zinc-500 italic' : 'text-slate-800 dark:text-zinc-200'}`}>{value}</p>
       </div>
     </div>
   );

@@ -38,6 +38,10 @@ async function log(level, category, message, opts = {}) {
   // Skip DB write if level is below threshold
   if (LOG_LEVELS[level] > LOG_LEVELS[CURRENT_LEVEL]) return;
 
+  // Only write error and warn to DB — info/debug stay console-only
+  // This prevents system_logs table from bloating with routine info logs
+  if (LOG_LEVELS[level] > 1) return; // 0=error, 1=warn go to DB; 2=info, 3=debug skip
+
   // Build details with requestId included for traceability
   const dbDetails = { ...(details || {}) };
   if (requestId) {

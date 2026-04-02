@@ -133,100 +133,100 @@ export default function ClientCreate() {
   }
 
   const selectedTemplate = templates.find(t => t.id === form.prompt_template_id);
-  const inputClass = (field) => `w-full px-3.5 py-2.5 text-sm bg-slate-50 border rounded-lg focus:outline-none focus:ring-2 ${fieldErrors[field] ? 'border-red-300 focus:ring-red-200' : 'border-slate-100 focus:ring-slate-200'}`;
+  const inputClass = (field) => `w-full px-3.5 py-2.5 text-sm bg-slate-50 dark:bg-zinc-900 border rounded-lg focus:outline-none focus:ring-2 ${fieldErrors[field] ? 'border-red-300 focus:ring-red-200' : 'border-slate-100 dark:border-zinc-800 focus:ring-slate-200 dark:focus:ring-zinc-700'}`;
   const fieldError = (field) => fieldErrors[field] ? <p className="text-xs text-red-500 mt-1">{fieldErrors[field]}</p> : null;
 
   return (
     <div className="max-w-3xl mx-auto space-y-5">
       <nav className="flex items-center gap-1.5 text-sm">
-        <Link to="/admin" className="text-slate-400 hover:text-slate-600 transition-colors">Admin</Link>
-        <ChevronRight size={14} className="text-slate-300" />
-        <Link to="/admin/clients" className="text-slate-400 hover:text-slate-600 transition-colors">Clients</Link>
-        <ChevronRight size={14} className="text-slate-300" />
-        <span className="text-slate-700 font-medium">New Client</span>
+        <Link to="/admin" className="text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-400 transition-colors">Admin</Link>
+        <ChevronRight size={14} className="text-slate-300 dark:text-zinc-600" />
+        <Link to="/admin/clients" className="text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-400 transition-colors">Clients</Link>
+        <ChevronRight size={14} className="text-slate-300 dark:text-zinc-600" />
+        <span className="text-slate-700 dark:text-zinc-300 font-medium">New Client</span>
       </nav>
 
       <div>
-        <h2 className="text-xl font-semibold text-slate-900 tracking-tight">Create New Client</h2>
-        <p className="text-sm text-slate-400 mt-1">Set up a new business with an AI voice agent</p>
+        <h2 className="text-xl font-semibold text-slate-900 dark:text-zinc-100 tracking-tight">Create New Client</h2>
+        <p className="text-sm text-slate-400 dark:text-zinc-500 mt-1">Set up a new business with an AI voice agent</p>
       </div>
 
       {error && (
-        <div className="px-4 py-3 bg-red-50 border border-red-100 rounded-lg">
-          <p className="text-sm text-red-600">{error}</p>
+        <div className="px-4 py-3 bg-red-50 dark:bg-red-900/30 border border-red-100 dark:border-red-800 rounded-lg">
+          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Company Info */}
-        <div className="bg-white rounded-lg border border-slate-100 p-6 space-y-4">
-          <h3 className="text-sm font-semibold text-slate-800">Company Information</h3>
+        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-100 dark:border-zinc-800 p-6 space-y-4">
+          <h3 className="text-sm font-semibold text-slate-800 dark:text-zinc-200">Company Information</h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="col-span-1 sm:col-span-2">
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">Company Name *</label>
+              <label className="block text-xs font-medium text-slate-400 dark:text-zinc-500 mb-1.5">Company Name *</label>
               <input type="text" value={form.name} onChange={e => { updateForm('name', e.target.value); setFieldErrors(p => ({ ...p, name: '' })); }}
                 className={inputClass('name')} placeholder="Bright Smile Dental" />
               {fieldError('name')}
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">Industry *</label>
+              <label className="block text-xs font-medium text-slate-400 dark:text-zinc-500 mb-1.5">Industry *</label>
               <select value={form.industry} onChange={e => updateForm('industry', e.target.value)}
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200">
+                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200 dark:focus:ring-zinc-700">
                 {INDUSTRIES.map(i => <option key={i.value} value={i.value}>{i.label}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">Brand Color</label>
+              <label className="block text-xs font-medium text-slate-400 dark:text-zinc-500 mb-1.5">Brand Color</label>
               <div className="flex items-center gap-2">
                 <input type="color" value={form.brand_color} onChange={e => updateForm('brand_color', e.target.value)}
-                  className="w-10 h-10 rounded-lg border border-slate-100 cursor-pointer" />
+                  className="w-10 h-10 rounded-lg border border-slate-100 dark:border-zinc-800 cursor-pointer" />
                 <input type="text" value={form.brand_color} onChange={e => updateForm('brand_color', e.target.value)}
-                  className="flex-1 px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200" />
+                  className="flex-1 px-3.5 py-2.5 text-sm bg-slate-50 dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200 dark:focus:ring-zinc-700" />
               </div>
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">Email</label>
+              <label className="block text-xs font-medium text-slate-400 dark:text-zinc-500 mb-1.5">Email</label>
               <input type="email" value={form.email} onChange={e => updateForm('email', e.target.value)}
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200" placeholder="info@company.com" />
+                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200 dark:focus:ring-zinc-700" placeholder="info@company.com" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">Phone</label>
+              <label className="block text-xs font-medium text-slate-400 dark:text-zinc-500 mb-1.5">Phone</label>
               <input type="tel" value={form.phone} onChange={e => updateForm('phone', e.target.value)}
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200" placeholder="+1 425-555-0100" />
+                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200 dark:focus:ring-zinc-700" placeholder="+1 425-555-0100" />
             </div>
             <div className="col-span-1 sm:col-span-2">
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">Address</label>
+              <label className="block text-xs font-medium text-slate-400 dark:text-zinc-500 mb-1.5">Address</label>
               <input type="text" value={form.address} onChange={e => updateForm('address', e.target.value)}
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200" placeholder="123 Main St, Suite 200" />
+                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200 dark:focus:ring-zinc-700" placeholder="123 Main St, Suite 200" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">Website</label>
+              <label className="block text-xs font-medium text-slate-400 dark:text-zinc-500 mb-1.5">Website</label>
               <input type="text" value={form.website} onChange={e => updateForm('website', e.target.value)}
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200" placeholder="www.company.com" />
+                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200 dark:focus:ring-zinc-700" placeholder="www.company.com" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">Business Hours</label>
+              <label className="block text-xs font-medium text-slate-400 dark:text-zinc-500 mb-1.5">Business Hours</label>
               <input type="text" value={form.business_hours} onChange={e => updateForm('business_hours', e.target.value)}
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200" />
+                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200 dark:focus:ring-zinc-700" />
             </div>
           </div>
         </div>
 
         {/* AI Agent */}
-        <div className="bg-white rounded-lg border border-slate-100 p-6 space-y-4">
-          <h3 className="text-sm font-semibold text-slate-800">AI Agent Configuration</h3>
+        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-100 dark:border-zinc-800 p-6 space-y-4">
+          <h3 className="text-sm font-semibold text-slate-800 dark:text-zinc-200">AI Agent Configuration</h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">Agent Name</label>
+              <label className="block text-xs font-medium text-slate-400 dark:text-zinc-500 mb-1.5">Agent Name</label>
               <input type="text" value={form.agent_name} onChange={e => updateForm('agent_name', e.target.value)}
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200" placeholder="Sarah" />
+                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200 dark:focus:ring-zinc-700" placeholder="Sarah" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">Prompt Template</label>
+              <label className="block text-xs font-medium text-slate-400 dark:text-zinc-500 mb-1.5">Prompt Template</label>
               <select value={form.prompt_template_id} onChange={e => updateForm('prompt_template_id', e.target.value)}
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200">
+                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200 dark:focus:ring-zinc-700">
                 <option value="">Select template...</option>
                 {templates.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
               </select>
@@ -234,9 +234,9 @@ export default function ClientCreate() {
           </div>
 
           {selectedTemplate && (
-            <div className="mt-3 px-4 py-3 bg-slate-50 rounded-lg">
-              <p className="text-xs font-medium text-slate-500 mb-1">Prompt Preview</p>
-              <pre className="text-xs text-slate-600 whitespace-pre-wrap font-sans leading-relaxed max-h-40 overflow-y-auto">
+            <div className="mt-3 px-4 py-3 bg-slate-50 dark:bg-zinc-900 rounded-lg">
+              <p className="text-xs font-medium text-slate-500 dark:text-zinc-500 mb-1">Prompt Preview</p>
+              <pre className="text-xs text-slate-600 dark:text-zinc-500 whitespace-pre-wrap font-sans leading-relaxed max-h-40 overflow-y-auto">
                 {selectedTemplate.body.slice(0, 500)}{selectedTemplate.body.length > 500 ? '...' : ''}
               </pre>
             </div>
@@ -244,19 +244,19 @@ export default function ClientCreate() {
         </div>
 
         {/* Staff */}
-        <div className="bg-white rounded-lg border border-slate-100 p-6 space-y-4">
-          <h3 className="text-sm font-semibold text-slate-800">Staff Members</h3>
-          <p className="text-xs text-slate-400">These names will appear in the AI agent's prompt.</p>
+        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-100 dark:border-zinc-800 p-6 space-y-4">
+          <h3 className="text-sm font-semibold text-slate-800 dark:text-zinc-200">Staff Members</h3>
+          <p className="text-xs text-slate-400 dark:text-zinc-500">These names will appear in the AI agent's prompt.</p>
 
           {staffList.length > 0 && (
             <div className="space-y-2">
               {staffList.map((s, i) => (
-                <div key={i} className="flex items-center justify-between px-4 py-2.5 bg-slate-50 rounded-lg">
+                <div key={i} className="flex items-center justify-between px-4 py-2.5 bg-slate-50 dark:bg-zinc-900 rounded-lg">
                   <div>
-                    <span className="text-sm font-medium text-slate-800">{s.name}</span>
-                    {s.specialization && <span className="text-xs text-slate-400 ml-2">({s.specialization})</span>}
+                    <span className="text-sm font-medium text-slate-800 dark:text-zinc-200">{s.name}</span>
+                    {s.specialization && <span className="text-xs text-slate-400 dark:text-zinc-500 ml-2">({s.specialization})</span>}
                   </div>
-                  <button type="button" onClick={() => removeStaff(i)} className="p-1 text-slate-400 hover:text-red-500 transition-colors">
+                  <button type="button" onClick={() => removeStaff(i)} className="p-1 text-slate-400 dark:text-zinc-500 hover:text-red-500 transition-colors">
                     <X size={14} />
                   </button>
                 </div>
@@ -266,10 +266,10 @@ export default function ClientCreate() {
 
           <div className="flex items-center gap-2">
             <input type="text" placeholder="Name" value={newStaff.name} onChange={e => setNewStaff(p => ({ ...p, name: e.target.value }))}
-              className="flex-1 px-3 py-2 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200 placeholder:text-slate-300"
+              className="flex-1 px-3 py-2 text-sm bg-slate-50 dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200 dark:focus:ring-zinc-700 placeholder:text-slate-300 dark:placeholder:text-zinc-600"
               onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addStaff())} />
             <input type="text" placeholder="Specialization" value={newStaff.specialization} onChange={e => setNewStaff(p => ({ ...p, specialization: e.target.value }))}
-              className="flex-1 px-3 py-2 text-sm bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200 placeholder:text-slate-300"
+              className="flex-1 px-3 py-2 text-sm bg-slate-50 dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200 dark:focus:ring-zinc-700 placeholder:text-slate-300 dark:placeholder:text-zinc-600"
               onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addStaff())} />
             <button type="button" onClick={addStaff} className="px-3 py-2 bg-slate-900 text-white text-xs font-medium rounded-lg hover:bg-slate-800 transition-colors">
               <Plus size={14} />
@@ -278,25 +278,25 @@ export default function ClientCreate() {
         </div>
 
         {/* Admin Login */}
-        <div className="bg-white rounded-lg border border-slate-100 p-6 space-y-4">
-          <h3 className="text-sm font-semibold text-slate-800">Client Admin Login</h3>
-          <p className="text-xs text-slate-400">Create a login account for this client to access their dashboard.</p>
+        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-100 dark:border-zinc-800 p-6 space-y-4">
+          <h3 className="text-sm font-semibold text-slate-800 dark:text-zinc-200">Client Admin Login</h3>
+          <p className="text-xs text-slate-400 dark:text-zinc-500">Create a login account for this client to access their dashboard.</p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">Admin Email *</label>
+              <label className="block text-xs font-medium text-slate-400 dark:text-zinc-500 mb-1.5">Admin Email *</label>
               <input type="email" value={form.admin_email} onChange={e => { updateForm('admin_email', e.target.value); setFieldErrors(p => ({ ...p, admin_email: '' })); }}
                 className={inputClass('admin_email')} placeholder="admin@company.com" />
               {fieldError('admin_email')}
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">Admin Name *</label>
+              <label className="block text-xs font-medium text-slate-400 dark:text-zinc-500 mb-1.5">Admin Name *</label>
               <input type="text" value={form.admin_name} onChange={e => { updateForm('admin_name', e.target.value); setFieldErrors(p => ({ ...p, admin_name: '' })); }}
                 className={inputClass('admin_name')} placeholder="Dr. Chen" />
               {fieldError('admin_name')}
             </div>
             <div className="col-span-1 sm:col-span-2">
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">Password *</label>
+              <label className="block text-xs font-medium text-slate-400 dark:text-zinc-500 mb-1.5">Password *</label>
               <input type="password" value={form.admin_password} onChange={e => { updateForm('admin_password', e.target.value); setFieldErrors(p => ({ ...p, admin_password: '' })); }}
                 className={inputClass('admin_password')} placeholder="Minimum 6 characters" />
               {fieldError('admin_password')}
@@ -305,19 +305,19 @@ export default function ClientCreate() {
         </div>
 
         {/* Plan Selection */}
-        <div className="bg-white rounded-lg border border-slate-100 p-6 space-y-4">
+        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-100 dark:border-zinc-800 p-6 space-y-4">
           <div>
-            <h3 className="text-sm font-semibold text-slate-800">Plan</h3>
-            <p className="text-xs text-slate-400 mt-0.5">Select the plan this client is on</p>
+            <h3 className="text-sm font-semibold text-slate-800 dark:text-zinc-200">Plan</h3>
+            <p className="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">Select the plan this client is on</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {PLANS.map(plan => {
               const Icon = plan.icon;
               const selected = form.plan === plan.id;
               const colorMap = {
-                blue:   { ring: 'ring-blue-500 border-blue-300', bg: 'bg-blue-600', badge: 'bg-blue-50 text-blue-600', icon: 'text-blue-500' },
-                violet: { ring: 'ring-violet-500 border-violet-300', bg: 'bg-violet-600', badge: 'bg-violet-50 text-violet-600', icon: 'text-violet-500' },
-                amber:  { ring: 'ring-amber-500 border-amber-300', bg: 'bg-amber-500', badge: 'bg-amber-50 text-amber-600', icon: 'text-amber-500' },
+                blue:   { ring: 'ring-blue-500 border-blue-300', bg: 'bg-blue-600', badge: 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400', icon: 'text-blue-500' },
+                violet: { ring: 'ring-violet-500 border-violet-300', bg: 'bg-violet-600', badge: 'bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400', icon: 'text-violet-500' },
+                amber:  { ring: 'ring-amber-500 border-amber-300', bg: 'bg-amber-500', badge: 'bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400', icon: 'text-amber-500' },
               };
               const c = colorMap[plan.color];
               return (
@@ -326,7 +326,7 @@ export default function ClientCreate() {
                   type="button"
                   onClick={() => updateForm('plan', plan.id)}
                   className={`relative text-left rounded-lg border-2 p-4 transition-all ${
-                    selected ? `${c.ring} ring-2 bg-slate-50` : 'border-slate-100 hover:border-slate-200'
+                    selected ? `${c.ring} ring-2 bg-slate-50 dark:bg-zinc-900` : 'border-slate-100 dark:border-zinc-800 hover:border-slate-200 dark:hover:border-zinc-700'
                   }`}
                 >
                   {plan.popular && (
@@ -342,20 +342,20 @@ export default function ClientCreate() {
                       </div>
                     )}
                   </div>
-                  <p className="text-sm font-bold text-slate-900">{plan.label}</p>
-                  <p className="text-base font-bold text-slate-900 mt-0.5">
+                  <p className="text-sm font-bold text-slate-900 dark:text-zinc-100">{plan.label}</p>
+                  <p className="text-base font-bold text-slate-900 dark:text-zinc-100 mt-0.5">
                     {plan.price}
-                    {plan.price !== 'Custom' && <span className="text-xs font-normal text-slate-400">/mo</span>}
+                    {plan.price !== 'Custom' && <span className="text-xs font-normal text-slate-400 dark:text-zinc-500">/mo</span>}
                   </p>
                   <ul className="mt-3 space-y-1.5">
                     {plan.features.slice(0, 4).map((f, i) => (
                       <li key={i} className="flex items-start gap-1.5">
                         <Check size={11} className={`${c.icon} mt-0.5 shrink-0`} />
-                        <span className="text-[11px] text-slate-500 leading-tight">{f}</span>
+                        <span className="text-[11px] text-slate-500 dark:text-zinc-500 leading-tight">{f}</span>
                       </li>
                     ))}
                     {plan.features.length > 4 && (
-                      <li className="text-[11px] text-slate-400 pl-4">+{plan.features.length - 4} more</li>
+                      <li className="text-[11px] text-slate-400 dark:text-zinc-500 pl-4">+{plan.features.length - 4} more</li>
                     )}
                   </ul>
                 </button>
@@ -366,9 +366,9 @@ export default function ClientCreate() {
 
         {/* Submit */}
         <div className="flex items-center justify-between">
-          <label className="flex items-center gap-2 text-sm text-slate-600">
+          <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-zinc-500">
             <input type="checkbox" checked={form.deploy_agent} onChange={e => updateForm('deploy_agent', e.target.checked)}
-              className="rounded border-slate-300" />
+              className="rounded border-slate-300 dark:border-zinc-600" />
             Deploy Retell agent now
           </label>
           <button type="submit" disabled={saving}

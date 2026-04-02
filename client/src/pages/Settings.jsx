@@ -101,7 +101,7 @@ export default function Settings() {
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Loading skeleton */}
         {[1,2,3,4].map(i => (
-          <div key={i} className="bg-white rounded-lg border border-slate-100 overflow-hidden">
+          <div key={i} className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-100 dark:border-zinc-800 overflow-hidden">
             <div className="h-14 skeleton-shimmer" />
             <div className="p-6 space-y-4">
               <div className="h-4 w-32 skeleton-shimmer rounded" />
@@ -137,16 +137,16 @@ export default function Settings() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       {error && (
-        <div className="bg-red-50/80 backdrop-blur-sm border border-red-100 rounded-lg px-5 py-4 flex items-center gap-3">
-          <div className="w-9 h-9 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
+        <div className="bg-red-50/80 dark:bg-red-900/30 backdrop-blur-sm border border-red-100 dark:border-red-800 rounded-lg px-5 py-4 flex items-center gap-3">
+          <div className="w-9 h-9 bg-red-100 dark:bg-red-900/40 rounded-lg flex items-center justify-center flex-shrink-0">
             <Shield size={16} className="text-red-500" />
           </div>
-          <p className="text-sm font-medium text-red-700">{error}</p>
+          <p className="text-sm font-medium text-red-700 dark:text-red-400">{error}</p>
         </div>
       )}
 
       {/* Firm Info */}
-      <div className={`bg-white rounded-lg border border-slate-200/60 shadow-sm overflow-hidden ${saving ? 'opacity-50 pointer-events-none' : ''}`}>
+      <div className={`bg-white dark:bg-zinc-900 rounded-lg border border-slate-200/60 dark:border-zinc-700 shadow-sm overflow-hidden ${saving ? 'opacity-50 pointer-events-none' : ''}`}>
         <div className="bg-slate-800 px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
@@ -179,19 +179,19 @@ export default function Settings() {
 
         <div className="p-6 space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1.5">Company Name</label>
+            <label className="block text-xs font-semibold text-slate-600 dark:text-zinc-500 mb-1.5">Company Name</label>
             <input
               type="text"
               value={form.name}
               onChange={(e) => setForm(p => ({ ...p, name: e.target.value }))}
               disabled={saving}
-              className="w-full px-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white disabled:opacity-50 transition-all"
+              className="w-full px-4 py-3 text-sm bg-slate-50/80 dark:bg-zinc-900/80 border border-slate-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white dark:focus:bg-zinc-900 disabled:opacity-50 transition-all"
             />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 mb-1.5">
-                <Mail size={10} className="text-slate-400" />
+              <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-zinc-500 mb-1.5">
+                <Mail size={10} className="text-slate-400 dark:text-zinc-500" />
                 Email
               </label>
               <input
@@ -199,12 +199,12 @@ export default function Settings() {
                 value={form.email}
                 onChange={(e) => setForm(p => ({ ...p, email: e.target.value }))}
                 disabled={saving}
-                className="w-full px-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white disabled:opacity-50 transition-all"
+                className="w-full px-4 py-3 text-sm bg-slate-50/80 dark:bg-zinc-900/80 border border-slate-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white dark:focus:bg-zinc-900 disabled:opacity-50 transition-all"
               />
             </div>
             <div>
-              <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 mb-1.5">
-                <Phone size={10} className="text-slate-400" />
+              <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-zinc-500 mb-1.5">
+                <Phone size={10} className="text-slate-400 dark:text-zinc-500" />
                 Phone
               </label>
               <input
@@ -212,13 +212,13 @@ export default function Settings() {
                 value={form.phone}
                 onChange={(e) => setForm(p => ({ ...p, phone: e.target.value }))}
                 disabled={saving}
-                className="w-full px-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white disabled:opacity-50 transition-all"
+                className="w-full px-4 py-3 text-sm bg-slate-50/80 dark:bg-zinc-900/80 border border-slate-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white dark:focus:bg-zinc-900 disabled:opacity-50 transition-all"
               />
             </div>
           </div>
           <div>
-            <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 mb-1.5">
-              <MapPin size={10} className="text-slate-400" />
+            <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-zinc-500 mb-1.5">
+              <MapPin size={10} className="text-slate-400 dark:text-zinc-500" />
               Address
             </label>
             <input
@@ -227,13 +227,13 @@ export default function Settings() {
               onChange={(e) => setForm(p => ({ ...p, address: e.target.value }))}
               placeholder="123 Main St, Suite 100, City, State"
               disabled={saving}
-              className="w-full px-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white placeholder:text-slate-300 disabled:opacity-50 transition-all"
+              className="w-full px-4 py-3 text-sm bg-slate-50/80 dark:bg-zinc-900/80 border border-slate-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white dark:focus:bg-zinc-900 placeholder:text-slate-300 dark:placeholder:text-zinc-600 disabled:opacity-50 transition-all"
             />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 mb-1.5">
-                <Globe size={10} className="text-slate-400" />
+              <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-zinc-500 mb-1.5">
+                <Globe size={10} className="text-slate-400 dark:text-zinc-500" />
                 Website
               </label>
               <input
@@ -241,12 +241,12 @@ export default function Settings() {
                 value={form.website}
                 onChange={(e) => setForm(p => ({ ...p, website: e.target.value }))}
                 disabled={saving}
-                className="w-full px-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white disabled:opacity-50 transition-all"
+                className="w-full px-4 py-3 text-sm bg-slate-50/80 dark:bg-zinc-900/80 border border-slate-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white dark:focus:bg-zinc-900 disabled:opacity-50 transition-all"
               />
             </div>
             <div>
-              <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 mb-1.5">
-                <Clock size={10} className="text-slate-400" />
+              <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-zinc-500 mb-1.5">
+                <Clock size={10} className="text-slate-400 dark:text-zinc-500" />
                 Business Hours
               </label>
               <input
@@ -254,7 +254,7 @@ export default function Settings() {
                 value={form.business_hours}
                 onChange={(e) => setForm(p => ({ ...p, business_hours: e.target.value }))}
                 disabled={saving}
-                className="w-full px-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white disabled:opacity-50 transition-all"
+                className="w-full px-4 py-3 text-sm bg-slate-50/80 dark:bg-zinc-900/80 border border-slate-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white dark:focus:bg-zinc-900 disabled:opacity-50 transition-all"
               />
             </div>
           </div>
@@ -307,7 +307,7 @@ export default function Settings() {
 
       {/* Sync Agent */}
       {(user?.role === 'admin' || user?.role === 'super_admin') && (
-        <div className="bg-white rounded-lg border border-slate-200/60 shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-200/60 dark:border-zinc-700 shadow-sm overflow-hidden">
           <div className="bg-indigo-600 px-6 py-4 flex items-center gap-3">
             <div className="w-8 h-8 bg-white/15 rounded-lg flex items-center justify-center">
               <RefreshCw size={16} className="text-white/90" />
@@ -318,28 +318,28 @@ export default function Settings() {
             </div>
           </div>
           <div className="p-6 space-y-4">
-            <p className="text-xs text-slate-500 leading-relaxed">
+            <p className="text-xs text-slate-500 dark:text-zinc-500 leading-relaxed">
               Paste your Retell Agent ID and LLM ID below. Clicking <strong>Sync Now</strong> will push your current staff list and knowledge base into the AI agent's prompt.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Agent ID</label>
+                <label className="block text-xs font-semibold text-slate-600 dark:text-zinc-500 mb-1.5">Agent ID</label>
                 <input
                   type="text"
                   value={syncAgentId || firm?.retell_agent_id || ''}
                   onChange={(e) => setSyncAgentId(e.target.value)}
                   placeholder="agent_xxxxxxxxxxxxxxxx"
-                  className="w-full px-3 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 font-mono placeholder:text-slate-300 transition-all"
+                  className="w-full px-3 py-2.5 text-xs bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 font-mono placeholder:text-slate-300 dark:placeholder:text-zinc-600 transition-all"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1.5">LLM ID</label>
+                <label className="block text-xs font-semibold text-slate-600 dark:text-zinc-500 mb-1.5">LLM ID</label>
                 <input
                   type="text"
                   value={syncLlmId || firm?.retell_llm_id || ''}
                   onChange={(e) => setSyncLlmId(e.target.value)}
                   placeholder="llm_xxxxxxxxxxxxxxxx"
-                  className="w-full px-3 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 font-mono placeholder:text-slate-300 transition-all"
+                  className="w-full px-3 py-2.5 text-xs bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 font-mono placeholder:text-slate-300 dark:placeholder:text-zinc-600 transition-all"
                 />
               </div>
             </div>
@@ -390,7 +390,7 @@ export default function Settings() {
       )}
 
       {/* AI Knowledge Preview */}
-      <div className="bg-white rounded-lg border border-slate-200/60 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-200/60 dark:border-zinc-700 shadow-sm overflow-hidden">
         <div className="bg-violet-600 px-6 py-4 flex items-center gap-3">
           <div className="w-8 h-8 bg-white/15 rounded-lg flex items-center justify-center">
             <Brain size={16} className="text-white/90" />
@@ -400,19 +400,19 @@ export default function Settings() {
         <div className="p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 bg-violet-50 rounded-lg flex items-center justify-center">
+              <div className="w-11 h-11 bg-violet-50 dark:bg-violet-900/30 rounded-lg flex items-center justify-center">
                 <Brain size={20} className="text-violet-500" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-slate-800">
+                <p className="text-sm font-semibold text-slate-800 dark:text-zinc-200">
                   {knowledgeCount} active {knowledgeCount === 1 ? 'entry' : 'entries'}
                 </p>
-                <p className="text-xs text-slate-400 mt-0.5">Questions your AI can answer</p>
+                <p className="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">Questions your AI can answer</p>
               </div>
             </div>
             <Link
               to="/knowledge"
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-violet-600 bg-violet-50 hover:bg-violet-100 rounded-lg border border-violet-100 transition-all duration-200"
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30 hover:bg-violet-100 dark:hover:bg-violet-900/40 rounded-lg border border-violet-100 dark:border-violet-800 transition-all duration-200"
             >
               Manage Knowledge
               <ArrowRight size={12} />
@@ -422,7 +422,7 @@ export default function Settings() {
       </div>
 
       {/* Staff */}
-      <div className="bg-white rounded-lg border border-slate-200/60 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-200/60 dark:border-zinc-700 shadow-sm overflow-hidden">
         <div className="bg-emerald-600 px-6 py-4 flex items-center gap-3">
           <div className="w-8 h-8 bg-white/15 rounded-lg flex items-center justify-center">
             <Users size={16} className="text-white/90" />
@@ -432,7 +432,7 @@ export default function Settings() {
         <div className="p-6">
           {activeStaff.length === 0 ? (
             <div className="text-center py-4">
-              <p className="text-sm text-slate-400">No {labels.staff.toLowerCase()} added yet</p>
+              <p className="text-sm text-slate-400 dark:text-zinc-500">No {labels.staff.toLowerCase()} added yet</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -440,15 +440,15 @@ export default function Settings() {
                 const initials = ((s.name || 'U').split(' ').map(n => n?.[0] || '').join('').slice(0, 2).toUpperCase()) || '?';
                 const color = getStaffColor(s.name);
                 return (
-                  <div key={s.id} className="flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-slate-50 transition-colors">
+                  <div key={s.id} className="flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-slate-50 dark:hover:bg-zinc-900 transition-colors">
                     <div className={`w-9 h-9 ${color} rounded-lg flex items-center justify-center text-xs font-bold text-white shadow-sm flex-shrink-0`}>
                       {initials}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-slate-800">{s.name}</p>
-                      <p className="text-xs text-slate-400">{s.specialization || s.role || ''}</p>
+                      <p className="text-sm font-semibold text-slate-800 dark:text-zinc-200">{s.name}</p>
+                      <p className="text-xs text-slate-400 dark:text-zinc-500">{s.specialization || s.role || ''}</p>
                     </div>
-                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full ring-1 ring-emerald-100">
+                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-2.5 py-1 rounded-full ring-1 ring-emerald-100">
                       <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
                       Active
                     </span>
@@ -462,7 +462,7 @@ export default function Settings() {
 
       {/* Calendar Mode -- admin only */}
       {(user?.role === 'admin' || user?.role === 'super_admin') && (
-        <div className="bg-white rounded-lg border border-slate-200/60 shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-200/60 dark:border-zinc-700 shadow-sm overflow-hidden">
           <div className="bg-emerald-600 px-6 py-4 flex items-center gap-3">
             <div className="w-8 h-8 bg-white/15 rounded-lg flex items-center justify-center">
               <Calendar size={16} className="text-white/90" />
@@ -474,17 +474,17 @@ export default function Settings() {
           </div>
           <div className="p-6 space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Calendar Mode</label>
+              <label className="block text-xs font-semibold text-slate-600 dark:text-zinc-500 mb-1.5">Calendar Mode</label>
               <select
                 value={form.calendar_mode}
                 onChange={(e) => setForm(p => ({ ...p, calendar_mode: e.target.value }))}
                 disabled={saving}
-                className="w-full px-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-300 focus:bg-white disabled:opacity-50 transition-all appearance-none cursor-pointer"
+                className="w-full px-4 py-3 text-sm bg-slate-50/80 dark:bg-zinc-900/80 border border-slate-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-300 focus:bg-white dark:focus:bg-zinc-900 disabled:opacity-50 transition-all appearance-none cursor-pointer"
               >
                 <option value="builtin">Built-in (Recommended)</option>
                 <option value="google">Google Calendar</option>
               </select>
-              <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">
+              <p className="text-[11px] text-slate-400 dark:text-zinc-500 mt-1.5 leading-relaxed">
                 {form.calendar_mode === 'builtin'
                   ? 'Availability checked against your dashboard appointments. Per-attorney, zero setup, works immediately.'
                   : 'Availability checked against a linked Google Calendar. Blocks external meetings. Requires Google Calendar ID below.'}
@@ -493,16 +493,16 @@ export default function Settings() {
 
             {form.calendar_mode === 'google' && (
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Google Calendar ID</label>
+                <label className="block text-xs font-semibold text-slate-600 dark:text-zinc-500 mb-1.5">Google Calendar ID</label>
                 <input
                   type="text"
                   value={form.google_calendar_id}
                   onChange={(e) => setForm(p => ({ ...p, google_calendar_id: e.target.value }))}
                   placeholder="example@group.calendar.google.com"
                   disabled={saving}
-                  className="w-full px-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-300 focus:bg-white placeholder:text-slate-300 disabled:opacity-50 transition-all font-mono text-xs"
+                  className="w-full px-4 py-3 text-sm bg-slate-50/80 dark:bg-zinc-900/80 border border-slate-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-300 focus:bg-white dark:focus:bg-zinc-900 placeholder:text-slate-300 dark:placeholder:text-zinc-600 disabled:opacity-50 transition-all font-mono text-xs"
                 />
-                <p className="text-[11px] text-slate-400 mt-1.5">
+                <p className="text-[11px] text-slate-400 dark:text-zinc-500 mt-1.5">
                   Found in Google Calendar → Settings → your calendar → Calendar ID
                 </p>
               </div>
@@ -513,7 +513,7 @@ export default function Settings() {
 
       {/* CRM Integration -- admin only */}
       {user?.role === 'admin' || user?.role === 'super_admin' ? (
-        <div className="bg-white rounded-lg border border-slate-200/60 shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-200/60 dark:border-zinc-700 shadow-sm overflow-hidden">
           <div className="bg-blue-600 px-6 py-4 flex items-center gap-3">
             <div className="w-8 h-8 bg-white/15 rounded-lg flex items-center justify-center">
               <Webhook size={16} className="text-white/90" />
@@ -526,7 +526,7 @@ export default function Settings() {
 
           <div className="p-6 space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5">CRM Mode</label>
+              <label className="block text-xs font-semibold text-slate-600 dark:text-zinc-500 mb-1.5">CRM Mode</label>
               <select
                 value={form.crm_mode}
                 onChange={(e) => {
@@ -538,13 +538,13 @@ export default function Settings() {
                   }));
                 }}
                 disabled={saving}
-                className="w-full px-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white disabled:opacity-50 transition-all appearance-none cursor-pointer"
+                className="w-full px-4 py-3 text-sm bg-slate-50/80 dark:bg-zinc-900/80 border border-slate-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white dark:focus:bg-zinc-900 disabled:opacity-50 transition-all appearance-none cursor-pointer"
               >
                 <option value="builtin">Built-in Only</option>
                 <option value="external">External Webhook</option>
                 <option value="both">Both (Built-in + External)</option>
               </select>
-              <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">
+              <p className="text-[11px] text-slate-400 dark:text-zinc-500 mt-1.5 leading-relaxed">
                 {form.crm_mode === 'builtin'
                   ? 'Lead data stays in the built-in CRM only.'
                   : form.crm_mode === 'external'
@@ -556,8 +556,8 @@ export default function Settings() {
             {(form.crm_mode === 'external' || form.crm_mode === 'both') && (
               <>
                 <div>
-                  <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 mb-1.5">
-                    <ExternalLink size={10} className="text-slate-400" />
+                  <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-zinc-500 mb-1.5">
+                    <ExternalLink size={10} className="text-slate-400 dark:text-zinc-500" />
                     Webhook URL
                   </label>
                   <input
@@ -566,13 +566,13 @@ export default function Settings() {
                     onChange={(e) => setForm(p => ({ ...p, crm_webhook_url: e.target.value }))}
                     placeholder="https://your-crm.com/api/webhook"
                     disabled={saving}
-                    className="w-full px-4 py-3 text-sm bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white placeholder:text-slate-300 disabled:opacity-50 transition-all"
+                    className="w-full px-4 py-3 text-sm bg-slate-50/80 dark:bg-zinc-900/80 border border-slate-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white dark:focus:bg-zinc-900 placeholder:text-slate-300 dark:placeholder:text-zinc-600 disabled:opacity-50 transition-all"
                   />
                 </div>
 
                 <div>
-                  <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 mb-1.5">
-                    <Shield size={10} className="text-slate-400" />
+                  <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-zinc-500 mb-1.5">
+                    <Shield size={10} className="text-slate-400 dark:text-zinc-500" />
                     API Key (optional)
                   </label>
                   <div className="relative">
@@ -582,17 +582,17 @@ export default function Settings() {
                       onChange={(e) => setForm(p => ({ ...p, crm_api_key: e.target.value }))}
                       placeholder="Bearer token for webhook authentication"
                       disabled={saving}
-                      className="w-full px-4 py-3 pr-11 text-sm bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white placeholder:text-slate-300 disabled:opacity-50 transition-all font-mono"
+                      className="w-full px-4 py-3 pr-11 text-sm bg-slate-50/80 dark:bg-zinc-900/80 border border-slate-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white dark:focus:bg-zinc-900 placeholder:text-slate-300 dark:placeholder:text-zinc-600 disabled:opacity-50 transition-all font-mono"
                     />
                     <button
                       type="button"
                       onClick={() => setShowApiKey(!showApiKey)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-violet-500 transition-colors rounded"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 dark:text-zinc-500 hover:text-violet-500 transition-colors rounded"
                     >
                       {showApiKey ? <EyeOff size={14} /> : <Eye size={14} />}
                     </button>
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-1.5">
+                  <p className="text-[11px] text-slate-400 dark:text-zinc-500 mt-1.5">
                     Sent as Authorization: Bearer header with each webhook request.
                   </p>
                 </div>
@@ -638,7 +638,7 @@ export default function Settings() {
                         ? 'bg-emerald-500 text-white shadow-sm shadow-emerald-200/50'
                         : webhookTestResult === 'error'
                         ? 'bg-red-500 text-white shadow-sm shadow-red-200/50'
-                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                        : 'bg-slate-100 dark:bg-zinc-800/50 text-slate-700 dark:text-zinc-300 hover:bg-slate-200 dark:hover:bg-zinc-700'
                     }`}
                   >
                     {testingWebhook ? (
@@ -660,7 +660,7 @@ export default function Settings() {
       ) : null}
 
       {/* Plan */}
-      <div className="bg-white rounded-lg border border-slate-200/60 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-200/60 dark:border-zinc-700 shadow-sm overflow-hidden">
         <div className={`px-6 py-4 flex items-center gap-3 ${
           firm.plan === 'enterprise' ? 'bg-amber-600' :
           firm.plan === 'scale' ? 'bg-violet-600' :
@@ -675,7 +675,7 @@ export default function Settings() {
             firm.status === 'paused' ? 'bg-black/20 text-white/80' :
             'bg-black/20 text-white/60'
           }`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${firm.status === 'active' ? 'bg-white' : 'bg-white/40'}`} />
+            <span className={`w-1.5 h-1.5 rounded-full ${firm.status === 'active' ? 'bg-white dark:bg-zinc-900' : 'bg-white/40'}`} />
             {firm.status || 'active'}
           </span>
         </div>
@@ -696,8 +696,8 @@ export default function Settings() {
             const plan = firm.plan || 'growth';
             const data = PLAN_DATA[plan] || PLAN_DATA.growth;
             const features = PLAN_FEATURES[plan] || PLAN_FEATURES.growth;
-            const accentColor = plan === 'enterprise' ? 'text-amber-600' : plan === 'scale' ? 'text-violet-600' : 'text-blue-600';
-            const badgeBg = plan === 'enterprise' ? 'bg-amber-50 border-amber-100' : plan === 'scale' ? 'bg-violet-50 border-violet-100' : 'bg-blue-50 border-blue-100';
+            const accentColor = plan === 'enterprise' ? 'text-amber-600 dark:text-amber-400' : plan === 'scale' ? 'text-violet-600 dark:text-violet-400' : 'text-blue-600 dark:text-blue-400';
+            const badgeBg = plan === 'enterprise' ? 'bg-amber-50 dark:bg-amber-900/30 border-amber-100 dark:border-amber-800' : plan === 'scale' ? 'bg-violet-50 dark:bg-violet-900/30 border-violet-100 dark:border-violet-800' : 'bg-blue-50 dark:bg-blue-900/30 border-blue-100 dark:border-blue-800';
             const checkColor = plan === 'enterprise' ? 'text-amber-500' : plan === 'scale' ? 'text-violet-500' : 'text-blue-500';
 
             return (
@@ -705,7 +705,7 @@ export default function Settings() {
                 <div className="flex items-start justify-between">
                   <div>
                     <div className="flex items-center gap-2.5">
-                      <p className="text-xl font-bold text-slate-900 capitalize">{plan} Plan</p>
+                      <p className="text-xl font-bold text-slate-900 dark:text-zinc-100 capitalize">{plan} Plan</p>
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${badgeBg} ${accentColor} uppercase tracking-wider`}>
                         {plan}
                       </span>
@@ -715,9 +715,9 @@ export default function Settings() {
                     </p>
                   </div>
                   <div className="text-right space-y-1">
-                    <p className="text-xs font-semibold text-slate-700">{data.minutes}</p>
-                    <p className="text-xs font-semibold text-slate-700">{data.agents}</p>
-                    <p className="text-xs text-slate-400">{data.support}</p>
+                    <p className="text-xs font-semibold text-slate-700 dark:text-zinc-300">{data.minutes}</p>
+                    <p className="text-xs font-semibold text-slate-700 dark:text-zinc-300">{data.agents}</p>
+                    <p className="text-xs text-slate-400 dark:text-zinc-500">{data.support}</p>
                   </div>
                 </div>
 
@@ -729,20 +729,20 @@ export default function Settings() {
                         <circle cx="8" cy="8" r="7" className={plan === 'enterprise' ? 'fill-amber-100' : plan === 'scale' ? 'fill-violet-100' : 'fill-blue-100'} />
                         <path d="M5 8l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
-                      <span className="text-xs text-slate-600">{f}</span>
+                      <span className="text-xs text-slate-600 dark:text-zinc-500">{f}</span>
                     </div>
                   ))}
                 </div>
 
                 {/* Upgrade prompt */}
                 {plan !== 'enterprise' && (
-                  <div className="pt-4 border-t border-slate-100">
+                  <div className="pt-4 border-t border-slate-100 dark:border-zinc-800">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-xs font-semibold text-slate-700">
+                        <p className="text-xs font-semibold text-slate-700 dark:text-zinc-300">
                           {plan === 'growth' ? 'Upgrade to Scale for 3× minutes + analytics' : 'Upgrade to Enterprise for unlimited capacity'}
                         </p>
-                        <p className="text-xs text-slate-400 mt-0.5">Contact us to upgrade your plan</p>
+                        <p className="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">Contact us to upgrade your plan</p>
                       </div>
                       <a
                         href="mailto:support@voibixai.com?subject=Plan Upgrade Request"
@@ -764,7 +764,7 @@ export default function Settings() {
       </div>
 
       {/* Account */}
-      <div className="bg-white rounded-lg border border-slate-200/60 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-200/60 dark:border-zinc-700 shadow-sm overflow-hidden">
         <div className="bg-slate-700 px-6 py-4 flex items-center gap-3">
           <div className="w-8 h-8 bg-white/15 rounded-lg flex items-center justify-center">
             <User size={16} className="text-white/90" />
@@ -773,17 +773,17 @@ export default function Settings() {
         </div>
         <div className="p-6">
           <div className="space-y-3">
-            <div className="flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-slate-50 transition-colors">
-              <span className="text-sm text-slate-400">Name</span>
-              <span className="text-sm font-semibold text-slate-800">{user?.name}</span>
+            <div className="flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-slate-50 dark:hover:bg-zinc-900 transition-colors">
+              <span className="text-sm text-slate-400 dark:text-zinc-500">Name</span>
+              <span className="text-sm font-semibold text-slate-800 dark:text-zinc-200">{user?.name}</span>
             </div>
-            <div className="flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-slate-50 transition-colors">
-              <span className="text-sm text-slate-400">Email</span>
-              <span className="text-sm font-semibold text-slate-800">{user?.email}</span>
+            <div className="flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-slate-50 dark:hover:bg-zinc-900 transition-colors">
+              <span className="text-sm text-slate-400 dark:text-zinc-500">Email</span>
+              <span className="text-sm font-semibold text-slate-800 dark:text-zinc-200">{user?.email}</span>
             </div>
-            <div className="flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-slate-50 transition-colors">
-              <span className="text-sm text-slate-400">Role</span>
-              <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-800 capitalize">
+            <div className="flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-slate-50 dark:hover:bg-zinc-900 transition-colors">
+              <span className="text-sm text-slate-400 dark:text-zinc-500">Role</span>
+              <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-800 dark:text-zinc-200 capitalize">
                 <Shield size={12} className="text-violet-400" />
                 {user?.role?.replace('_', ' ')}
               </span>

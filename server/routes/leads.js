@@ -4,6 +4,7 @@ const supabase = require('../services/supabase');
 const authenticate = require('../middleware/auth');
 const validateBody = require('../middleware/validateBody');
 const logger = require('../services/logger');
+const dataCache = require('../services/dataCache');
 
 const LEAD_UPDATABLE = ['status', 'assigned_staff_id', 'follow_up_date', 'notes'];
 const VALID_LEAD_STATUSES = ['new', 'contacted', 'booked', 'converted', 'closed'];
@@ -29,6 +30,14 @@ router.get('/', async (req, res) => {
     firmId = req.firm.id;
   } else {
     return res.status(400).json({ error: 'No firm associated with user' });
+  }
+
+  // Check server-side cache first (only for default queries — no offset/special filters)
+  if (firmId && offset === 0 && limit === 100) {
+    const cached = dataCache.get('leads', firmId);
+    if (cached) {
+      return res.json(cached);
+    }
   }
 
   let query = supabase
@@ -62,7 +71,13 @@ router.get('/', async (req, res) => {
     source: 'routes.leads.getAll',
   });
 
-  return res.json({ data, total: count });
+  // Store in cache for next time
+  const result = { data, total: count };
+  if (firmId && offset === 0 && limit === 100) {
+    dataCache.set('leads', firmId, result);
+  }
+
+  return res.json(result);
 });
 
 // GET /api/leads/:id
@@ -129,24 +144,7 @@ router.patch('/:id', validateBody(LEAD_UPDATABLE), async (req, res) => {
     return res.status(400).json({ error: `Invalid status. Must be one of: ${VALID_LEAD_STATUSES.join(', ')}` });
   }
 
-  // First check the lead exists to avoid cryptic Supabase errors on missing rows
-  const { data: existing, error: checkErr } = await supabase
-    .from('leads')
-    .select('id')
-    .eq('id', id)
-    .eq('firm_id', req.firm.id)
-    .maybeSingle();
-
-  if (checkErr) {
-    logger.error('database', `Failed to check lead existence: ${checkErr.message}`, {
-      firmId: req.firm.id,
-      leadId: id,
-      source: 'routes.leads.patch',
-    });
-    return res.status(500).json({ error: 'Failed to fetch data. Please try again.' });
-  }
-  if (!existing) return res.status(404).json({ error: 'Lead not found' });
-
+  // Update directly — no need for separate existence check (1 query instead of 2)
   const { data, error } = await supabase
     .from('leads')
     .update(req.body)
@@ -155,7 +153,8 @@ router.patch('/:id', validateBody(LEAD_UPDATABLE), async (req, res) => {
     .select()
     .single();
 
-  if (error) {
+  if (error || !data) {
+    if (!data) return res.status(404).json({ error: 'Lead not found' });
     logger.error('database', `Failed to update lead: ${error.message}`, {
       firmId: req.firm.id,
       leadId: id,
@@ -163,6 +162,9 @@ router.patch('/:id', validateBody(LEAD_UPDATABLE), async (req, res) => {
     });
     return res.status(500).json({ error: 'Failed to update data. Please try again.' });
   }
+
+  // Invalidate leads cache so next GET fetches fresh data
+  dataCache.invalidate('leads', req.firm.id);
 
   logger.info('lead', `Lead updated: ${id}`, {
     firmId: req.firm.id,

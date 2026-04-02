@@ -38,17 +38,17 @@ export default function CalendarWeekView({ currentDate, appointments, staffMap, 
   }
 
   return (
-    <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+    <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-200 dark:border-zinc-700 overflow-hidden">
       {/* Day headers */}
-      <div className="grid border-b border-slate-200 sticky top-0 bg-white z-10" style={{ gridTemplateColumns: '52px repeat(7, 1fr)' }}>
-        <div className="border-r border-slate-100" />
+      <div className="grid border-b border-slate-200 dark:border-zinc-700 sticky top-0 bg-white dark:bg-zinc-900 z-10" style={{ gridTemplateColumns: '52px repeat(7, 1fr)' }}>
+        <div className="border-r border-slate-100 dark:border-zinc-800" />
         {days.map(d => {
           const ds = toDateStr(d);
           const td = isToday(ds);
           return (
-            <div key={ds} className={`py-2.5 text-center border-r border-slate-100 last:border-r-0 ${td ? 'bg-violet-50/50' : ''}`}>
-              <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">{d.toLocaleDateString('en-US', { weekday: 'short' })}</p>
-              <p className={`text-base font-semibold mt-0.5 leading-none ${td ? 'w-7 h-7 mx-auto flex items-center justify-center bg-violet-600 text-white rounded-full' : 'text-slate-800'}`}>{d.getDate()}</p>
+            <div key={ds} className={`py-2.5 text-center border-r border-slate-100 dark:border-zinc-800 last:border-r-0 ${td ? 'bg-violet-50/50 dark:bg-violet-900/20' : ''}`}>
+              <p className="text-[10px] font-medium text-slate-400 dark:text-zinc-500 uppercase tracking-wider">{d.toLocaleDateString('en-US', { weekday: 'short' })}</p>
+              <p className={`text-base font-semibold mt-0.5 leading-none ${td ? 'w-7 h-7 mx-auto flex items-center justify-center bg-violet-600 text-white rounded-full' : 'text-slate-800 dark:text-zinc-200'}`}>{d.getDate()}</p>
             </div>
           );
         })}
@@ -58,9 +58,9 @@ export default function CalendarWeekView({ currentDate, appointments, staffMap, 
       <div className="overflow-y-auto" style={{ maxHeight: 520 }}>
         <div className="grid relative" style={{ gridTemplateColumns: '52px repeat(7, 1fr)', height: totalHeight }}>
           {/* Time gutter */}
-          <div className="border-r border-slate-100 relative">
+          <div className="border-r border-slate-100 dark:border-zinc-800 relative">
             {hours.map(({ label, hour }) => (
-              <div key={hour} className="absolute right-2 -translate-y-1/2 text-[10px] text-slate-400 font-medium whitespace-nowrap" style={{ top: (hour - START_HOUR) * HOUR_HEIGHT }}>
+              <div key={hour} className="absolute right-2 -translate-y-1/2 text-[10px] text-slate-400 dark:text-zinc-500 font-medium whitespace-nowrap" style={{ top: (hour - START_HOUR) * HOUR_HEIGHT }}>
                 {label}
               </div>
             ))}
@@ -73,14 +73,14 @@ export default function CalendarWeekView({ currentDate, appointments, staffMap, 
             const td = isToday(ds);
 
             return (
-              <div key={ds} className={`border-r border-slate-100 last:border-r-0 relative ${td ? 'bg-violet-50/20' : ''}`}>
+              <div key={ds} className={`border-r border-slate-100 dark:border-zinc-800/60 last:border-r-0 relative ${td ? 'bg-violet-50/20 dark:bg-violet-900/10' : ''}`}>
                 {/* Hour lines */}
                 {hours.map(({ hour }) => (
-                  <div key={hour} className="absolute left-0 right-0 border-t border-slate-100/80" style={{ top: (hour - START_HOUR) * HOUR_HEIGHT }} />
+                  <div key={hour} className="absolute left-0 right-0 border-t border-slate-100/80 dark:border-zinc-800/60" style={{ top: (hour - START_HOUR) * HOUR_HEIGHT }} />
                 ))}
                 {/* Half-hour dashed lines */}
                 {hours.map(({ hour }) => (
-                  <div key={`half-${hour}`} className="absolute left-0 right-0 border-t border-dashed border-slate-50" style={{ top: (hour - START_HOUR) * HOUR_HEIGHT + HOUR_HEIGHT / 2 }} />
+                  <div key={`half-${hour}`} className="absolute left-0 right-0 border-t border-dashed border-slate-50 dark:border-zinc-800/30" style={{ top: (hour - START_HOUR) * HOUR_HEIGHT + HOUR_HEIGHT / 2 }} />
                 ))}
 
                 {/* Appointment blocks */}
@@ -96,7 +96,7 @@ export default function CalendarWeekView({ currentDate, appointments, staffMap, 
                       style={{ top, height: SLOT_PX - 2 }}
                     >
                       <p className={`text-[10px] font-semibold ${color.text} leading-tight truncate`}>{apt.appointment_time} · {apt.caller_name}</p>
-                      {staff && SLOT_PX > 25 && <p className="text-[9px] text-slate-500 truncate leading-tight">{staff.name}</p>}
+                      {staff && SLOT_PX > 25 && <p className="text-[9px] text-slate-500 dark:text-zinc-500 truncate leading-tight">{staff.name}</p>}
                     </button>
                   );
                 })}

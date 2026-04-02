@@ -63,20 +63,20 @@ export default function MessageTemplateSelector({ onSelect }) {
         title="Insert template"
         className={`p-2 rounded-lg transition-all ${
           open
-            ? 'bg-slate-200 text-slate-700'
-            : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'
+            ? 'bg-slate-200 dark:bg-zinc-700 text-slate-700 dark:text-zinc-300'
+            : 'text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800/50'
         }`}
       >
         <FileText size={16} />
       </button>
 
       {open && (
-        <div className="absolute bottom-full left-0 mb-2 w-72 bg-white rounded-xl border border-slate-200 shadow-lg shadow-slate-200/50 z-50 overflow-hidden">
-          <div className="flex items-center justify-between px-3 py-2.5 border-b border-slate-100">
-            <span className="text-xs font-semibold text-slate-600">Quick Templates</span>
+        <div className="absolute bottom-full left-0 mb-2 w-72 bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-700 shadow-lg shadow-slate-200/50 dark:shadow-black/30 z-50 overflow-hidden">
+          <div className="flex items-center justify-between px-3 py-2.5 border-b border-slate-100 dark:border-zinc-800">
+            <span className="text-xs font-semibold text-slate-600 dark:text-zinc-500">Quick Templates</span>
             <button
               onClick={() => setOpen(false)}
-              className="text-slate-400 hover:text-slate-600 transition-colors"
+              className="text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-400 transition-colors"
             >
               <X size={14} />
             </button>
@@ -86,10 +86,10 @@ export default function MessageTemplateSelector({ onSelect }) {
               <button
                 key={i}
                 onClick={() => handleSelect(template)}
-                className="w-full text-left px-3 py-2.5 hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0"
+                className="w-full text-left px-3 py-2.5 hover:bg-slate-50 dark:hover:bg-zinc-900 transition-colors border-b border-slate-50 dark:border-zinc-800/50 last:border-0"
               >
-                <p className="text-xs font-medium text-slate-700">{template.name}</p>
-                <p className="text-[11px] text-slate-400 mt-0.5 line-clamp-2">{template.body}</p>
+                <p className="text-xs font-medium text-slate-700 dark:text-zinc-300">{template.name}</p>
+                <p className="text-[11px] text-slate-400 dark:text-zinc-500 mt-0.5 line-clamp-2">{template.body}</p>
               </button>
             ))}
           </div>

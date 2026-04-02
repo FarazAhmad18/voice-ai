@@ -4,6 +4,7 @@ const supabase = require('../services/supabase');
 const authenticate = require('../middleware/auth');
 const validateBody = require('../middleware/validateBody');
 const logger = require('../services/logger');
+const dataCache = require('../services/dataCache');
 
 const APPOINTMENT_UPDATABLE = ['status', 'appointment_date', 'appointment_time', 'assigned_staff_id', 'notes'];
 const VALID_APPOINTMENT_STATUSES = ['confirmed', 'completed', 'cancelled', 'no_show'];
@@ -36,6 +37,13 @@ router.get('/', async (req, res) => {
   let query = supabase
     .from('appointments')
     .select('*', { count: 'exact' });
+
+  // Cache only default queries (no filters) — filtered queries always hit DB
+  const hasFilters = req.query.assigned_staff_id || req.query.date_from || req.query.date_to;
+  if (firmId && !hasFilters && offset === 0) {
+    const cached = dataCache.get('appointments', firmId);
+    if (cached) return res.json(cached);
+  }
 
   if (firmId) {
     query = query.eq('firm_id', firmId);
@@ -77,7 +85,12 @@ router.get('/', async (req, res) => {
     source: 'routes.appointments.getAll',
   });
 
-  return res.json({ data, total: count });
+  const result = { data, total: count };
+  if (firmId && !hasFilters && offset === 0) {
+    dataCache.set('appointments', firmId, result);
+  }
+
+  return res.json(result);
 });
 
 // PATCH /api/appointments/:id
@@ -123,6 +136,11 @@ router.patch('/:id', validateBody(APPOINTMENT_UPDATABLE), async (req, res) => {
       await supabase.from('leads').update({ appointment_booked: false }).eq('id', data.lead_id).eq('firm_id', req.firm.id);
     }
   }
+
+  dataCache.invalidate('appointments', req.firm.id);
+
+  // Invalidate appointments cache so next GET fetches fresh data
+  dataCache.invalidate('appointments', req.firm.id);
 
   logger.info('appointment', `Appointment updated: ${id} → ${req.body.status || 'updated'}`, {
     firmId: req.firm.id,

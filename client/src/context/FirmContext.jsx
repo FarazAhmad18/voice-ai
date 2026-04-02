@@ -1,4 +1,4 @@
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useMemo } from 'react';
 import { useAuth } from './AuthContext';
 
 const FirmContext = createContext(null);
@@ -10,8 +10,7 @@ const FirmContext = createContext(null);
 export function FirmProvider({ children }) {
   const { firm, industryConfig } = useAuth();
 
-  // Dynamic labels based on industry config
-  const labels = {
+  const labels = useMemo(() => ({
     lead: industryConfig?.lead_label || 'Leads',
     case: industryConfig?.case_label || 'Case Type',
     staff: industryConfig?.staff_label || 'Staff',
@@ -25,16 +24,16 @@ export function FirmProvider({ children }) {
         return ['other'];
       }
     })(),
-  };
+  }), [industryConfig]);
 
-  const value = {
+  const value = useMemo(() => ({
     firm,
     labels,
     brandColor: firm?.brand_color || '#6d28d9',
     industry: firm?.industry || 'other',
     firmName: firm?.name || 'Dashboard',
     agentName: firm?.agent_name || 'AI Assistant',
-  };
+  }), [firm, labels]);
 
   return (
     <FirmContext.Provider value={value}>

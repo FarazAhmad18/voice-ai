@@ -181,7 +181,7 @@ export default function Navbar() {
     return (
       <div key={label}>
         <div className="px-4 py-2 bg-zinc-50/80">
-          <p className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">{label}</p>
+          <p className="text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">{label}</p>
         </div>
         {items.map((lead) => {
           const li = ((lead.caller_name || 'U').split(' ').map(n => n?.[0] || '').join('').slice(0, 2).toUpperCase()) || '?';
@@ -190,21 +190,21 @@ export default function Navbar() {
               key={lead.id}
               to={`/leads/${lead.id}`}
               onClick={() => setNotifOpen(false)}
-              className="group flex items-start gap-3 px-4 py-3 hover:bg-zinc-50 transition-colors duration-150"
+              className="group flex items-start gap-3 px-4 py-3 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors duration-150"
             >
               <div className="relative flex-shrink-0">
-                <div className="w-9 h-9 bg-gradient-to-br from-violet-100 to-blue-100 rounded-full flex items-center justify-center text-[11px] font-semibold text-violet-700">
+                <div className="w-9 h-9 bg-gradient-to-br from-violet-100 to-blue-100 rounded-full flex items-center justify-center text-[11px] font-semibold text-violet-700 dark:text-violet-400">
                   {li}
                 </div>
                 {/* Unread dot */}
-                <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-blue-500 rounded-full border-2 border-white" />
+                <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-blue-500 rounded-full border-2 border-white dark:border-zinc-900" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-medium text-zinc-800 truncate group-hover:text-zinc-900">{lead.caller_name || 'Unknown Caller'}</p>
-                  <span className="text-[10px] text-zinc-300 flex-shrink-0 tabular-nums">{formatNotifTime(lead.created_at)}</span>
+                  <p className="text-sm font-medium text-zinc-800 truncate group-hover:text-zinc-900 dark:hover:text-zinc-100">{lead.caller_name || 'Unknown Caller'}</p>
+                  <span className="text-[10px] text-zinc-300 dark:text-zinc-600 flex-shrink-0 tabular-nums">{formatNotifTime(lead.created_at)}</span>
                 </div>
-                <p className="text-xs text-zinc-400 truncate mt-0.5">
+                <p className="text-xs text-zinc-400 dark:text-zinc-500 truncate mt-0.5">
                   <span className="capitalize">{lead.case_type || 'New lead'}</span>
                   {lead.score_label === 'hot' && <span className="ml-1.5 text-red-500 font-semibold">Hot</span>}
                   {lead.score_label === 'warm' && <span className="ml-1.5 text-amber-500 font-semibold">Warm</span>}
@@ -218,7 +218,7 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-zinc-200/60">
+    <nav className="sticky top-0 z-40 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border-b border-zinc-200/60 dark:border-zinc-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-[60px]">
           {/* Left: Brand + Nav */}
@@ -231,10 +231,10 @@ export default function Navbar() {
               >
                 <span className="text-white text-sm font-bold">{brandName.charAt(0)}</span>
               </div>
-              <span className="text-[15px] font-semibold text-zinc-900 tracking-tight hidden sm:block">{brandName}</span>
+              <span className="text-[15px] font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight hidden sm:block">{brandName}</span>
               {/* Agent status pill */}
               {!isAdminSection && firm?.retell_agent_id && (
-                <span className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 rounded-full text-[11px] font-medium text-emerald-700 border border-emerald-100">
+                <span className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 dark:bg-emerald-900/30 rounded-full text-[11px] font-medium text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800">
                   <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
                   {agentName}
                 </span>
@@ -251,8 +251,8 @@ export default function Navbar() {
                     to={item.path}
                     className={`relative px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-200 ${
                       active
-                        ? 'text-zinc-900'
-                        : 'text-zinc-400 hover:text-zinc-600 hover:bg-zinc-50'
+                        ? 'text-zinc-900 dark:text-zinc-100'
+                        : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800'
                     }`}
                   >
                     {item.label}
@@ -267,7 +267,7 @@ export default function Navbar() {
               {isSuperAdmin && (
                 <Link
                   to={isAdminSection ? '/' : '/admin'}
-                  className="ml-2 px-3 py-1.5 rounded-lg text-[13px] font-medium text-violet-600 bg-violet-50 hover:bg-violet-100 border border-violet-100 transition-all duration-200"
+                  className="ml-2 px-3 py-1.5 rounded-lg text-[13px] font-medium text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30 hover:bg-violet-100 dark:hover:bg-violet-900/40 border border-violet-100 dark:border-violet-800 transition-all duration-200"
                 >
                   {isAdminSection ? 'Client View' : 'Admin'}
                 </Link>
@@ -279,7 +279,7 @@ export default function Navbar() {
           <div className="flex items-center gap-1.5">
             {/* Search with Cmd+K hint */}
             <form onSubmit={handleSearch} className="hidden sm:block relative">
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-300 pointer-events-none" />
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-300 dark:text-zinc-600 pointer-events-none" />
               <input
                 ref={searchRef}
                 type="text"
@@ -288,19 +288,19 @@ export default function Navbar() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setSearchFocused(true)}
                 onBlur={() => setSearchFocused(false)}
-                className={`w-48 lg:w-56 pl-9 pr-14 py-2 text-sm bg-zinc-50 border rounded-lg focus:outline-none placeholder:text-zinc-300 transition-all duration-200 ${
+                className={`w-48 lg:w-56 pl-9 pr-14 py-2 text-sm bg-zinc-50 dark:bg-zinc-800 border rounded-lg focus:outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-600 transition-all duration-200 ${
                   searchFocused
-                    ? 'border-zinc-300 bg-white ring-2 ring-zinc-900/5 w-64 lg:w-72'
-                    : 'border-zinc-100 hover:border-zinc-200'
+                    ? 'border-zinc-300 bg-white dark:bg-zinc-900 ring-2 ring-zinc-900/5 w-64 lg:w-72'
+                    : 'border-zinc-100 dark:border-zinc-800 hover:border-zinc-200 dark:hover:border-zinc-700'
                 }`}
               />
               {/* Cmd+K badge */}
               {!searchFocused && !searchQuery && (
                 <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-0.5 pointer-events-none">
-                  <kbd className="inline-flex items-center justify-center w-5 h-5 bg-zinc-100 border border-zinc-200 rounded text-[10px] font-medium text-zinc-400">
+                  <kbd className="inline-flex items-center justify-center w-5 h-5 bg-zinc-100 dark:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 rounded text-[10px] font-medium text-zinc-400 dark:text-zinc-500">
                     <Command size={10} />
                   </kbd>
-                  <kbd className="inline-flex items-center justify-center w-5 h-5 bg-zinc-100 border border-zinc-200 rounded text-[10px] font-medium text-zinc-400">
+                  <kbd className="inline-flex items-center justify-center w-5 h-5 bg-zinc-100 dark:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 rounded text-[10px] font-medium text-zinc-400 dark:text-zinc-500">
                     K
                   </kbd>
                 </div>
@@ -312,28 +312,28 @@ export default function Navbar() {
               <button
                 onClick={() => setNotifOpen(!notifOpen)}
                 className={`relative p-2.5 rounded-lg transition-all duration-200 ${
-                  notifOpen ? 'bg-zinc-100' : 'hover:bg-zinc-50'
+                  notifOpen ? 'bg-zinc-100 dark:bg-zinc-700' : 'hover:bg-zinc-50 dark:hover:bg-zinc-800'
                 }`}
               >
-                <Bell size={18} className={`transition-colors ${notifOpen ? 'text-zinc-700' : 'text-zinc-400'}`} />
+                <Bell size={18} className={`transition-colors ${notifOpen ? 'text-zinc-700 dark:text-zinc-300' : 'text-zinc-400 dark:text-zinc-500'}`} />
                 {unreadCount > 0 && (
-                  <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center ring-2 ring-white">
+                  <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center ring-2 ring-white dark:ring-zinc-900">
                     {unreadCount > 9 ? '9+' : unreadCount}
                   </span>
                 )}
               </button>
 
               {/* Notification dropdown with animation */}
-              <div className={`absolute right-0 top-[calc(100%+8px)] w-[calc(100vw-2rem)] sm:w-[360px] max-w-[360px] bg-white rounded-xl shadow-xl shadow-zinc-200/50 border border-zinc-200/80 z-50 overflow-hidden transition-all duration-200 origin-top-right ${
+              <div className={`absolute right-0 top-[calc(100%+8px)] w-[calc(100vw-2rem)] sm:w-[360px] max-w-[360px] bg-white dark:bg-zinc-900 rounded-xl shadow-xl shadow-zinc-200/50 dark:shadow-black/30 border border-zinc-200/80 dark:border-zinc-700 z-50 overflow-hidden transition-all duration-200 origin-top-right ${
                 notifOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
               }`}>
-                <div className="px-4 py-3.5 border-b border-zinc-100 flex items-center justify-between">
+                <div className="px-4 py-3.5 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-semibold text-zinc-900">Notifications</p>
-                    <p className="text-[11px] text-zinc-400 mt-0.5">{unreadCount} new lead{unreadCount !== 1 ? 's' : ''} today</p>
+                    <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Notifications</p>
+                    <p className="text-[11px] text-zinc-400 dark:text-zinc-500 mt-0.5">{unreadCount} new lead{unreadCount !== 1 ? 's' : ''} today</p>
                   </div>
                   {unreadCount > 0 && (
-                    <span className="px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-semibold rounded-full border border-blue-100">
+                    <span className="px-2 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[10px] font-semibold rounded-full border border-blue-100 dark:border-blue-800">
                       {unreadCount} new
                     </span>
                   )}
@@ -341,11 +341,11 @@ export default function Navbar() {
                 <div className="max-h-[400px] overflow-y-auto divide-y divide-zinc-50">
                   {notifications.length === 0 ? (
                     <div className="py-12 text-center">
-                      <div className="w-12 h-12 bg-zinc-50 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <Bell size={20} className="text-zinc-300" />
+                      <div className="w-12 h-12 bg-zinc-50 dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <Bell size={20} className="text-zinc-300 dark:text-zinc-600" />
                       </div>
-                      <p className="text-sm font-medium text-zinc-400">No new leads today</p>
-                      <p className="text-xs text-zinc-300 mt-1">New leads will appear here in real-time</p>
+                      <p className="text-sm font-medium text-zinc-400 dark:text-zinc-500">No new leads today</p>
+                      <p className="text-xs text-zinc-300 dark:text-zinc-600 mt-1">New leads will appear here in real-time</p>
                     </div>
                   ) : (
                     <>
@@ -359,10 +359,10 @@ export default function Navbar() {
                   <Link
                     to="/leads"
                     onClick={() => setNotifOpen(false)}
-                    className="flex items-center justify-center gap-1.5 text-xs font-medium text-zinc-500 hover:text-zinc-700 hover:bg-zinc-50 py-3 border-t border-zinc-100 transition-colors"
+                    className="flex items-center justify-center gap-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 py-3 border-t border-zinc-100 dark:border-zinc-800 transition-colors"
                   >
                     View all leads
-                    <span className="text-zinc-300">&rarr;</span>
+                    <span className="text-zinc-300 dark:text-zinc-600">&rarr;</span>
                   </Link>
                 )}
               </div>
@@ -376,43 +376,43 @@ export default function Navbar() {
               <button
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
                 className={`flex items-center gap-2 pl-2 pr-2 py-1.5 rounded-lg transition-all duration-200 ${
-                  userMenuOpen ? 'bg-zinc-100' : 'hover:bg-zinc-50'
+                  userMenuOpen ? 'bg-zinc-100 dark:bg-zinc-700' : 'hover:bg-zinc-50 dark:hover:bg-zinc-800'
                 }`}
               >
-                <div className="w-7 h-7 bg-gradient-to-br from-zinc-700 to-zinc-900 rounded-full flex items-center justify-center text-[11px] font-semibold text-white ring-2 ring-white">
+                <div className="w-7 h-7 bg-gradient-to-br from-zinc-700 to-zinc-900 rounded-full flex items-center justify-center text-[11px] font-semibold text-white ring-2 ring-white dark:ring-zinc-900">
                   {initials}
                 </div>
                 <div className="hidden sm:block text-left mr-0.5">
-                  <p className="text-[13px] font-medium text-zinc-700 leading-tight">{user?.name?.split(' ')[0]}</p>
+                  <p className="text-[13px] font-medium text-zinc-700 dark:text-zinc-300 leading-tight">{user?.name?.split(' ')[0]}</p>
                 </div>
-                <ChevronDown size={14} className={`text-zinc-400 transition-transform duration-200 ${userMenuOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown size={14} className={`text-zinc-400 dark:text-zinc-500 transition-transform duration-200 ${userMenuOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {/* User dropdown with animation */}
-              <div className={`absolute right-0 top-[calc(100%+8px)] w-[calc(100vw-2rem)] sm:w-64 max-w-[264px] bg-white rounded-xl shadow-xl shadow-zinc-200/50 border border-zinc-200/80 z-50 overflow-hidden transition-all duration-200 origin-top-right ${
+              <div className={`absolute right-0 top-[calc(100%+8px)] w-[calc(100vw-2rem)] sm:w-64 max-w-[264px] bg-white dark:bg-zinc-900 rounded-xl shadow-xl shadow-zinc-200/50 dark:shadow-black/30 border border-zinc-200/80 dark:border-zinc-700 z-50 overflow-hidden transition-all duration-200 origin-top-right ${
                 userMenuOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
               }`}>
-                <div className="px-4 py-3.5 border-b border-zinc-100">
-                  <p className="text-sm font-semibold text-zinc-900">{user?.name}</p>
-                  <p className="text-xs text-zinc-400 mt-0.5 capitalize">{user?.role?.replace('_', ' ')}</p>
+                <div className="px-4 py-3.5 border-b border-zinc-100 dark:border-zinc-800">
+                  <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{user?.name}</p>
+                  <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5 capitalize">{user?.role?.replace('_', ' ')}</p>
                   {firm?.name && (
-                    <p className="text-[11px] text-zinc-300 mt-1 truncate">{firm.name}</p>
+                    <p className="text-[11px] text-zinc-300 dark:text-zinc-600 mt-1 truncate">{firm.name}</p>
                   )}
                 </div>
                 <div className="py-1">
                   <Link
                     to="/settings"
                     onClick={() => setUserMenuOpen(false)}
-                    className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-zinc-600 hover:bg-zinc-50 transition-colors duration-150"
+                    className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors duration-150"
                   >
-                    <Settings size={15} className="text-zinc-400" />
+                    <Settings size={15} className="text-zinc-400 dark:text-zinc-500" />
                     Settings
                   </Link>
                 </div>
-                <div className="border-t border-zinc-100 py-1">
+                <div className="border-t border-zinc-100 dark:border-zinc-800 py-1">
                   <button
                     onClick={() => { setUserMenuOpen(false); logout(); }}
-                    className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors duration-150"
+                    className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors duration-150"
                   >
                     <LogOut size={15} />
                     Sign out
@@ -424,27 +424,27 @@ export default function Navbar() {
             {/* Mobile hamburger */}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="md:hidden p-2 rounded-lg hover:bg-zinc-50 transition-colors"
+              className="md:hidden p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
             >
-              {mobileOpen ? <X size={20} className="text-zinc-600" /> : <Menu size={20} className="text-zinc-600" />}
+              {mobileOpen ? <X size={20} className="text-zinc-600 dark:text-zinc-400" /> : <Menu size={20} className="text-zinc-600 dark:text-zinc-400" />}
             </button>
           </div>
         </div>
 
         {/* Mobile Nav with slide animation */}
-        <div className={`md:hidden border-t border-zinc-100 overflow-hidden transition-all duration-300 ${
+        <div className={`md:hidden border-t border-zinc-100 dark:border-zinc-800 overflow-hidden transition-all duration-300 ${
           mobileOpen ? 'max-h-[500px] opacity-100 py-3' : 'max-h-0 opacity-0 py-0'
         }`}>
           <div className="space-y-1">
             {/* Mobile search */}
             <form onSubmit={handleSearch} className="relative mb-3 sm:hidden">
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-300" />
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-300 dark:text-zinc-600" />
               <input
                 type="text"
                 placeholder="Search leads..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-2.5 text-sm bg-zinc-50 border border-zinc-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-200 placeholder:text-zinc-300"
+                className="w-full pl-9 pr-3 py-2.5 text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-200 placeholder:text-zinc-300 dark:placeholder:text-zinc-600"
               />
             </form>
 
@@ -457,11 +457,11 @@ export default function Navbar() {
                   to={item.path}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                     active
-                      ? 'text-zinc-900 bg-zinc-100'
-                      : 'text-zinc-500 hover:bg-zinc-50 hover:text-zinc-700'
+                      ? 'text-zinc-900 dark:text-zinc-100 bg-zinc-100 dark:bg-zinc-700'
+                      : 'text-zinc-500 dark:text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-zinc-700 dark:hover:text-zinc-300'
                   }`}
                 >
-                  <Icon size={16} className={active ? 'text-zinc-700' : 'text-zinc-400'} />
+                  <Icon size={16} className={active ? 'text-zinc-700 dark:text-zinc-300' : 'text-zinc-400 dark:text-zinc-500'} />
                   {item.label}
                 </Link>
               );
@@ -469,7 +469,7 @@ export default function Navbar() {
             {isSuperAdmin && (
               <Link
                 to={isAdminSection ? '/' : '/admin'}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-violet-600 hover:bg-violet-50 transition-all"
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/30 transition-all"
               >
                 <Shield size={16} />
                 {isAdminSection ? 'Client View' : 'Admin Panel'}

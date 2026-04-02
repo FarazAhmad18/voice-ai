@@ -11,18 +11,18 @@ import {
 
 
 const INDUSTRY_COLORS = {
-  legal: { bg: 'bg-blue-50', text: 'text-blue-600', border: 'border-blue-100', label: 'Legal' },
-  dental: { bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-100', label: 'Dental' },
-  plumbing: { bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-100', label: 'Plumbing' },
-  real_estate: { bg: 'bg-violet-50', text: 'text-violet-600', border: 'border-violet-100', label: 'Real Estate' },
-  medical: { bg: 'bg-rose-50', text: 'text-rose-600', border: 'border-rose-100', label: 'Medical' },
-  other: { bg: 'bg-slate-50', text: 'text-slate-500', border: 'border-slate-100', label: 'Other' },
+  legal: { bg: 'bg-blue-50 dark:bg-blue-900/30', text: 'text-blue-600 dark:text-blue-400', border: 'border-blue-100 dark:border-blue-800', label: 'Legal' },
+  dental: { bg: 'bg-emerald-50 dark:bg-emerald-900/30', text: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-100 dark:border-emerald-800', label: 'Dental' },
+  plumbing: { bg: 'bg-amber-50 dark:bg-amber-900/30', text: 'text-amber-600 dark:text-amber-400', border: 'border-amber-100 dark:border-amber-800', label: 'Plumbing' },
+  real_estate: { bg: 'bg-violet-50 dark:bg-violet-900/30', text: 'text-violet-600 dark:text-violet-400', border: 'border-violet-100 dark:border-violet-800', label: 'Real Estate' },
+  medical: { bg: 'bg-rose-50 dark:bg-rose-900/30', text: 'text-rose-600', border: 'border-rose-100', label: 'Medical' },
+  other: { bg: 'bg-slate-50 dark:bg-zinc-900', text: 'text-slate-500 dark:text-zinc-500', border: 'border-slate-100 dark:border-zinc-800', label: 'Other' },
 };
 
 const PLAN_BADGES = {
-  growth: { bg: 'bg-blue-50', text: 'text-blue-600', border: 'border-blue-100', icon: null },
-  scale: { bg: 'bg-violet-50', text: 'text-violet-600', border: 'border-violet-100', icon: Crown },
-  enterprise: { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-100', icon: Crown },
+  growth: { bg: 'bg-blue-50 dark:bg-blue-900/30', text: 'text-blue-600 dark:text-blue-400', border: 'border-blue-100 dark:border-blue-800', icon: null },
+  scale: { bg: 'bg-violet-50 dark:bg-violet-900/30', text: 'text-violet-600 dark:text-violet-400', border: 'border-violet-100 dark:border-violet-800', icon: Crown },
+  enterprise: { bg: 'bg-amber-50 dark:bg-amber-900/30', text: 'text-amber-700 dark:text-amber-400', border: 'border-amber-100 dark:border-amber-800', icon: Crown },
 };
 
 export default function ClientList() {
@@ -80,7 +80,7 @@ export default function ClientList() {
         <div className="h-24 bg-indigo-50 rounded-lg animate-pulse" />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="h-48 bg-slate-50 rounded-lg animate-pulse" />
+            <div key={i} className="h-48 bg-slate-50 dark:bg-zinc-900 rounded-lg animate-pulse" />
           ))}
         </div>
       </div>
@@ -166,29 +166,29 @@ export default function ClientList() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3 flex-wrap">
           <div className="relative">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" />
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 dark:text-zinc-600" />
             <input
               type="text"
               placeholder="Search by name, industry, email..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-72 pl-9 pr-3 py-2.5 text-sm bg-white border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-200 placeholder:text-slate-300"
+              className="w-72 pl-9 pr-3 py-2.5 text-sm bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-200 placeholder:text-slate-300 dark:placeholder:text-zinc-600"
             />
             {search && (
-              <button onClick={() => setSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500">
+              <button onClick={() => setSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-300 dark:text-zinc-600 hover:text-slate-500 dark:hover:text-zinc-500">
                 <X size={14} />
               </button>
             )}
           </div>
 
           {/* Status filter chips */}
-          <div className="flex items-center gap-1 bg-slate-50 rounded-lg p-1">
+          <div className="flex items-center gap-1 bg-slate-50 dark:bg-zinc-900 rounded-lg p-1">
             {['all', 'active', 'paused', 'cancelled'].map(s => (
               <button
                 key={s}
                 onClick={() => setStatusFilter(s)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all capitalize ${
-                  statusFilter === s ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'
+                  statusFilter === s ? 'bg-white dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 shadow-sm' : 'text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-400'
                 }`}
               >
                 {s === 'all' ? 'All Status' : s}
@@ -198,11 +198,11 @@ export default function ClientList() {
 
           {/* Industry filter */}
           {industries.length > 1 && (
-            <div className="flex items-center gap-1 bg-slate-50 rounded-lg p-1">
+            <div className="flex items-center gap-1 bg-slate-50 dark:bg-zinc-900 rounded-lg p-1">
               <button
                 onClick={() => setIndustryFilter('all')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                  industryFilter === 'all' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'
+                  industryFilter === 'all' ? 'bg-white dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 shadow-sm' : 'text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-400'
                 }`}
               >
                 All Industries
@@ -214,7 +214,7 @@ export default function ClientList() {
                     key={ind}
                     onClick={() => setIndustryFilter(ind)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all capitalize ${
-                      industryFilter === ind ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'
+                      industryFilter === ind ? 'bg-white dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 shadow-sm' : 'text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-400'
                     }`}
                   >
                     {ic.label || ind}
@@ -237,7 +237,7 @@ export default function ClientList() {
 
       {/* Result count */}
       <div className="flex items-center justify-between">
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-slate-400 dark:text-zinc-500">
           {filtered.length} client{filtered.length !== 1 ? 's' : ''}
           {hasActiveFilters ? ` (filtered from ${firms.length})` : ''}
         </p>
@@ -245,12 +245,12 @@ export default function ClientList() {
 
       {/* ── Client Cards Grid ── */}
       {filtered.length === 0 ? (
-        <div className="bg-white rounded-lg border border-slate-100 py-20 text-center">
+        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-100 dark:border-zinc-800 py-20 text-center">
           <div className="w-16 h-16 bg-indigo-50 rounded-lg flex items-center justify-center mx-auto mb-4">
             <Building2 size={24} className="text-indigo-400" />
           </div>
-          <p className="text-sm font-semibold text-slate-700">No clients found</p>
-          <p className="text-xs text-slate-400 mt-1.5">
+          <p className="text-sm font-semibold text-slate-700 dark:text-zinc-300">No clients found</p>
+          <p className="text-xs text-slate-400 dark:text-zinc-500 mt-1.5">
             {hasActiveFilters ? 'Try adjusting your filters.' : 'Deploy your first client to get started.'}
           </p>
           {!hasActiveFilters && (
@@ -271,7 +271,7 @@ export default function ClientList() {
             return (
               <div
                 key={firm.id}
-                className="relative bg-white rounded-lg border border-slate-100 overflow-hidden group"
+                className="relative bg-white dark:bg-zinc-900 rounded-lg border border-slate-100 dark:border-zinc-800 overflow-hidden group"
               >
                 {/* Color accent bar */}
                 <div className="h-1" style={{ backgroundColor: firm.brand_color || '#6d28d9' }} />
@@ -286,16 +286,16 @@ export default function ClientList() {
                       {firm.name?.charAt(0).toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <Link to={`/admin/clients/${firm.id}`} className="text-sm font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors truncate block">
+                      <Link to={`/admin/clients/${firm.id}`} className="text-sm font-semibold text-slate-900 dark:text-zinc-100 group-hover:text-indigo-600 transition-colors truncate block">
                         {firm.name}
                       </Link>
-                      <p className="text-xs text-slate-400 mt-0.5 truncate">{firm.email || firm.retell_phone_number || 'No contact'}</p>
+                      <p className="text-xs text-slate-400 dark:text-zinc-500 mt-0.5 truncate">{firm.email || firm.retell_phone_number || 'No contact'}</p>
                     </div>
                     {/* Status dot */}
                     <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-semibold ${
-                      isActive ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
-                      firm.status === 'paused' ? 'bg-amber-50 text-amber-700 border border-amber-100' :
-                      'bg-slate-50 text-slate-500 border border-slate-100'
+                      isActive ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800' :
+                      firm.status === 'paused' ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-100 dark:border-amber-800' :
+                      'bg-slate-50 dark:bg-zinc-900 text-slate-500 dark:text-zinc-500 border border-slate-100 dark:border-zinc-800'
                     }`}>
                       <span className={`w-1.5 h-1.5 rounded-full ${
                         isActive ? 'bg-emerald-500' :
@@ -316,7 +316,7 @@ export default function ClientList() {
                       {firm.plan || 'growth'}
                     </span>
                     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold ${
-                      hasAgent ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-slate-50 text-slate-400 border border-slate-100'
+                      hasAgent ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800' : 'bg-slate-50 dark:bg-zinc-900 text-slate-400 dark:text-zinc-500 border border-slate-100 dark:border-zinc-800'
                     }`}>
                       <span className={`w-1.5 h-1.5 rounded-full ${hasAgent ? 'bg-emerald-400' : 'bg-slate-300'}`} />
                       {hasAgent ? `${firm.agent_name || 'Agent'} live` : 'No agent'}
@@ -324,25 +324,25 @@ export default function ClientList() {
                   </div>
 
                   {/* Stats row */}
-                  <div className="flex items-center gap-5 py-3 border-t border-slate-50">
+                  <div className="flex items-center gap-5 py-3 border-t border-slate-50 dark:border-zinc-800/50">
                     <div>
-                      <p className="text-lg font-bold text-slate-900 tabular-nums">{firm._counts?.leads || 0}</p>
-                      <p className="text-[10px] text-slate-400 uppercase tracking-wider font-medium">Leads</p>
+                      <p className="text-lg font-bold text-slate-900 dark:text-zinc-100 tabular-nums">{firm._counts?.leads || 0}</p>
+                      <p className="text-[10px] text-slate-400 dark:text-zinc-500 uppercase tracking-wider font-medium">Leads</p>
                     </div>
-                    <div className="w-px h-8 bg-slate-100" />
+                    <div className="w-px h-8 bg-slate-100 dark:bg-zinc-800/50" />
                     <div>
-                      <p className="text-lg font-bold text-slate-900 tabular-nums">{firm._counts?.appointments || 0}</p>
-                      <p className="text-[10px] text-slate-400 uppercase tracking-wider font-medium">Appts</p>
+                      <p className="text-lg font-bold text-slate-900 dark:text-zinc-100 tabular-nums">{firm._counts?.appointments || 0}</p>
+                      <p className="text-[10px] text-slate-400 dark:text-zinc-500 uppercase tracking-wider font-medium">Appts</p>
                     </div>
-                    <div className="w-px h-8 bg-slate-100" />
+                    <div className="w-px h-8 bg-slate-100 dark:bg-zinc-800/50" />
                     <div>
-                      <p className="text-lg font-bold text-slate-900 tabular-nums">{firm._counts?.staff || 0}</p>
-                      <p className="text-[10px] text-slate-400 uppercase tracking-wider font-medium">Staff</p>
+                      <p className="text-lg font-bold text-slate-900 dark:text-zinc-100 tabular-nums">{firm._counts?.staff || 0}</p>
+                      <p className="text-[10px] text-slate-400 dark:text-zinc-500 uppercase tracking-wider font-medium">Staff</p>
                     </div>
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-50">
+                  <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-50 dark:border-zinc-800/50">
                     <Link
                       to={`/admin/clients/${firm.id}`}
                       className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-indigo-50 text-indigo-600 text-xs font-semibold rounded-lg hover:bg-indigo-100 transition-colors"
@@ -351,7 +351,7 @@ export default function ClientList() {
                     </Link>
                     <Link
                       to={`/admin/clients/${firm.id}`}
-                      className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-slate-50 text-slate-600 text-xs font-semibold rounded-lg hover:bg-slate-100 transition-colors"
+                      className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-slate-50 dark:bg-zinc-900 text-slate-600 dark:text-zinc-500 text-xs font-semibold rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800/50 transition-colors"
                     >
                       <Pencil size={12} /> Edit
                     </Link>
@@ -360,8 +360,8 @@ export default function ClientList() {
                       disabled={toggling === firm.id}
                       className={`flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg transition-colors ${
                         isActive
-                          ? 'bg-amber-50 text-amber-600 hover:bg-amber-100'
-                          : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'
+                          ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/40'
+                          : 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/40'
                       } ${toggling === firm.id ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                       {toggling === firm.id ? (

@@ -20,14 +20,14 @@ function formatDuration(seconds) {
 
 // ── Entry type configs ──
 const TYPE_CONFIG = {
-  call_inbound:  { label: 'Inbound Call',         color: 'text-red-600',    bg: 'bg-red-50',    border: 'border-l-red-400',    icon: PhoneIncoming },
-  call_outbound: { label: 'Outbound Call',        color: 'text-blue-600',   bg: 'bg-blue-50',   border: 'border-l-blue-400',   icon: PhoneOutgoing },
-  sms_inbound:   { label: 'Inbound Text Message', color: 'text-red-600',    bg: 'bg-red-50',    border: 'border-l-red-400',    icon: MessageSquare },
-  sms_outbound:  { label: 'Outbound Text Message', color: 'text-blue-600',  bg: 'bg-blue-50',   border: 'border-l-blue-400',   icon: MessageSquare },
-  email_inbound: { label: 'Inbound Email',        color: 'text-red-600',    bg: 'bg-red-50',    border: 'border-l-red-400',    icon: Mail },
-  email_outbound:{ label: 'Email Reply',          color: 'text-blue-600',   bg: 'bg-blue-50',   border: 'border-l-blue-400',   icon: Mail },
-  note:          { label: 'Note',                  color: 'text-amber-600',  bg: 'bg-amber-50',  border: 'border-l-amber-400',  icon: StickyNote },
-  legacy_note:   { label: 'Note',                  color: 'text-amber-600',  bg: 'bg-amber-50',  border: 'border-l-amber-400',  icon: StickyNote },
+  call_inbound:  { label: 'Inbound Call',         color: 'text-red-600 dark:text-red-400',    bg: 'bg-red-50 dark:bg-red-900/30',    border: 'border-l-red-400',    icon: PhoneIncoming },
+  call_outbound: { label: 'Outbound Call',        color: 'text-blue-600 dark:text-blue-400',   bg: 'bg-blue-50 dark:bg-blue-900/30',   border: 'border-l-blue-400',   icon: PhoneOutgoing },
+  sms_inbound:   { label: 'Inbound Text Message', color: 'text-red-600 dark:text-red-400',    bg: 'bg-red-50 dark:bg-red-900/30',    border: 'border-l-red-400',    icon: MessageSquare },
+  sms_outbound:  { label: 'Outbound Text Message', color: 'text-blue-600 dark:text-blue-400',  bg: 'bg-blue-50 dark:bg-blue-900/30',   border: 'border-l-blue-400',   icon: MessageSquare },
+  email_inbound: { label: 'Inbound Email',        color: 'text-red-600 dark:text-red-400',    bg: 'bg-red-50 dark:bg-red-900/30',    border: 'border-l-red-400',    icon: Mail },
+  email_outbound:{ label: 'Email Reply',          color: 'text-blue-600 dark:text-blue-400',   bg: 'bg-blue-50 dark:bg-blue-900/30',   border: 'border-l-blue-400',   icon: Mail },
+  note:          { label: 'Note',                  color: 'text-amber-600 dark:text-amber-400',  bg: 'bg-amber-50 dark:bg-amber-900/30',  border: 'border-l-amber-400',  icon: StickyNote },
+  legacy_note:   { label: 'Note',                  color: 'text-amber-600 dark:text-amber-400',  bg: 'bg-amber-50 dark:bg-amber-900/30',  border: 'border-l-amber-400',  icon: StickyNote },
 };
 
 function getEntryConfig(item) {
@@ -48,19 +48,19 @@ function CallEntry({ call }) {
     <div className="space-y-2">
       {/* Call meta */}
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">{formatDuration(call.duration)}</span>
+        <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-0.5 rounded">{formatDuration(call.duration)}</span>
         {call.sentiment && (
           <span className={`text-xs font-medium px-2 py-0.5 rounded capitalize ${
-            call.sentiment === 'positive' ? 'bg-emerald-50 text-emerald-600' :
-            call.sentiment === 'negative' || call.sentiment === 'distressed' ? 'bg-red-50 text-red-600' :
-            'bg-slate-50 text-slate-500'
+            call.sentiment === 'positive' ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' :
+            call.sentiment === 'negative' || call.sentiment === 'distressed' ? 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400' :
+            'bg-slate-50 dark:bg-zinc-900 text-slate-500 dark:text-zinc-500'
           }`}>{call.sentiment}</span>
         )}
-        <span className="text-xs text-slate-400 capitalize">{call.ended_reason?.replace(/_/g, ' ')}</span>
+        <span className="text-xs text-slate-400 dark:text-zinc-500 capitalize">{call.ended_reason?.replace(/_/g, ' ')}</span>
       </div>
 
       {/* Summary */}
-      {call.summary && <p className="text-sm text-slate-700 leading-relaxed">{call.summary}</p>}
+      {call.summary && <p className="text-sm text-slate-700 dark:text-zinc-300 leading-relaxed">{call.summary}</p>}
 
       {/* Audio — always visible */}
       {call.recording_url && (
@@ -72,14 +72,14 @@ function CallEntry({ call }) {
         <>
           <button
             onClick={() => setShowTranscript(!showTranscript)}
-            className="text-[11px] font-medium text-slate-400 hover:text-slate-600 transition-colors flex items-center gap-1"
+            className="text-[11px] font-medium text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-400 transition-colors flex items-center gap-1"
           >
             {showTranscript ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
             {showTranscript ? 'Hide' : 'Show'} Transcript
           </button>
           {showTranscript && (
-            <div className="bg-slate-50 rounded-lg p-3 max-h-64 overflow-y-auto">
-              <pre className="text-sm text-slate-600 whitespace-pre-wrap font-sans leading-relaxed">{call.transcript}</pre>
+            <div className="bg-slate-50 dark:bg-zinc-900  p-3 max-h-64 overflow-y-auto">
+              <pre className="text-sm text-slate-600 dark:text-zinc-500 whitespace-pre-wrap font-sans leading-relaxed">{call.transcript}</pre>
             </div>
           )}
         </>
@@ -105,26 +105,26 @@ export default function MessageTimeline({ messages = [], calls = [], legacyNotes
   if (items.length === 0) {
     return (
       <div className="text-center py-10">
-        <MessageSquare size={20} className="text-slate-300 mx-auto mb-2" />
-        <p className="text-sm text-slate-400">No activity yet</p>
-        <p className="text-[11px] text-slate-300 mt-1">Calls, messages, and notes will appear here</p>
+        <MessageSquare size={20} className="text-slate-300 dark:text-zinc-600 mx-auto mb-2" />
+        <p className="text-sm text-slate-400 dark:text-zinc-500">No activity yet</p>
+        <p className="text-[11px] text-slate-300 dark:text-zinc-600 mt-1">Calls, messages, and notes will appear here</p>
       </div>
     );
   }
 
   return (
-    <div className="divide-y divide-slate-100">
+    <div className="divide-y divide-slate-100 dark:divide-zinc-800">
       {items.map(item => {
         const config = getEntryConfig(item);
         const Icon = config.icon;
         const dateStr = item.created_at;
 
         return (
-          <div key={`${item.type}_${item.data.id}`} className={`flex gap-4 py-3 border-l-4 ${config.border} pl-4`}>
+          <div key={`${item.type}_${item.data.id}`} className="flex gap-4 py-3 pl-4">
             {/* Timestamp — left column */}
             <div className="flex-shrink-0 w-[70px] pt-0.5">
-              <p className="text-[11px] font-medium text-slate-500">{formatFullDate(dateStr)}</p>
-              <p className="text-[11px] text-slate-400">{formatTime(dateStr)}</p>
+              <p className="text-[11px] font-medium text-slate-500 dark:text-zinc-500">{formatFullDate(dateStr)}</p>
+              <p className="text-[11px] text-slate-400 dark:text-zinc-500">{formatTime(dateStr)}</p>
             </div>
 
             {/* Icon */}
@@ -137,12 +137,12 @@ export default function MessageTimeline({ messages = [], calls = [], legacyNotes
               {/* Entry header */}
               <p className={`text-sm font-semibold ${config.color}`}>
                 {config.label}
-                {item.type === 'call' && <span className="text-slate-400 font-normal"> ({formatDuration(item.data.duration)})</span>}
+                {item.type === 'call' && <span className="text-slate-400 dark:text-zinc-500 font-normal"> ({formatDuration(item.data.duration)})</span>}
               </p>
 
               {/* Sender/receiver info */}
               {item.data.sender && (
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p className="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">
                   {item.data.direction === 'inbound' ? 'From' : 'By'}: {item.data.sender}
                   {item.data.channel === 'sms' && item.data.direction === 'outbound' && item.data.caller_phone && (
                     <span> · Sent to: {item.data.caller_phone}</span>
@@ -152,7 +152,7 @@ export default function MessageTimeline({ messages = [], calls = [], legacyNotes
 
               {/* Subject for emails */}
               {item.data.subject && (
-                <p className="text-xs font-semibold text-slate-700 mt-1">Subject: {item.data.subject}</p>
+                <p className="text-xs font-semibold text-slate-700 dark:text-zinc-300 mt-1">Subject: {item.data.subject}</p>
               )}
 
               {/* Body / Content */}
@@ -161,7 +161,7 @@ export default function MessageTimeline({ messages = [], calls = [], legacyNotes
                   <CallEntry call={item.data} />
                 </div>
               ) : (
-                <p className="text-sm text-slate-700 leading-relaxed mt-1">{item.data.body}</p>
+                <p className="text-sm text-slate-700 dark:text-zinc-300 leading-relaxed mt-1">{item.data.body}</p>
               )}
             </div>
           </div>

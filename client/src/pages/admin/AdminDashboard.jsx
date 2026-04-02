@@ -31,7 +31,7 @@ const INDUSTRY_COLORS = {
   plumbing: { bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/20', dot: 'bg-amber-400' },
   real_estate: { bg: 'bg-violet-500/10', text: 'text-violet-400', border: 'border-violet-500/20', dot: 'bg-violet-400' },
   medical: { bg: 'bg-rose-500/10', text: 'text-rose-400', border: 'border-rose-500/20', dot: 'bg-rose-400' },
-  other: { bg: 'bg-slate-500/10', text: 'text-slate-400', border: 'border-slate-500/20', dot: 'bg-slate-400' },
+  other: { bg: 'bg-slate-500/10', text: 'text-slate-400 dark:text-zinc-500', border: 'border-slate-500/20', dot: 'bg-slate-400' },
 };
 
 /* ── Skeleton Loading ── */
@@ -200,15 +200,15 @@ export default function AdminDashboard() {
         <div className="lg:col-span-8 space-y-5">
 
           {/* Top Clients by Activity */}
-          <div className="bg-white rounded-lg border border-slate-100 shadow-sm">
-            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+          <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-100 dark:border-zinc-800 shadow-sm">
+            <div className="px-6 py-5 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 bg-indigo-50 rounded-lg flex items-center justify-center">
                   <TrendingUp size={16} className="text-indigo-500" />
                 </div>
                 <div>
-                  <h3 className="text-[15px] font-semibold text-slate-900">Top Clients by Activity</h3>
-                  <p className="text-xs text-slate-400">Ranked by total leads generated</p>
+                  <h3 className="text-[15px] font-semibold text-slate-900 dark:text-zinc-100">Top Clients by Activity</h3>
+                  <p className="text-xs text-slate-400 dark:text-zinc-500">Ranked by total leads generated</p>
                 </div>
               </div>
               <Link
@@ -225,21 +225,21 @@ export default function AdminDashboard() {
                 <div className="w-16 h-16 bg-indigo-50 rounded-lg flex items-center justify-center mx-auto mb-4">
                   <Building2 size={24} className="text-indigo-400" />
                 </div>
-                <p className="text-sm font-semibold text-slate-700">No clients deployed</p>
-                <p className="text-xs text-slate-400 mt-1.5 max-w-xs mx-auto">Deploy your first client to start managing AI voice agents.</p>
+                <p className="text-sm font-semibold text-slate-700 dark:text-zinc-300">No clients deployed</p>
+                <p className="text-xs text-slate-400 dark:text-zinc-500 mt-1.5 max-w-xs mx-auto">Deploy your first client to start managing AI voice agents.</p>
                 <Link to="/admin/clients/new" className="inline-flex items-center gap-1.5 mt-4 text-sm font-medium text-indigo-600 hover:text-indigo-700">
                   <Sparkles size={14} /> Deploy first client
                 </Link>
               </div>
             ) : (
-              <div className="divide-y divide-slate-50">
+              <div className="divide-y divide-slate-50 dark:divide-zinc-800/50">
                 {/* Table header */}
                 <div className="px-6 py-2.5 grid grid-cols-12 gap-3">
-                  <div className="col-span-1 text-[10px] font-semibold text-slate-300 uppercase tracking-wider">#</div>
-                  <div className="col-span-5 text-[10px] font-semibold text-slate-300 uppercase tracking-wider">Client</div>
-                  <div className="col-span-2 text-[10px] font-semibold text-slate-300 uppercase tracking-wider text-center">Leads</div>
-                  <div className="col-span-2 text-[10px] font-semibold text-slate-300 uppercase tracking-wider text-center">Appts</div>
-                  <div className="col-span-2 text-[10px] font-semibold text-slate-300 uppercase tracking-wider text-right">Status</div>
+                  <div className="col-span-1 text-[10px] font-semibold text-slate-300 dark:text-zinc-600 uppercase tracking-wider">#</div>
+                  <div className="col-span-5 text-[10px] font-semibold text-slate-300 dark:text-zinc-600 uppercase tracking-wider">Client</div>
+                  <div className="col-span-2 text-[10px] font-semibold text-slate-300 dark:text-zinc-600 uppercase tracking-wider text-center">Leads</div>
+                  <div className="col-span-2 text-[10px] font-semibold text-slate-300 dark:text-zinc-600 uppercase tracking-wider text-center">Appts</div>
+                  <div className="col-span-2 text-[10px] font-semibold text-slate-300 dark:text-zinc-600 uppercase tracking-wider text-right">Status</div>
                 </div>
                 {[...firms]
                   .sort((a, b) => (b._counts?.leads || 0) - (a._counts?.leads || 0))
@@ -254,10 +254,10 @@ export default function AdminDashboard() {
                       <Link
                         key={firm.id}
                         to={`/admin/clients/${firm.id}`}
-                        className="px-6 py-3.5 grid grid-cols-12 gap-3 items-center hover:bg-slate-50/60 transition-all group"
+                        className="px-6 py-3.5 grid grid-cols-12 gap-3 items-center hover:bg-slate-50 dark:hover:bg-zinc-800/30 transition-all group"
                       >
                         <div className="col-span-1">
-                          <span className={`text-sm font-bold ${idx === 0 ? 'text-amber-500' : idx === 1 ? 'text-slate-400' : idx === 2 ? 'text-amber-700' : 'text-slate-300'}`}>
+                          <span className={`text-sm font-bold ${idx === 0 ? 'text-amber-500' : idx === 1 ? 'text-slate-400 dark:text-zinc-500' : idx === 2 ? 'text-amber-700 dark:text-amber-400' : 'text-slate-300 dark:text-zinc-600'}`}>
                             {idx + 1}
                           </span>
                         </div>
@@ -269,27 +269,27 @@ export default function AdminDashboard() {
                             {firm.name?.charAt(0).toUpperCase()}
                           </div>
                           <div className="min-w-0">
-                            <p className="text-sm font-medium text-slate-800 group-hover:text-indigo-600 transition-colors truncate">{firm.name}</p>
+                            <p className="text-sm font-medium text-slate-800 dark:text-zinc-200 group-hover:text-indigo-600 transition-colors truncate">{firm.name}</p>
                             <div className="flex items-center gap-1.5 mt-0.5">
                               <span className={`text-[10px] font-medium ${ic.text} capitalize`}>{firm.industry}</span>
-                              {!hasAgent && <span className="text-[10px] text-slate-300">· no agent</span>}
+                              {!hasAgent && <span className="text-[10px] text-slate-300 dark:text-zinc-600">· no agent</span>}
                             </div>
                           </div>
                         </div>
                         <div className="col-span-2 flex flex-col items-center gap-1">
-                          <span className="text-sm font-bold text-slate-900 tabular-nums">{firm._counts?.leads || 0}</span>
-                          <div className="w-full h-1 bg-slate-100 rounded-full overflow-hidden">
+                          <span className="text-sm font-bold text-slate-900 dark:text-zinc-100 tabular-nums">{firm._counts?.leads || 0}</span>
+                          <div className="w-full h-1 bg-slate-100 dark:bg-zinc-800/50 rounded-full overflow-hidden">
                             <div className="h-full bg-indigo-400 rounded-full transition-all" style={{ width: `${barWidth}%` }} />
                           </div>
                         </div>
                         <div className="col-span-2 text-center">
-                          <span className="text-sm font-bold text-slate-900 tabular-nums">{firm._counts?.appointments || 0}</span>
+                          <span className="text-sm font-bold text-slate-900 dark:text-zinc-100 tabular-nums">{firm._counts?.appointments || 0}</span>
                         </div>
                         <div className="col-span-2 flex justify-end">
                           <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold ${
-                            isActive ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
-                            firm.status === 'paused' ? 'bg-amber-50 text-amber-700 border border-amber-100' :
-                            'bg-slate-50 text-slate-500 border border-slate-100'
+                            isActive ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800' :
+                            firm.status === 'paused' ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-100 dark:border-amber-800' :
+                            'bg-slate-50 dark:bg-zinc-900 text-slate-500 dark:text-zinc-500 border border-slate-100 dark:border-zinc-800'
                           }`}>
                             <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-emerald-500' : firm.status === 'paused' ? 'bg-amber-500' : 'bg-slate-400'}`} />
                             {firm.status}
@@ -302,7 +302,7 @@ export default function AdminDashboard() {
             )}
 
             {firms.length > 0 && (
-              <div className="px-6 py-3 border-t border-slate-50">
+              <div className="px-6 py-3 border-t border-slate-50 dark:border-zinc-800/50">
                 <Link to="/admin/clients" className="inline-flex items-center gap-1.5 text-xs font-medium text-indigo-500 hover:text-indigo-700 transition-colors">
                   Manage all clients <ArrowUpRight size={12} />
                 </Link>
@@ -311,35 +311,35 @@ export default function AdminDashboard() {
           </div>
 
           {/* Platform Activity Feed */}
-          <div className="bg-white rounded-lg border border-slate-100 shadow-sm">
-            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+          <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-100 dark:border-zinc-800 shadow-sm">
+            <div className="px-6 py-5 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-slate-50 rounded-lg flex items-center justify-center">
-                  <Activity size={16} className="text-slate-600" />
+                <div className="w-9 h-9 bg-slate-50 dark:bg-zinc-900 rounded-lg flex items-center justify-center">
+                  <Activity size={16} className="text-slate-600 dark:text-zinc-500" />
                 </div>
                 <div>
-                  <h3 className="text-[15px] font-semibold text-slate-900">Platform Activity</h3>
-                  <p className="text-xs text-slate-400">Latest across all clients</p>
+                  <h3 className="text-[15px] font-semibold text-slate-900 dark:text-zinc-100">Platform Activity</h3>
+                  <p className="text-xs text-slate-400 dark:text-zinc-500">Latest across all clients</p>
                 </div>
               </div>
-              <Link to="/admin/logs" className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-slate-600 transition-colors">
+              <Link to="/admin/logs" className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-400 transition-colors">
                 View logs <ArrowUpRight size={12} />
               </Link>
             </div>
 
             {recentActivity.length === 0 ? (
               <div className="py-16 text-center">
-                <p className="text-sm text-slate-400">No activity yet</p>
+                <p className="text-sm text-slate-400 dark:text-zinc-500">No activity yet</p>
               </div>
             ) : (
-              <div className="divide-y divide-slate-50">
+              <div className="divide-y divide-slate-50 dark:divide-zinc-800/50">
                 {recentActivity.map((firm, idx) => {
                   const ic = INDUSTRY_COLORS[firm.industry] || INDUSTRY_COLORS.other;
                   return (
                     <Link
                       key={firm.id}
                       to={`/admin/clients/${firm.id}`}
-                      className="flex items-center gap-4 px-6 py-3.5 hover:bg-slate-50/60 transition-all group"
+                      className="flex items-center gap-4 px-6 py-3.5 hover:bg-slate-50 dark:hover:bg-zinc-800/30 transition-all group"
                     >
                       <div
                         className="w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold text-white flex-shrink-0 shadow-sm"
@@ -349,22 +349,22 @@ export default function AdminDashboard() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className="text-sm font-medium text-slate-800 group-hover:text-indigo-600 transition-colors truncate">{firm.name}</p>
+                          <p className="text-sm font-medium text-slate-800 dark:text-zinc-200 group-hover:text-indigo-600 transition-colors truncate">{firm.name}</p>
                           <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold border ${ic.bg} ${ic.text} ${ic.border} capitalize`}>
                             {firm.industry}
                           </span>
                         </div>
-                        <p className="text-xs text-slate-400 mt-0.5">
+                        <p className="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">
                           {firm._counts?.leads || 0} leads
-                          <span className="mx-1.5 text-slate-200">&middot;</span>
+                          <span className="mx-1.5 text-slate-200 dark:text-zinc-700">&middot;</span>
                           {firm._counts?.staff || 0} staff
-                          <span className="mx-1.5 text-slate-200">&middot;</span>
+                          <span className="mx-1.5 text-slate-200 dark:text-zinc-700">&middot;</span>
                           {firm.retell_phone_number || 'No phone'}
                         </p>
                       </div>
                       <div className="flex items-center gap-3 flex-shrink-0">
-                        <span className="text-[10px] text-slate-300 font-medium">{formatRelativeTime(firm.created_at)}</span>
-                        <ChevronRight size={14} className="text-slate-200 group-hover:text-indigo-400 transition-colors" />
+                        <span className="text-[10px] text-slate-300 dark:text-zinc-600 font-medium">{formatRelativeTime(firm.created_at)}</span>
+                        <ChevronRight size={14} className="text-slate-200 dark:text-zinc-700 group-hover:text-indigo-400 transition-colors" />
                       </div>
                     </Link>
                   );
@@ -424,27 +424,27 @@ export default function AdminDashboard() {
           </div>
 
           {/* Error Monitor */}
-          <div className="bg-white rounded-lg border border-slate-100 shadow-sm p-6">
+          <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-100 dark:border-zinc-800 shadow-sm p-6">
             <div className="flex items-center gap-3 mb-5">
               <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${
-                totalErrors === 0 ? 'bg-emerald-50' : totalErrors < 5 ? 'bg-amber-50' : 'bg-red-50'
+                totalErrors === 0 ? 'bg-emerald-50 dark:bg-emerald-900/30' : totalErrors < 5 ? 'bg-amber-50 dark:bg-amber-900/30' : 'bg-red-50 dark:bg-red-900/30'
               }`}>
                 <Server size={16} className={
                   totalErrors === 0 ? 'text-emerald-500' : totalErrors < 5 ? 'text-amber-500' : 'text-red-500'
                 } />
               </div>
               <div>
-                <h3 className="text-[15px] font-semibold text-slate-900">Error Monitor</h3>
-                <p className="text-xs text-slate-400">Last 24 hours</p>
+                <h3 className="text-[15px] font-semibold text-slate-900 dark:text-zinc-100">Error Monitor</h3>
+                <p className="text-xs text-slate-400 dark:text-zinc-500">Last 24 hours</p>
               </div>
             </div>
 
             {totalErrors === 0 ? (
-              <div className="flex items-center gap-3 py-4 px-4 bg-emerald-50/50 rounded-lg border border-emerald-100/50">
+              <div className="flex items-center gap-3 py-4 px-4 bg-emerald-50/50 rounded-lg border border-emerald-100 dark:border-emerald-800/50">
                 <CheckCircle2 size={18} className="text-emerald-500 flex-shrink-0" />
                 <div>
                   <p className="text-sm font-medium text-emerald-800">All clear</p>
-                  <p className="text-[11px] text-emerald-600/60">No errors in the last 24 hours</p>
+                  <p className="text-[11px] text-emerald-600 dark:text-emerald-400/60">No errors in the last 24 hours</p>
                 </div>
               </div>
             ) : (
@@ -455,14 +455,14 @@ export default function AdminDashboard() {
                     <Link
                       key={cat.key}
                       to={`/admin/logs?level=error&category=${cat.key}`}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-50 transition-colors group"
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-zinc-900 transition-colors group"
                     >
                       <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
                         count === 0 ? 'bg-emerald-400' : count < 3 ? 'bg-amber-400' : 'bg-red-400'
                       }`} />
-                      <span className="text-[13px] text-slate-600 flex-1 group-hover:text-slate-900 transition-colors">{cat.label}</span>
+                      <span className="text-[13px] text-slate-600 dark:text-zinc-500 flex-1 group-hover:text-slate-900 dark:hover:text-zinc-100 transition-colors">{cat.label}</span>
                       <span className={`text-[13px] font-bold tabular-nums ${
-                        count === 0 ? 'text-slate-300' : count < 3 ? 'text-amber-600' : 'text-red-600'
+                        count === 0 ? 'text-slate-300 dark:text-zinc-600' : count < 3 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'
                       }`}>{count}</span>
                     </Link>
                   );
@@ -473,7 +473,7 @@ export default function AdminDashboard() {
             {totalErrors > 0 && (
               <Link
                 to="/admin/logs?level=error"
-                className="mt-4 flex items-center justify-center gap-1.5 text-xs font-semibold text-red-600 hover:text-red-700 transition-colors bg-red-50 rounded-lg px-4 py-2.5"
+                className="mt-4 flex items-center justify-center gap-1.5 text-xs font-semibold text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-400 transition-colors bg-red-50 dark:bg-red-900/30 rounded-lg px-4 py-2.5"
               >
                 View all errors <ArrowUpRight size={12} />
               </Link>
@@ -481,28 +481,28 @@ export default function AdminDashboard() {
           </div>
 
           {/* Quick Actions */}
-          <div className="bg-white rounded-lg border border-slate-100 shadow-sm p-6">
-            <h3 className="text-[15px] font-semibold text-slate-900 mb-4">Quick Actions</h3>
+          <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-100 dark:border-zinc-800 shadow-sm p-6">
+            <h3 className="text-[15px] font-semibold text-slate-900 dark:text-zinc-100 mb-4">Quick Actions</h3>
             <div className="space-y-2">
               <Link to="/admin/clients/new" className="flex items-center gap-3 px-4 py-3 rounded-lg bg-indigo-50/50 border border-indigo-100/50 hover:bg-indigo-50 transition-all group">
                 <Sparkles size={15} className="text-indigo-500" />
                 <span className="text-sm font-medium text-indigo-700">Deploy New Client</span>
                 <ChevronRight size={14} className="text-indigo-300 ml-auto group-hover:text-indigo-500 transition-colors" />
               </Link>
-              <Link to="/admin/templates" className="flex items-center gap-3 px-4 py-3 rounded-lg bg-violet-50/50 border border-violet-100/50 hover:bg-violet-50 transition-all group">
+              <Link to="/admin/templates" className="flex items-center gap-3 px-4 py-3 rounded-lg bg-violet-50/50 border border-violet-100 dark:border-violet-800/50 hover:bg-violet-50 dark:hover:bg-violet-900/30 transition-all group">
                 <Zap size={15} className="text-violet-500" />
-                <span className="text-sm font-medium text-violet-700">Prompt Templates</span>
+                <span className="text-sm font-medium text-violet-700 dark:text-violet-400">Prompt Templates</span>
                 <ChevronRight size={14} className="text-violet-300 ml-auto group-hover:text-violet-500 transition-colors" />
               </Link>
-              <Link to="/admin/logs" className="flex items-center gap-3 px-4 py-3 rounded-lg bg-slate-50/50 border border-slate-100/50 hover:bg-slate-100/50 transition-all group">
-                <Activity size={15} className="text-slate-500" />
-                <span className="text-sm font-medium text-slate-700">System Logs</span>
-                <ChevronRight size={14} className="text-slate-300 ml-auto group-hover:text-slate-500 transition-colors" />
+              <Link to="/admin/logs" className="flex items-center gap-3 px-4 py-3 rounded-lg bg-slate-50/50 dark:bg-zinc-900/50 border border-slate-100/50 hover:bg-slate-100 dark:hover:bg-zinc-800/50 transition-all group">
+                <Activity size={15} className="text-slate-500 dark:text-zinc-500" />
+                <span className="text-sm font-medium text-slate-700 dark:text-zinc-300">System Logs</span>
+                <ChevronRight size={14} className="text-slate-300 dark:text-zinc-600 ml-auto group-hover:text-slate-500 dark:group-hover:text-zinc-500 transition-colors" />
               </Link>
-              <Link to="/admin/clients" className="flex items-center gap-3 px-4 py-3 rounded-lg bg-slate-50/50 border border-slate-100/50 hover:bg-slate-100/50 transition-all group">
-                <Building2 size={15} className="text-slate-500" />
-                <span className="text-sm font-medium text-slate-700">All Clients</span>
-                <ChevronRight size={14} className="text-slate-300 ml-auto group-hover:text-slate-500 transition-colors" />
+              <Link to="/admin/clients" className="flex items-center gap-3 px-4 py-3 rounded-lg bg-slate-50/50 dark:bg-zinc-900/50 border border-slate-100/50 hover:bg-slate-100 dark:hover:bg-zinc-800/50 transition-all group">
+                <Building2 size={15} className="text-slate-500 dark:text-zinc-500" />
+                <span className="text-sm font-medium text-slate-700 dark:text-zinc-300">All Clients</span>
+                <ChevronRight size={14} className="text-slate-300 dark:text-zinc-600 ml-auto group-hover:text-slate-500 dark:group-hover:text-zinc-500 transition-colors" />
               </Link>
             </div>
           </div>
@@ -520,7 +520,7 @@ function HeroStat({ icon: Icon, label, value, suffix, trend, color, clickable })
     violet: 'bg-violet-500/15 text-violet-300',
     emerald: 'bg-emerald-500/15 text-emerald-300',
     red: 'bg-red-500/15 text-red-300',
-    slate: 'bg-slate-500/15 text-slate-400',
+    slate: 'bg-slate-500/15 text-slate-400 dark:text-zinc-500',
   };
 
   return (

@@ -1,12 +1,22 @@
 const supabase = require('../services/supabase');
 const logger = require('../services/logger');
 
+// In-memory auth cache — avoids 2-3 DB calls per request
+// Key: JWT token, Value: { user, firm, expires }
+const authCache = new Map();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+// Clean expired entries every 10 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, val] of authCache) {
+    if (now > val.expires) authCache.delete(key);
+  }
+}, 10 * 60 * 1000);
+
 /**
  * Verify Supabase JWT and attach user + firm to request.
- *
- * After this middleware:
- *   req.user = { id, email, name, role, firm_id }
- *   req.firm = { id, name, industry, ... } or null (for super_admin)
+ * Uses in-memory cache to skip DB lookups on repeated requests.
  */
 async function authenticate(req, res, next) {
   const token = req.headers.authorization?.replace('Bearer ', '');
@@ -17,6 +27,14 @@ async function authenticate(req, res, next) {
 
   if (!supabase) {
     return res.status(500).json({ error: 'Database not configured' });
+  }
+
+  // Check cache first
+  const cached = authCache.get(token);
+  if (cached && Date.now() < cached.expires) {
+    req.user = cached.user;
+    req.firm = cached.firm;
+    return next();
   }
 
   try {
@@ -31,7 +49,7 @@ async function authenticate(req, res, next) {
       return res.status(401).json({ error: 'Invalid or expired token' });
     }
 
-    // Fetch user record with role and firm
+    // Fetch user + firm in parallel (was sequential — 2 calls now 1 round-trip)
     const { data: dbUser, error: userError } = await supabase
       .from('users')
       .select('id, email, name, role, firm_id')
@@ -46,16 +64,18 @@ async function authenticate(req, res, next) {
       return res.status(401).json({ error: 'User account not found' });
     }
 
-    // Fetch firm if user has one (super_admin has firm_id = null)
     let firm = null;
     if (dbUser.firm_id) {
       const { data: firmData } = await supabase
         .from('firms')
-        .select('*')
+        .select('id, name, industry, brand_color, business_hours, retell_agent_id, retell_phone_number, agent_name, crm_mode, crm_type, crm_webhook_url, status, retell_llm_id, calendar_mode, google_calendar_id')
         .eq('id', dbUser.firm_id)
         .single();
       firm = firmData;
     }
+
+    // Cache the result
+    authCache.set(token, { user: dbUser, firm, expires: Date.now() + CACHE_TTL });
 
     req.user = dbUser;
     req.firm = firm;

@@ -762,17 +762,17 @@ const SECTIONS = [
 ];
 
 const COLOR_MAP = {
-  violet: { bg: 'bg-violet-50', text: 'text-violet-600', border: 'border-violet-200', badge: 'bg-violet-100 text-violet-700', active: 'bg-violet-600 text-white' },
-  blue:   { bg: 'bg-blue-50',   text: 'text-blue-600',   border: 'border-blue-200',   badge: 'bg-blue-100 text-blue-700',   active: 'bg-blue-600 text-white' },
+  violet: { bg: 'bg-violet-50 dark:bg-violet-900/30', text: 'text-violet-600 dark:text-violet-400', border: 'border-violet-200 dark:border-violet-700', badge: 'bg-violet-100 text-violet-700 dark:text-violet-400', active: 'bg-violet-600 text-white' },
+  blue:   { bg: 'bg-blue-50 dark:bg-blue-900/30',   text: 'text-blue-600 dark:text-blue-400',   border: 'border-blue-200 dark:border-blue-700',   badge: 'bg-blue-100 text-blue-700 dark:text-blue-400',   active: 'bg-blue-600 text-white' },
   purple: { bg: 'bg-purple-50', text: 'text-purple-600', border: 'border-purple-200', badge: 'bg-purple-100 text-purple-700', active: 'bg-purple-600 text-white' },
-  emerald:{ bg: 'bg-emerald-50',text: 'text-emerald-600',border: 'border-emerald-200',badge: 'bg-emerald-100 text-emerald-700',active: 'bg-emerald-600 text-white' },
-  orange: { bg: 'bg-orange-50', text: 'text-orange-600', border: 'border-orange-200', badge: 'bg-orange-100 text-orange-700', active: 'bg-orange-600 text-white' },
+  emerald:{ bg: 'bg-emerald-50 dark:bg-emerald-900/30',text: 'text-emerald-600 dark:text-emerald-400',border: 'border-emerald-200 dark:border-emerald-700',badge: 'bg-emerald-100 text-emerald-700 dark:text-emerald-400',active: 'bg-emerald-600 text-white' },
+  orange: { bg: 'bg-orange-50 dark:bg-orange-900/30', text: 'text-orange-600', border: 'border-orange-200', badge: 'bg-orange-100 text-orange-700 dark:text-orange-400', active: 'bg-orange-600 text-white' },
   cyan:   { bg: 'bg-cyan-50',   text: 'text-cyan-600',   border: 'border-cyan-200',   badge: 'bg-cyan-100 text-cyan-700',   active: 'bg-cyan-600 text-white' },
-  slate:  { bg: 'bg-slate-50',  text: 'text-slate-600',  border: 'border-slate-200',  badge: 'bg-slate-100 text-slate-700', active: 'bg-slate-700 text-white' },
-  red:    { bg: 'bg-red-50',    text: 'text-red-600',    border: 'border-red-200',    badge: 'bg-red-100 text-red-700',    active: 'bg-red-600 text-white' },
+  slate:  { bg: 'bg-slate-50 dark:bg-zinc-900',  text: 'text-slate-600 dark:text-zinc-500',  border: 'border-slate-200 dark:border-zinc-700',  badge: 'bg-slate-100 dark:bg-zinc-800/50 text-slate-700 dark:text-zinc-300', active: 'bg-slate-700 text-white' },
+  red:    { bg: 'bg-red-50 dark:bg-red-900/30',    text: 'text-red-600 dark:text-red-400',    border: 'border-red-200 dark:border-red-700',    badge: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-400',    active: 'bg-red-600 text-white' },
   indigo: { bg: 'bg-indigo-50', text: 'text-indigo-600', border: 'border-indigo-200', badge: 'bg-indigo-100 text-indigo-700',active: 'bg-indigo-600 text-white' },
-  rose:   { bg: 'bg-rose-50',   text: 'text-rose-600',   border: 'border-rose-200',   badge: 'bg-rose-100 text-rose-700',  active: 'bg-rose-600 text-white' },
-  amber:  { bg: 'bg-amber-50',  text: 'text-amber-600',  border: 'border-amber-200',  badge: 'bg-amber-100 text-amber-700', active: 'bg-amber-600 text-white' },
+  rose:   { bg: 'bg-rose-50 dark:bg-rose-900/30',   text: 'text-rose-600',   border: 'border-rose-200 dark:border-rose-700',   badge: 'bg-rose-100 text-rose-700 dark:text-rose-400',  active: 'bg-rose-600 text-white' },
+  amber:  { bg: 'bg-amber-50 dark:bg-amber-900/30',  text: 'text-amber-600 dark:text-amber-400',  border: 'border-amber-200 dark:border-amber-700',  badge: 'bg-amber-100 text-amber-700 dark:text-amber-400', active: 'bg-amber-600 text-white' },
 };
 
 export default function Manual() {
@@ -802,11 +802,11 @@ export default function Manual() {
       <div className="mb-6">
         <div className="flex items-center gap-3 mb-1">
           <div className="w-9 h-9 bg-violet-100 rounded-xl flex items-center justify-center">
-            <BookOpen size={18} className="text-violet-600" />
+            <BookOpen size={18} className="text-violet-600 dark:text-violet-400" />
           </div>
-          <h1 className="text-xl font-semibold text-slate-900">Platform Manual</h1>
+          <h1 className="text-xl font-semibold text-slate-900 dark:text-zinc-100">Platform Manual</h1>
         </div>
-        <p className="text-sm text-slate-400 ml-12">Complete guide to VoibixAI — how everything works end to end</p>
+        <p className="text-sm text-slate-400 dark:text-zinc-500 ml-12">Complete guide to VoibixAI — how everything works end to end</p>
       </div>
 
       <div className="flex gap-6">
@@ -814,13 +814,13 @@ export default function Manual() {
         <div className="w-64 shrink-0 space-y-2">
           {/* Search */}
           <div className="relative mb-4">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-500" />
             <input
               type="text"
               placeholder="Search manual..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-2.5 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300"
+              className="w-full pl-9 pr-3 py-2.5 text-sm bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300"
             />
           </div>
 
@@ -836,7 +836,7 @@ export default function Manual() {
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all ${
                   isActive
                     ? `${colors.active} shadow-sm`
-                    : 'text-slate-600 hover:bg-slate-50'
+                    : 'text-slate-600 dark:text-zinc-500 hover:bg-slate-50 dark:hover:bg-zinc-900'
                 }`}
               >
                 <Icon size={16} className={isActive ? 'opacity-90' : colors.text} />
@@ -851,14 +851,14 @@ export default function Manual() {
           {search ? (
             /* Search results */
             <div className="space-y-4">
-              <p className="text-sm text-slate-500">{filteredSections.length} section{filteredSections.length !== 1 ? 's' : ''} match "{search}"</p>
+              <p className="text-sm text-slate-500 dark:text-zinc-500">{filteredSections.length} section{filteredSections.length !== 1 ? 's' : ''} match "{search}"</p>
               {filteredSections.map(section => (
                 <SectionCard key={section.id} section={section} highlight={search} expandedItems={expandedItems} toggleItem={toggleItem} />
               ))}
               {filteredSections.length === 0 && (
                 <div className="text-center py-16">
-                  <Search size={32} className="text-slate-300 mx-auto mb-3" />
-                  <p className="text-sm text-slate-400">No results for "{search}"</p>
+                  <Search size={32} className="text-slate-300 dark:text-zinc-600 mx-auto mb-3" />
+                  <p className="text-sm text-slate-400 dark:text-zinc-500">No results for "{search}"</p>
                 </div>
               )}
             </div>
@@ -879,22 +879,22 @@ function SectionCard({ section, highlight, expandedItems, toggleItem }) {
   const Icon = section.icon;
 
   return (
-    <div className="bg-white rounded-lg border border-slate-100 overflow-hidden">
+    <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-100 dark:border-zinc-800 overflow-hidden">
       {/* Section header */}
       <div className={`px-6 py-5 ${colors.bg} border-b ${colors.border}`}>
         <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm`}>
+          <div className={`w-10 h-10 bg-white dark:bg-zinc-900 rounded-xl flex items-center justify-center shadow-sm`}>
             <Icon size={20} className={colors.text} />
           </div>
           <div>
-            <h2 className="text-base font-semibold text-slate-900">{section.title}</h2>
-            <p className="text-sm text-slate-500">{section.subtitle}</p>
+            <h2 className="text-base font-semibold text-slate-900 dark:text-zinc-100">{section.title}</h2>
+            <p className="text-sm text-slate-500 dark:text-zinc-500">{section.subtitle}</p>
           </div>
         </div>
       </div>
 
       {/* Content blocks */}
-      <div className="divide-y divide-slate-50">
+      <div className="divide-y divide-slate-50 dark:divide-zinc-800/50">
         {section.content.map((block, idx) => {
           const key = `${section.id}-${idx}`;
           const isExpanded = expandedItems[key] !== false; // default open
@@ -905,19 +905,19 @@ function SectionCard({ section, highlight, expandedItems, toggleItem }) {
                 onClick={() => toggleItem(key)}
                 className="w-full flex items-center justify-between gap-3 text-left group mb-0"
               >
-                <h3 className="text-sm font-semibold text-slate-800 group-hover:text-violet-600 transition-colors">
+                <h3 className="text-sm font-semibold text-slate-800 dark:text-zinc-200 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
                   {block.heading}
                 </h3>
                 {isExpanded
-                  ? <ChevronDown size={15} className="text-slate-400 shrink-0" />
-                  : <ChevronRight size={15} className="text-slate-400 shrink-0" />
+                  ? <ChevronDown size={15} className="text-slate-400 dark:text-zinc-500 shrink-0" />
+                  : <ChevronRight size={15} className="text-slate-400 dark:text-zinc-500 shrink-0" />
                 }
               </button>
 
               {isExpanded && (
                 <div className="mt-3 space-y-3">
                   {block.body && (
-                    <p className="text-sm text-slate-600 leading-relaxed">{block.body}</p>
+                    <p className="text-sm text-slate-600 dark:text-zinc-500 leading-relaxed">{block.body}</p>
                   )}
 
                   {block.steps && (
@@ -927,29 +927,29 @@ function SectionCard({ section, highlight, expandedItems, toggleItem }) {
                           <span className={`shrink-0 w-5 h-5 rounded-full ${colors.badge} text-[11px] font-bold flex items-center justify-center mt-0.5`}>
                             {i + 1}
                           </span>
-                          <span className="text-sm text-slate-600 leading-relaxed">{step}</span>
+                          <span className="text-sm text-slate-600 dark:text-zinc-500 leading-relaxed">{step}</span>
                         </li>
                       ))}
                     </ol>
                   )}
 
                   {block.table && (
-                    <div className="overflow-x-auto rounded-xl border border-slate-100">
+                    <div className="overflow-x-auto rounded-xl border border-slate-100 dark:border-zinc-800">
                       <table className="w-full text-sm">
                         <thead>
-                          <tr className="bg-slate-50">
+                          <tr className="bg-slate-50 dark:bg-zinc-900">
                             {block.table.headers.map((h, i) => (
-                              <th key={i} className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                              <th key={i} className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500 dark:text-zinc-500 uppercase tracking-wide">
                                 {h}
                               </th>
                             ))}
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-50">
+                        <tbody className="divide-y divide-slate-50 dark:divide-zinc-800/50">
                           {block.table.rows.map((row, i) => (
-                            <tr key={i} className="hover:bg-slate-50/50 transition-colors">
+                            <tr key={i} className="hover:bg-slate-50 dark:hover:bg-zinc-800/50 transition-colors">
                               {row.map((cell, j) => (
-                                <td key={j} className={`px-4 py-3 text-slate-600 ${j === 0 ? 'font-medium text-slate-800' : ''}`}>
+                                <td key={j} className={`px-4 py-3 text-slate-600 dark:text-zinc-500 ${j === 0 ? 'font-medium text-slate-800 dark:text-zinc-200' : ''}`}>
                                   {cell}
                                 </td>
                               ))}

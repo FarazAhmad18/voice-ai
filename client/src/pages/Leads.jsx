@@ -19,9 +19,9 @@ const PIPELINE = [
 
 const SCORE_FILTERS = [
   { key: 'all_scores', label: 'All', icon: null },
-  { key: 'hot', label: 'Hot', color: 'text-red-600 bg-red-50' },
-  { key: 'warm', label: 'Warm', color: 'text-amber-600 bg-amber-50' },
-  { key: 'cold', label: 'Cold', color: 'text-slate-500 bg-slate-50' },
+  { key: 'hot', label: 'Hot', color: 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30' },
+  { key: 'warm', label: 'Warm', color: 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30' },
+  { key: 'cold', label: 'Cold', color: 'text-slate-500 dark:text-zinc-500 bg-slate-50 dark:bg-zinc-900' },
 ];
 
 function filterByDate(leads, dateRange) {
@@ -99,7 +99,7 @@ function LeadCardView({ lead }) {
   return (
     <Link
       to={`/leads/${lead.id}`}
-      className="group relative bg-white rounded-lg border border-slate-100 p-5 hover:shadow-lg hover:shadow-slate-200/50 hover:-translate-y-0.5 transition-all duration-200"
+      className="group relative bg-white dark:bg-zinc-900 rounded-lg border border-slate-100 dark:border-zinc-800 p-5 hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-black/30 hover:-translate-y-0.5 transition-all duration-200"
     >
       {lead.urgency === 'high' && (
         <div className="absolute top-4 right-4">
@@ -114,28 +114,28 @@ function LeadCardView({ lead }) {
           {initials}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-slate-900 truncate group-hover:text-violet-600 transition-colors">{lead.caller_name}</p>
-          <p className="text-xs text-slate-400 mt-0.5 truncate">{lead.caller_phone}</p>
+          <p className="text-sm font-semibold text-slate-900 dark:text-zinc-100 truncate group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">{lead.caller_name}</p>
+          <p className="text-xs text-slate-400 dark:text-zinc-500 mt-0.5 truncate">{lead.caller_phone}</p>
         </div>
       </div>
       <div className="mt-4 flex items-center gap-2 flex-wrap">
         <ScoreBadge score={lead.score} label={lead.score_label} />
         <StatusBadge status={lead.status} />
       </div>
-      <div className="mt-3 pt-3 border-t border-slate-50 flex items-center justify-between">
-        <span className="text-[11px] text-slate-400 capitalize">{lead.case_type?.replace(/_/g, ' ')}</span>
-        <span className="text-[11px] text-slate-300">{formatRelativeTime(lead.created_at)}</span>
+      <div className="mt-3 pt-3 border-t border-slate-50 dark:border-zinc-800/50 flex items-center justify-between">
+        <span className="text-[11px] text-slate-400 dark:text-zinc-500 capitalize">{lead.case_type?.replace(/_/g, ' ')}</span>
+        <span className="text-[11px] text-slate-300 dark:text-zinc-600">{formatRelativeTime(lead.created_at)}</span>
       </div>
     </Link>
   );
 }
 
 const KANBAN_STAGES = [
-  { key: 'new', label: 'New', color: 'emerald', bg: 'bg-emerald-50', border: 'border-emerald-200', badge: 'bg-emerald-500' },
-  { key: 'contacted', label: 'Contacted', color: 'blue', bg: 'bg-blue-50', border: 'border-blue-200', badge: 'bg-blue-500' },
-  { key: 'booked', label: 'Booked', color: 'violet', bg: 'bg-violet-50', border: 'border-violet-200', badge: 'bg-violet-500' },
-  { key: 'converted', label: 'Converted', color: 'teal', bg: 'bg-teal-50', border: 'border-teal-200', badge: 'bg-teal-500' },
-  { key: 'closed', label: 'Closed', color: 'slate', bg: 'bg-slate-50', border: 'border-slate-200', badge: 'bg-slate-400' },
+  { key: 'new', label: 'New', color: 'emerald', bg: 'bg-emerald-50 dark:bg-emerald-900/30', border: 'border-emerald-200 dark:border-emerald-700', badge: 'bg-emerald-500' },
+  { key: 'contacted', label: 'Contacted', color: 'blue', bg: 'bg-blue-50 dark:bg-blue-900/30', border: 'border-blue-200 dark:border-blue-700', badge: 'bg-blue-500' },
+  { key: 'booked', label: 'Booked', color: 'violet', bg: 'bg-violet-50 dark:bg-violet-900/30', border: 'border-violet-200 dark:border-violet-700', badge: 'bg-violet-500' },
+  { key: 'converted', label: 'Converted', color: 'teal', bg: 'bg-teal-50 dark:bg-teal-900/30', border: 'border-teal-200 dark:border-teal-700', badge: 'bg-teal-500' },
+  { key: 'closed', label: 'Closed', color: 'slate', bg: 'bg-slate-50 dark:bg-zinc-900', border: 'border-slate-200 dark:border-zinc-700', badge: 'bg-slate-400' },
 ];
 
 function KanbanView({ leads, onStatusChange }) {
@@ -176,7 +176,7 @@ function KanbanView({ leads, onStatusChange }) {
           <div
             key={stage.key}
             className={`flex-shrink-0 w-72 flex flex-col rounded-xl border-2 transition-all duration-200 ${
-              isDragOver ? `${stage.border} ${stage.bg} scale-[1.01]` : 'border-slate-100 bg-slate-50/50'
+              isDragOver ? `${stage.border} ${stage.bg} scale-[1.01]` : 'border-slate-100 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900/50'
             }`}
             onDragOver={(e) => handleDragOver(e, stage.key)}
             onDragLeave={handleDragLeave}
@@ -186,16 +186,16 @@ function KanbanView({ leads, onStatusChange }) {
             <div className="px-4 py-3 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className={`w-2.5 h-2.5 rounded-full ${stage.badge}`} />
-                <span className="text-sm font-semibold text-slate-700">{stage.label}</span>
+                <span className="text-sm font-semibold text-slate-700 dark:text-zinc-300">{stage.label}</span>
               </div>
-              <span className="text-xs font-bold text-slate-400 bg-white px-2 py-0.5 rounded-full">{stageLeads.length}</span>
+              <span className="text-xs font-bold text-slate-400 dark:text-zinc-500 bg-white dark:bg-zinc-900 px-2 py-0.5 rounded-full">{stageLeads.length}</span>
             </div>
 
             {/* Cards */}
             <div className="flex-1 px-2 pb-2 space-y-2 overflow-y-auto max-h-[600px]">
               {stageLeads.length === 0 ? (
-                <div className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${isDragOver ? stage.border : 'border-slate-200'}`}>
-                  <p className="text-xs text-slate-300">Drop here</p>
+                <div className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${isDragOver ? stage.border : 'border-slate-200 dark:border-zinc-700'}`}>
+                  <p className="text-xs text-slate-300 dark:text-zinc-600">Drop here</p>
                 </div>
               ) : (
                 stageLeads.map(lead => {
@@ -208,7 +208,7 @@ function KanbanView({ leads, onStatusChange }) {
                       draggable
                       onDragStart={(e) => handleDragStart(e, lead)}
                       onDragEnd={() => { setDraggedLead(null); setDragOverStage(null); }}
-                      className={`group bg-white rounded-lg border border-slate-100 p-3.5 cursor-grab active:cursor-grabbing hover:shadow-md hover:border-slate-200 transition-all ${isDragging ? 'opacity-40 scale-95' : ''}`}
+                      className={`group bg-white dark:bg-zinc-900 rounded-lg border border-slate-100 dark:border-zinc-800 p-3.5 cursor-grab active:cursor-grabbing hover:shadow-md hover:border-slate-200 dark:hover:border-zinc-700 transition-all ${isDragging ? 'opacity-40 scale-95' : ''}`}
                     >
                       <Link to={`/leads/${lead.id}`} className="block" onClick={(e) => { if (isDragging) e.preventDefault(); }}>
                         <div className="flex items-center gap-3">
@@ -216,8 +216,8 @@ function KanbanView({ leads, onStatusChange }) {
                             {initials}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-slate-800 truncate group-hover:text-violet-600 transition-colors">{lead.caller_name}</p>
-                            <p className="text-[11px] text-slate-400 truncate">{lead.case_type?.replace(/_/g, ' ')} · {formatRelativeTime(lead.created_at)}</p>
+                            <p className="text-sm font-semibold text-slate-800 dark:text-zinc-200 truncate group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">{lead.caller_name}</p>
+                            <p className="text-[11px] text-slate-400 dark:text-zinc-500 truncate">{lead.case_type?.replace(/_/g, ' ')} · {formatRelativeTime(lead.created_at)}</p>
                           </div>
                           {lead.urgency === 'high' && (
                             <span className="relative flex h-2 w-2 flex-shrink-0">
@@ -228,22 +228,22 @@ function KanbanView({ leads, onStatusChange }) {
                         </div>
                         <div className="mt-2.5 flex items-center gap-2">
                           <ScoreBadge score={lead.score} label={lead.score_label} />
-                          {lead.caller_phone && <span className="text-[10px] text-slate-300 truncate">{lead.caller_phone}</span>}
+                          {lead.caller_phone && <span className="text-[10px] text-slate-300 dark:text-zinc-600 truncate">{lead.caller_phone}</span>}
                         </div>
                       </Link>
                       {/* Quick Actions */}
-                      <div className="mt-2 pt-2 border-t border-slate-50 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="mt-2 pt-2 border-t border-slate-50 dark:border-zinc-800/50 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         {lead.caller_phone && (
-                          <a href={`tel:${lead.caller_phone}`} className="p-1.5 rounded-md hover:bg-emerald-50 text-slate-300 hover:text-emerald-600 transition-colors" title="Call" onClick={(e) => e.stopPropagation()}>
+                          <a href={`tel:${lead.caller_phone}`} className="p-1.5 rounded-md hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-slate-300 dark:text-zinc-600 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors" title="Call" onClick={(e) => e.stopPropagation()}>
                             <Phone size={13} />
                           </a>
                         )}
                         {lead.caller_email && (
-                          <a href={`mailto:${lead.caller_email}`} className="p-1.5 rounded-md hover:bg-blue-50 text-slate-300 hover:text-blue-600 transition-colors" title="Email" onClick={(e) => e.stopPropagation()}>
+                          <a href={`mailto:${lead.caller_email}`} className="p-1.5 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/30 text-slate-300 dark:text-zinc-600 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" title="Email" onClick={(e) => e.stopPropagation()}>
                             <Mail size={13} />
                           </a>
                         )}
-                        <Link to={`/leads/${lead.id}`} className="p-1.5 rounded-md hover:bg-violet-50 text-slate-300 hover:text-violet-600 transition-colors" title="View details">
+                        <Link to={`/leads/${lead.id}`} className="p-1.5 rounded-md hover:bg-violet-50 dark:hover:bg-violet-900/30 text-slate-300 dark:text-zinc-600 hover:text-violet-600 dark:hover:text-violet-400 transition-colors" title="View details">
                           <StickyNote size={13} />
                         </Link>
                       </div>
@@ -380,37 +380,37 @@ export default function Leads() {
         {/* Skeleton header */}
         <div className="flex items-end justify-between">
           <div>
-            <div className="h-8 w-32 bg-slate-100 rounded-lg animate-pulse" />
+            <div className="h-8 w-32 bg-slate-100 dark:bg-zinc-800/50 rounded-lg animate-pulse" />
             <div className="flex gap-3 mt-3">
-              <div className="h-8 w-24 bg-slate-50 rounded-full animate-pulse" />
-              <div className="h-8 w-20 bg-slate-50 rounded-full animate-pulse" />
-              <div className="h-8 w-28 bg-slate-50 rounded-full animate-pulse" />
+              <div className="h-8 w-24 bg-slate-50 dark:bg-zinc-900 rounded-full animate-pulse" />
+              <div className="h-8 w-20 bg-slate-50 dark:bg-zinc-900 rounded-full animate-pulse" />
+              <div className="h-8 w-28 bg-slate-50 dark:bg-zinc-900 rounded-full animate-pulse" />
             </div>
           </div>
           <div className="flex gap-2">
-            <div className="h-10 w-28 bg-slate-50 rounded-lg animate-pulse" />
+            <div className="h-10 w-28 bg-slate-50 dark:bg-zinc-900 rounded-lg animate-pulse" />
           </div>
         </div>
         {/* Skeleton filter bar */}
-        <div className="bg-white rounded-lg border border-slate-100 p-5">
-          <div className="h-10 bg-slate-50 rounded-lg animate-pulse mb-3" />
+        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-100 dark:border-zinc-800 p-5">
+          <div className="h-10 bg-slate-50 dark:bg-zinc-900 rounded-lg animate-pulse mb-3" />
           <div className="flex gap-2">
             {[1,2,3,4,5].map(i => (
-              <div key={i} className="h-8 w-16 bg-slate-50 rounded-lg animate-pulse" />
+              <div key={i} className="h-8 w-16 bg-slate-50 dark:bg-zinc-900 rounded-lg animate-pulse" />
             ))}
           </div>
         </div>
         {/* Skeleton rows */}
-        <div className="bg-white rounded-lg border border-slate-100 overflow-hidden">
+        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-100 dark:border-zinc-800 overflow-hidden">
           {[1,2,3,4,5,6].map(i => (
-            <div key={i} className="flex items-center gap-4 px-5 py-4 border-b border-slate-50">
-              <div className="w-10 h-10 bg-slate-100 rounded-lg animate-pulse" />
+            <div key={i} className="flex items-center gap-4 px-5 py-4 border-b border-slate-50 dark:border-zinc-800/50">
+              <div className="w-10 h-10 bg-slate-100 dark:bg-zinc-800/50 rounded-lg animate-pulse" />
               <div className="flex-1">
-                <div className="h-4 w-32 bg-slate-100 rounded animate-pulse" />
-                <div className="h-3 w-24 bg-slate-50 rounded animate-pulse mt-2" />
+                <div className="h-4 w-32 bg-slate-100 dark:bg-zinc-800/50 rounded animate-pulse" />
+                <div className="h-3 w-24 bg-slate-50 dark:bg-zinc-900 rounded animate-pulse mt-2" />
               </div>
-              <div className="h-6 w-16 bg-slate-50 rounded-lg animate-pulse" />
-              <div className="h-6 w-16 bg-slate-50 rounded-lg animate-pulse" />
+              <div className="h-6 w-16 bg-slate-50 dark:bg-zinc-900 rounded-lg animate-pulse" />
+              <div className="h-6 w-16 bg-slate-50 dark:bg-zinc-900 rounded-lg animate-pulse" />
             </div>
           ))}
         </div>
@@ -421,17 +421,17 @@ export default function Leads() {
   return (
     <div className="space-y-6">
       {error && (
-        <div className="bg-red-50/80 backdrop-blur-sm border border-red-100 rounded-lg px-5 py-4 flex items-center justify-between">
+        <div className="bg-red-50/80 dark:bg-red-900/30 backdrop-blur-sm border border-red-100 dark:border-red-800 rounded-lg px-5 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
+            <div className="w-9 h-9 bg-red-100 dark:bg-red-900/40 rounded-lg flex items-center justify-center flex-shrink-0">
               <AlertCircle size={16} className="text-red-500" />
             </div>
             <div>
-              <p className="text-sm font-medium text-red-800">Failed to load leads</p>
-              <p className="text-xs text-red-600 mt-0.5">{error}</p>
+              <p className="text-sm font-medium text-red-800 dark:text-red-300">Failed to load leads</p>
+              <p className="text-xs text-red-600 dark:text-red-400 mt-0.5">{error}</p>
             </div>
           </div>
-          <button onClick={loadLeads} className="px-4 py-2 text-xs font-semibold text-red-600 bg-red-100 hover:bg-red-200 rounded-lg transition-colors">
+          <button onClick={loadLeads} className="px-4 py-2 text-xs font-semibold text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/40 hover:bg-red-200 rounded-lg transition-colors">
             Retry
           </button>
         </div>
@@ -440,26 +440,26 @@ export default function Leads() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Leads</h1>
+          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-zinc-100 tracking-tight">Leads</h1>
           <div className="flex items-center gap-2.5 mt-3 flex-wrap">
-            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 bg-slate-50 border border-slate-100 px-3 py-1.5 rounded-full">
+            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-zinc-500 bg-slate-50 dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 px-3 py-1.5 rounded-full">
               <Users size={12} />
               {visibleLeads.length} total
             </span>
             {hotCount > 0 && (
-              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-600 bg-red-50 border border-red-100 px-3 py-1.5 rounded-full">
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 border border-red-100 dark:border-red-800 px-3 py-1.5 rounded-full">
                 <Flame size={12} />
                 {hotCount} hot
               </span>
             )}
             {warmCount > 0 && (
-              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-600 bg-amber-50 border border-amber-100 px-3 py-1.5 rounded-full">
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 border border-amber-100 dark:border-amber-800 px-3 py-1.5 rounded-full">
                 <TrendingUp size={12} />
                 {warmCount} warm
               </span>
             )}
             {todayCount > 0 && (
-              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-violet-600 bg-violet-50 border border-violet-100 px-3 py-1.5 rounded-full">
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30 border border-violet-100 dark:border-violet-800 px-3 py-1.5 rounded-full">
                 <Zap size={12} />
                 {todayCount} today
               </span>
@@ -470,7 +470,7 @@ export default function Leads() {
           {followUpCount > 0 && (
             <Link
               to="/follow-ups"
-              className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-amber-700 bg-amber-50 border border-amber-200/60 rounded-lg hover:bg-amber-100 transition-all shadow-sm"
+              className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700/60 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-all shadow-sm"
             >
               <Clock size={14} />
               {followUpCount} Follow Up{followUpCount !== 1 ? 's' : ''}
@@ -478,24 +478,24 @@ export default function Leads() {
             </Link>
           )}
           {/* View toggle */}
-          <div className="flex items-center bg-slate-100 rounded-lg p-0.5">
+          <div className="flex items-center bg-slate-100 dark:bg-zinc-800/50 rounded-lg p-0.5">
             <button
               onClick={() => setViewMode('table')}
-              className={`p-2 rounded-md transition-all ${viewMode === 'table' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-400 hover:text-slate-600'}`}
+              className={`p-2 rounded-md transition-all ${viewMode === 'table' ? 'bg-white dark:bg-zinc-800 shadow-sm text-slate-900 dark:text-zinc-100' : 'text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-400'}`}
               title="Table view"
             >
               <LayoutList size={15} />
             </button>
             <button
               onClick={() => setViewMode('card')}
-              className={`p-2 rounded-md transition-all ${viewMode === 'card' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-400 hover:text-slate-600'}`}
+              className={`p-2 rounded-md transition-all ${viewMode === 'card' ? 'bg-white dark:bg-zinc-800 shadow-sm text-slate-900 dark:text-zinc-100' : 'text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-400'}`}
               title="Card view"
             >
               <LayoutGrid size={15} />
             </button>
             <button
               onClick={() => setViewMode('kanban')}
-              className={`p-2 rounded-md transition-all ${viewMode === 'kanban' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-400 hover:text-slate-600'}`}
+              className={`p-2 rounded-md transition-all ${viewMode === 'kanban' ? 'bg-white dark:bg-zinc-800 shadow-sm text-slate-900 dark:text-zinc-100' : 'text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-400'}`}
               title="Kanban board"
             >
               <Columns3 size={15} />
@@ -503,7 +503,7 @@ export default function Leads() {
           </div>
           <button
             onClick={() => exportToCSV(filtered)}
-            className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm"
+            className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-600 dark:text-zinc-500 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-lg hover:bg-slate-50 dark:hover:bg-zinc-900 hover:border-slate-300 dark:hover:border-zinc-600 transition-all shadow-sm"
           >
             <Download size={15} />
             Export
@@ -512,16 +512,16 @@ export default function Leads() {
       </div>
 
       {/* Filters Bar — Glass morphism */}
-      <div className="bg-white/80 backdrop-blur-xl rounded-lg border border-slate-200/60 shadow-sm shadow-slate-100/50 p-5 space-y-4">
+      <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-lg border border-slate-200/60 dark:border-zinc-700 shadow-sm shadow-slate-100/50 dark:shadow-black/30 p-5 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
           <div className="relative flex-1 max-w-md group">
-            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-violet-400 transition-colors" />
+            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 dark:text-zinc-600 group-focus-within:text-violet-400 transition-colors" />
             <input
               type="text"
               placeholder="Search by name or phone..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 text-sm bg-slate-50/80 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white placeholder:text-slate-300 transition-all"
+              className="w-full pl-11 pr-4 py-3 text-sm bg-slate-50/80 dark:bg-zinc-900/80 border border-slate-100 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 focus:bg-white dark:focus:bg-zinc-900 placeholder:text-slate-300 dark:placeholder:text-zinc-600 transition-all"
             />
           </div>
           <DateFilter value={dateRange} onChange={setDateRange} />
@@ -529,10 +529,10 @@ export default function Leads() {
 
         <div className="flex items-center justify-between gap-3 flex-wrap overflow-x-auto">
           {/* Pipeline tabs with slide indicator */}
-          <div ref={pipelineRef} className="relative flex items-center gap-0.5 bg-slate-50 rounded-lg p-1">
+          <div ref={pipelineRef} className="relative flex items-center gap-0.5 bg-slate-50 dark:bg-zinc-900 rounded-lg p-1">
             {/* Sliding active indicator */}
             <div
-              className="absolute top-1 left-1 h-[calc(100%-8px)] bg-white rounded-lg shadow-sm transition-all duration-300 ease-out"
+              className="absolute top-1 left-1 h-[calc(100%-8px)] bg-white dark:bg-zinc-800 rounded-lg shadow-sm transition-all duration-300 ease-out"
               style={sliderStyle}
             />
             {PIPELINE.map((p) => {
@@ -545,12 +545,12 @@ export default function Leads() {
                   onClick={() => setPipeline(p.key)}
                   className={`relative z-10 px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 ${
                     isActive
-                      ? 'text-slate-900'
-                      : 'text-slate-400 hover:text-slate-600'
+                      ? 'text-slate-900 dark:text-zinc-100'
+                      : 'text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-400'
                   }`}
                 >
                   {p.label}
-                  <span className={`text-[10px] font-medium tabular-nums ${isActive ? 'text-violet-500' : 'text-slate-300'}`}>
+                  <span className={`text-[10px] font-medium tabular-nums ${isActive ? 'text-violet-500' : 'text-slate-300 dark:text-zinc-600'}`}>
                     {count}
                   </span>
                 </button>
@@ -570,33 +570,33 @@ export default function Leads() {
                     : f.key === 'warm' ? 'bg-amber-500 text-white shadow-sm shadow-amber-400/20'
                     : f.key === 'cold' ? 'bg-slate-800 text-white shadow-sm'
                     : 'bg-slate-900 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
+                    : 'text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-900'
                 }`}
               >
                 {f.label}
               </button>
             ))}
-            <div className="ml-3 h-4 w-px bg-slate-200" />
-            <span className="ml-2 text-xs font-medium text-slate-400 tabular-nums">{filtered.length} result{filtered.length !== 1 ? 's' : ''}</span>
+            <div className="ml-3 h-4 w-px bg-slate-200 dark:bg-zinc-700" />
+            <span className="ml-2 text-xs font-medium text-slate-400 dark:text-zinc-500 tabular-nums">{filtered.length} result{filtered.length !== 1 ? 's' : ''}</span>
           </div>
         </div>
       </div>
 
       {/* Content */}
       {filtered.length === 0 ? (
-        <div className="bg-white rounded-lg border border-slate-100 shadow-sm py-20 text-center">
+        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-100 dark:border-zinc-800 shadow-sm py-20 text-center">
           <div className="relative mx-auto w-20 h-20 mb-6">
-            <div className="absolute inset-0 bg-slate-100 rounded-3xl rotate-6 animate-pulse" />
-            <div className="relative w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center">
-              <PhoneIncoming size={28} className="text-slate-300" />
+            <div className="absolute inset-0 bg-slate-100 dark:bg-zinc-800/50 rounded-3xl rotate-6 animate-pulse" />
+            <div className="relative w-20 h-20 bg-slate-50 dark:bg-zinc-900 rounded-3xl flex items-center justify-center">
+              <PhoneIncoming size={28} className="text-slate-300 dark:text-zinc-600" />
             </div>
           </div>
-          <p className="text-base font-semibold text-slate-700">No leads found</p>
-          <p className="text-sm text-slate-400 mt-2 max-w-xs mx-auto">Try adjusting your filters or wait for new calls to come in</p>
+          <p className="text-base font-semibold text-slate-700 dark:text-zinc-300">No leads found</p>
+          <p className="text-sm text-slate-400 dark:text-zinc-500 mt-2 max-w-xs mx-auto">Try adjusting your filters or wait for new calls to come in</p>
           {(pipeline !== 'all' || scoreFilter !== 'all_scores' || search) && (
             <button
               onClick={() => { setPipeline('all'); setScoreFilter('all_scores'); setSearchInput(''); setSearch(''); setDateRange('all'); }}
-              className="mt-5 px-5 py-2.5 text-sm font-medium text-violet-600 bg-violet-50 hover:bg-violet-100 rounded-lg transition-colors"
+              className="mt-5 px-5 py-2.5 text-sm font-medium text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30 hover:bg-violet-100 dark:hover:bg-violet-900/40 rounded-lg transition-colors"
             >
               Clear all filters
             </button>
@@ -627,17 +627,17 @@ export default function Leads() {
         </div>
       ) : (
         /* Table View */
-        <div className="bg-white rounded-lg border border-slate-100 shadow-sm shadow-slate-100/50 overflow-hidden">
+        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-slate-100 dark:border-zinc-800 shadow-sm shadow-slate-100/50 dark:shadow-black/30 overflow-hidden">
           <table className="w-full">
             <thead>
-              <tr className="bg-slate-50/80 border-b border-slate-100">
-                <th className="text-left px-5 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-400">Client</th>
-                <th className="text-left px-5 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-400 hidden sm:table-cell">Phone</th>
-                <th className="text-left px-5 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-400 hidden md:table-cell">Case</th>
-                <th className="text-left px-5 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-400">Score</th>
-                <th className="text-left px-5 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-400 hidden sm:table-cell">Status</th>
-                <th className="text-left px-5 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-400 hidden lg:table-cell">Assigned</th>
-                <th className="text-left px-5 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-400 hidden lg:table-cell">Created</th>
+              <tr className="bg-slate-50/80 dark:bg-zinc-900/80 border-b border-slate-100 dark:border-zinc-800">
+                <th className="text-left px-5 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">Client</th>
+                <th className="text-left px-5 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 hidden sm:table-cell">Phone</th>
+                <th className="text-left px-5 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 hidden md:table-cell">Case</th>
+                <th className="text-left px-5 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">Score</th>
+                <th className="text-left px-5 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 hidden sm:table-cell">Status</th>
+                <th className="text-left px-5 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 hidden lg:table-cell">Assigned</th>
+                <th className="text-left px-5 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 hidden lg:table-cell">Created</th>
                 <th className="w-10"></th>
               </tr>
             </thead>
@@ -648,7 +648,7 @@ export default function Leads() {
                 return (
                   <tr
                     key={lead.id}
-                    className="group hover:bg-slate-50/80 hover:shadow-[0_1px_8px_-2px_rgba(0,0,0,0.06)] transition-all duration-200 bg-white border-b border-slate-50"
+                    className="group hover:bg-slate-50 dark:hover:bg-zinc-800/80 hover:shadow-[0_1px_8px_-2px_rgba(0,0,0,0.06)] transition-all duration-200 bg-white dark:bg-zinc-900 border-b border-slate-50 dark:border-zinc-800/50"
                   >
                     <td className="px-5 py-2.5">
                       <Link to={`/leads/${lead.id}`} className="flex items-center gap-3">
@@ -660,13 +660,13 @@ export default function Leads() {
                             <div className="absolute -top-0.5 -right-0.5">
                               <span className="relative flex h-2.5 w-2.5">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
-                                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500 border-2 border-white" />
+                                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500 border-2 border-white dark:border-zinc-900" />
                               </span>
                             </div>
                           )}
                         </div>
                         <div>
-                          <span className="text-sm font-semibold text-slate-800 group-hover:text-violet-600 transition-colors">{lead.caller_name}</span>
+                          <span className="text-sm font-semibold text-slate-800 dark:text-zinc-200 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">{lead.caller_name}</span>
                           {lead.urgency === 'high' && (
                             <span className="ml-2 inline-flex items-center gap-1">
                               <span className="relative flex h-1.5 w-1.5">
@@ -680,7 +680,7 @@ export default function Leads() {
                             <p className={`text-[10px] mt-0.5 flex items-center gap-1 ${
                               new Date(lead.follow_up_date) < new Date(new Date().toDateString())
                                 ? 'text-red-500 font-medium'
-                                : 'text-slate-400'
+                                : 'text-slate-400 dark:text-zinc-500'
                             }`}>
                               <Clock size={9} />
                               {new Date(lead.follow_up_date) < new Date(new Date().toDateString()) ? 'Overdue: ' : 'Follow-up: '}
@@ -690,10 +690,10 @@ export default function Leads() {
                         </div>
                       </Link>
                     </td>
-                    <td className="px-5 py-2.5 text-sm text-slate-500 font-mono text-[13px] hidden sm:table-cell">{lead.caller_phone}</td>
+                    <td className="px-5 py-2.5 text-sm text-slate-500 dark:text-zinc-500 font-mono text-[13px] hidden sm:table-cell">{lead.caller_phone}</td>
                     <td className="px-5 py-2.5 hidden md:table-cell">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-medium text-slate-600 bg-slate-50 px-2.5 py-1 rounded-md capitalize">{lead.case_type?.replace(/_/g, ' ')}</span>
+                        <span className="text-xs font-medium text-slate-600 dark:text-zinc-500 bg-slate-50 dark:bg-zinc-900 px-2.5 py-1 rounded-md capitalize">{lead.case_type?.replace(/_/g, ' ')}</span>
                         {lead.urgency === 'high' && <span className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" title="High urgency" />}
                         {lead.urgency === 'medium' && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" title="Medium urgency" />}
                       </div>
@@ -704,26 +704,26 @@ export default function Leads() {
                       {lead.assigned_staff_id && staffMap[lead.assigned_staff_id] ? (
                         <div className="flex items-center gap-2">
                           <span className={`w-2 h-2 rounded-full flex-shrink-0 ${getStaffColor(lead.assigned_staff_id).dot}`} />
-                          <span className="text-xs font-medium text-slate-600 truncate max-w-[120px]">{staffMap[lead.assigned_staff_id].name}</span>
+                          <span className="text-xs font-medium text-slate-600 dark:text-zinc-500 truncate max-w-[120px]">{staffMap[lead.assigned_staff_id].name}</span>
                         </div>
                       ) : (
-                        <span className="text-xs text-slate-300">&mdash;</span>
+                        <span className="text-xs text-slate-300 dark:text-zinc-600">&mdash;</span>
                       )}
                     </td>
-                    <td className="px-5 py-2.5 text-xs font-medium text-slate-400 hidden lg:table-cell">{formatRelativeTime(lead.created_at)}</td>
+                    <td className="px-5 py-2.5 text-xs font-medium text-slate-400 dark:text-zinc-500 hidden lg:table-cell">{formatRelativeTime(lead.created_at)}</td>
                     <td className="px-3 py-2.5">
                       <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                         {lead.caller_phone && (
-                          <a href={`tel:${lead.caller_phone}`} className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-emerald-50 text-slate-300 hover:text-emerald-600 transition-colors" title="Call">
+                          <a href={`tel:${lead.caller_phone}`} className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-slate-300 dark:text-zinc-600 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors" title="Call">
                             <Phone size={14} />
                           </a>
                         )}
                         {lead.caller_email && (
-                          <a href={`mailto:${lead.caller_email}`} className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-blue-50 text-slate-300 hover:text-blue-600 transition-colors" title="Email">
+                          <a href={`mailto:${lead.caller_email}`} className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-blue-50 dark:hover:bg-blue-900/30 text-slate-300 dark:text-zinc-600 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" title="Email">
                             <Mail size={14} />
                           </a>
                         )}
-                        <Link to={`/leads/${lead.id}`} className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-violet-50 text-slate-300 hover:text-violet-600 transition-colors" title="View">
+                        <Link to={`/leads/${lead.id}`} className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-violet-50 dark:hover:bg-violet-900/30 text-slate-300 dark:text-zinc-600 hover:text-violet-600 dark:hover:text-violet-400 transition-colors" title="View">
                           <ChevronRight size={14} />
                         </Link>
                       </div>

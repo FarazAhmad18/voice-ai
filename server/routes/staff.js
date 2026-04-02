@@ -7,6 +7,7 @@ const { reRenderFirmPrompt } = require('../services/promptRenderer');
 const { updateFirmAgent } = require('../controllers/agentController');
 const logger = require('../services/logger');
 const { sanitizeText } = require('../utils/sanitize');
+const dataCache = require('../services/dataCache');
 
 // All staff routes require authentication
 router.use(authenticate);
@@ -15,6 +16,10 @@ router.use(authenticate);
 router.get('/', async (req, res) => {
   const start = Date.now();
   if (!supabase || !req.firm) return res.json([]);
+
+  // Check cache — staff rarely changes (5 min TTL)
+  const cached = dataCache.get('staff', req.firm.id);
+  if (cached) return res.json(cached);
 
   const { data, error } = await supabase
     .from('staff')
@@ -37,6 +42,9 @@ router.get('/', async (req, res) => {
     durationMs: Date.now() - start,
     source: 'routes.staff.getAll',
   });
+
+  // Cache the result
+  dataCache.set('staff', req.firm.id, data);
 
   res.json(data);
 });
@@ -89,6 +97,7 @@ router.post('/', requireRole('admin', 'super_admin'), async (req, res) => {
   // Re-render prompt + update agent
   await reRenderAndSync(req.firm.id);
 
+  dataCache.invalidate('staff', req.firm.id);
   res.status(201).json(data);
 });
 
@@ -139,6 +148,7 @@ router.patch('/:id', requireRole('admin', 'super_admin'), async (req, res) => {
   // Re-render prompt + update agent
   await reRenderAndSync(req.firm.id);
 
+  dataCache.invalidate('staff', req.firm.id);
   res.json(data);
 });
 
@@ -201,6 +211,7 @@ router.delete('/:id', requireRole('admin', 'super_admin'), async (req, res) => {
   // Re-render prompt + update agent (fire-and-forget — don't block the response)
   reRenderAndSync(req.firm.id).catch(() => {});
 
+  dataCache.invalidate('staff', req.firm.id);
   res.json(data);
 });
 

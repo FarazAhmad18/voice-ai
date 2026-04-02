@@ -5,6 +5,7 @@ const { verifyWebhookSignature } = require('../services/retell');
 const logger = require('../services/logger');
 const { maybePushToCRM } = require('./crmPushController');
 const { sendMissedCallFollowUp, sendBookingConfirmation } = require('../services/scheduler');
+const dataCache = require('../services/dataCache');
 
 /**
  * Look up the firm associated with a Retell agent_id.
@@ -152,48 +153,22 @@ async function handleCallEnded(call) {
   }
 
   // Find if this caller booked an appointment during the call
-  // Strategy: 1) retell_call_id on appointments table (100% reliable, survives restarts)
-  //           2) Phone number match (for appointments booked outside this call)
-  //           3) Fallback: recent unlinked appointment for this firm
-  let recentAppointment = null;
-
-  // 1. Direct lookup by retell_call_id — the appointment was tagged with this call's ID
-  if (call.call_id) {
-    const { data: aptByCallId } = await supabase
-      .from('appointments')
-      .select('*')
-      .eq('retell_call_id', call.call_id)
-      .eq('firm_id', firmId)
-      .limit(1)
-      .maybeSingle();
-    recentAppointment = aptByCallId || null;
-  }
-
-  // 2. Phone number match
-  if (!recentAppointment && callerPhone && callerPhone !== 'unknown') {
-    const { data: aptByPhone } = await supabase
-      .from('appointments')
-      .select('*')
-      .eq('caller_phone', callerPhone)
-      .eq('firm_id', firmId)
-      .order('created_at', { ascending: false })
-      .limit(1);
-    recentAppointment = aptByPhone?.[0] || null;
-  }
-
-  // 3. Fallback: recent unlinked appointment for this firm (last 10 min)
-  if (!recentAppointment) {
-    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
-    const { data: recentApt } = await supabase
-      .from('appointments')
-      .select('*')
-      .eq('firm_id', firmId)
-      .is('lead_id', null)
-      .gte('created_at', tenMinutesAgo)
-      .order('created_at', { ascending: false })
-      .limit(1);
-    recentAppointment = recentApt?.[0] || null;
-  }
+  // Run all 3 lookups in parallel instead of sequentially
+  const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+  const [aptByCallIdRes, aptByPhoneRes, recentAptRes] = await Promise.all([
+    // 1. Direct lookup by retell_call_id
+    call.call_id
+      ? supabase.from('appointments').select('*').eq('retell_call_id', call.call_id).eq('firm_id', firmId).limit(1).maybeSingle()
+      : Promise.resolve({ data: null }),
+    // 2. Phone number match
+    callerPhone && callerPhone !== 'unknown'
+      ? supabase.from('appointments').select('*').eq('caller_phone', callerPhone).eq('firm_id', firmId).order('created_at', { ascending: false }).limit(1)
+      : Promise.resolve({ data: null }),
+    // 3. Fallback: recent unlinked appointment
+    supabase.from('appointments').select('*').eq('firm_id', firmId).is('lead_id', null).gte('created_at', tenMinutesAgo).order('created_at', { ascending: false }).limit(1),
+  ]);
+  // Use first match in priority order
+  const recentAppointment = aptByCallIdRes.data || aptByPhoneRes.data?.[0] || recentAptRes.data?.[0] || null;
 
   // Pull intake data for this call to enrich lead
   const intakeData = global._pendingIntakeAnswers?.[call.call_id]?.answers || [];
@@ -315,6 +290,10 @@ async function handleCallEnded(call) {
       await supabase.from('leads').insert(lead);
     }
     await supabase.from('calls').insert(callRecord);
+
+    // Invalidate caches so dashboard/leads page shows new data immediately
+    dataCache.invalidate('leads', firmId);
+    dataCache.invalidate('appointments', firmId);
 
     logger.info('lead_scoring', `Lead created: ${lead.caller_name} (score: ${score}, ${scoreLabel})`, {
       firmId,

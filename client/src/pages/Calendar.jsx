@@ -107,7 +107,7 @@ export default function Calendar() {
   if (loading && allAppointments.length === 0) {
     return (
       <div className="space-y-4">
-        <h1 className="text-lg font-bold text-slate-900">Calendar</h1>
+        <h1 className="text-lg font-bold text-slate-900 dark:text-zinc-100">Calendar</h1>
         <CalendarSkeleton />
       </div>
     );
@@ -116,9 +116,9 @@ export default function Calendar() {
   return (
     <div className="space-y-4">
       {error && (
-        <div className="bg-red-50 border border-red-100 rounded-lg px-4 py-3 flex items-center gap-3">
+        <div className="bg-red-50 dark:bg-red-900/30 border border-red-100 dark:border-red-800 rounded-lg px-4 py-3 flex items-center gap-3">
           <AlertCircle size={16} className="text-red-500" />
-          <p className="text-sm text-red-700">{error}</p>
+          <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
         </div>
       )}
 

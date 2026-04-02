@@ -2,14 +2,16 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useFirm } from '../context/FirmContext';
+import { useTheme } from '../context/ThemeContext';
 import { fetchLeads } from '../services/api';
 import { supabase } from '../services/supabase';
 import {
   LayoutDashboard, Users, Calendar, CalendarDays, Settings, Clock,
   Building2, FileText, Activity, LogOut, Search, Bell,
   Menu, X, Shield, BookOpen, BarChart3,
-  PanelLeftClose, PanelLeft,
+  PanelLeftClose, PanelLeft, Sun, Moon,
 } from 'lucide-react';
+import ConfirmModal from './ConfirmModal';
 
 const clientNav = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -35,7 +37,9 @@ export default function Sidebar() {
   const navigate = useNavigate();
   const { user, firm, logout, isSuperAdmin } = useAuth();
   const { agentName } = useFirm();
+  const { isDark, toggleTheme } = useTheme();
 
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [collapsed, setCollapsed] = useState(() => {
     try { return localStorage.getItem('sidebar-collapsed') === 'true'; } catch { return false; }
   });
@@ -163,8 +167,8 @@ export default function Sidebar() {
     if (items.length === 0) return null;
     return (
       <div key={label}>
-        <div className="px-4 py-2 bg-slate-50/80">
-          <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">{label}</p>
+        <div className="px-4 py-2 bg-slate-50/80 dark:bg-zinc-900/80">
+          <p className="text-[10px] font-semibold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">{label}</p>
         </div>
         {items.map((lead) => {
           const li = ((lead.caller_name || 'U').split(' ').map(n => n?.[0] || '').join('').slice(0, 2).toUpperCase()) || '?';
@@ -173,20 +177,20 @@ export default function Sidebar() {
               key={lead.id}
               to={`/leads/${lead.id}`}
               onClick={() => setNotifOpen(false)}
-              className="group flex items-start gap-3 px-4 py-3 hover:bg-slate-50 transition-colors duration-150"
+              className="group flex items-start gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-zinc-800/50 transition-colors duration-150"
             >
               <div className="relative flex-shrink-0">
-                <div className="w-8 h-8 bg-violet-100 rounded-full flex items-center justify-center text-[11px] font-semibold text-violet-700">
+                <div className="w-8 h-8 bg-violet-100 dark:bg-violet-900/40 rounded-full flex items-center justify-center text-[11px] font-semibold text-violet-700 dark:text-violet-400">
                   {li}
                 </div>
-                <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-blue-500 rounded-full border-2 border-white" />
+                <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-blue-500 rounded-full border-2 border-white dark:border-zinc-900" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-medium text-slate-800 truncate">{lead.caller_name || 'Unknown Caller'}</p>
-                  <span className="text-[10px] text-slate-300 flex-shrink-0 tabular-nums">{formatNotifTime(lead.created_at)}</span>
+                  <p className="text-sm font-medium text-slate-800 dark:text-zinc-200 truncate">{lead.caller_name || 'Unknown Caller'}</p>
+                  <span className="text-[10px] text-slate-300 dark:text-zinc-600 flex-shrink-0 tabular-nums">{formatNotifTime(lead.created_at)}</span>
                 </div>
-                <p className="text-xs text-slate-400 truncate mt-0.5">
+                <p className="text-xs text-slate-400 dark:text-zinc-500 truncate mt-0.5">
                   <span className="capitalize">{lead.case_type || 'New lead'}</span>
                   {lead.score_label === 'hot' && <span className="ml-1.5 text-red-500 font-semibold">Hot</span>}
                   {lead.score_label === 'warm' && <span className="ml-1.5 text-amber-500 font-semibold">Warm</span>}
@@ -203,7 +207,7 @@ export default function Sidebar() {
   const sidebarContent = (
     <>
       {/* Logo section */}
-      <div className={`flex items-center h-14 border-b border-slate-200 px-4 flex-shrink-0 ${collapsed ? 'justify-center' : 'gap-3'}`}>
+      <div className={`flex items-center h-14 border-b border-slate-200 dark:border-zinc-800 px-4 flex-shrink-0 ${collapsed ? 'justify-center' : 'gap-3'}`}>
         <div
           className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
           style={{ backgroundColor: isAdminSection ? '#09090b' : (firm?.brand_color || '#09090b') }}
@@ -212,9 +216,9 @@ export default function Sidebar() {
         </div>
         {!collapsed && (
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-slate-900 truncate">{brandName}</p>
+            <p className="text-sm font-semibold text-slate-900 dark:text-zinc-100 truncate">{brandName}</p>
             {!isAdminSection && firm?.retell_agent_id && (
-              <p className="text-[10px] text-emerald-600 font-medium flex items-center gap-1">
+              <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
                 <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
                 {agentName}
               </p>
@@ -229,7 +233,7 @@ export default function Sidebar() {
           <button
             onClick={() => setCollapsed(false)}
             title="Search (Ctrl+K)"
-            className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 dark:text-zinc-500 hover:bg-slate-50 dark:hover:bg-zinc-800/50 hover:text-slate-600 dark:hover:text-zinc-400 transition-colors"
           >
             <Search size={16} />
           </button>
@@ -237,14 +241,14 @@ export default function Sidebar() {
       ) : (
         <div className="px-3 pt-3 pb-1">
           <form onSubmit={handleSearch} className="relative">
-            <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" />
+            <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300 dark:text-zinc-600 pointer-events-none" />
             <input
               ref={searchRef}
               type="text"
               placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200 focus:border-slate-200 placeholder:text-slate-300"
+              className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-zinc-900 border border-slate-100 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200 dark:focus:ring-zinc-700 focus:border-slate-200 dark:focus:border-zinc-600 placeholder:text-slate-300 dark:placeholder:text-zinc-600 text-slate-900 dark:text-zinc-100"
             />
           </form>
         </div>
@@ -262,22 +266,32 @@ export default function Sidebar() {
               title={collapsed ? item.label : undefined}
               className={`flex items-center gap-3 py-2 rounded-lg text-[13px] font-medium transition-colors duration-150 ${
                 active
-                  ? 'bg-slate-900 text-white'
-                  : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'
+                  ? 'bg-slate-900 dark:bg-white/10 text-white'
+                  : 'text-slate-500 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-800/50 hover:text-slate-700 dark:hover:text-zinc-300'
               } ${collapsed ? 'justify-center px-2' : 'px-3'}`}
             >
-              <Icon size={18} className={`flex-shrink-0 ${active ? 'text-white' : 'text-slate-400'}`} />
+              <Icon size={18} className={`flex-shrink-0 ${active ? 'text-white' : 'text-slate-400 dark:text-zinc-500'}`} />
               {!collapsed && <span>{item.label}</span>}
             </Link>
           );
         })}
+
+        {/* Theme toggle */}
+        <button
+          onClick={toggleTheme}
+          title={collapsed ? (isDark ? 'Light mode' : 'Dark mode') : undefined}
+          className={`flex items-center gap-3 py-2 rounded-lg text-[13px] font-medium text-slate-500 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-800/50 hover:text-slate-700 dark:hover:text-zinc-300 transition-colors duration-150 ${collapsed ? 'justify-center px-2' : 'px-3'}`}
+        >
+          {isDark ? <Sun size={18} className="flex-shrink-0 text-amber-400" /> : <Moon size={18} className="flex-shrink-0 text-slate-400 dark:text-zinc-500" />}
+          {!collapsed && <span>{isDark ? 'Light Mode' : 'Dark Mode'}</span>}
+        </button>
 
         {/* Admin/Client switch */}
         {isSuperAdmin && (
           <Link
             to={isAdminSection ? '/' : '/admin'}
             title={collapsed ? (isAdminSection ? 'Client View' : 'Admin') : undefined}
-            className={`flex items-center gap-3 py-2 rounded-lg text-[13px] font-medium text-violet-600 hover:bg-violet-50 transition-colors duration-150 mt-2 ${collapsed ? 'justify-center px-2' : 'px-3'}`}
+            className={`flex items-center gap-3 py-2 rounded-lg text-[13px] font-medium text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/30 transition-colors duration-150 mt-2 ${collapsed ? 'justify-center px-2' : 'px-3'}`}
           >
             <Shield size={18} />
             {!collapsed && <span>{isAdminSection ? 'Client View' : 'Admin'}</span>}
@@ -286,18 +300,18 @@ export default function Sidebar() {
       </nav>
 
       {/* Bottom section */}
-      <div className="flex-shrink-0 border-t border-slate-200">
+      <div className="flex-shrink-0 border-t border-slate-200 dark:border-zinc-800">
         {/* Notifications */}
         <div className="relative px-3 py-1" ref={notifRef}>
           <button
             onClick={() => setNotifOpen(!notifOpen)}
             title={collapsed ? 'Notifications' : undefined}
             className={`w-full flex items-center gap-3 py-2 rounded-lg text-[13px] font-medium transition-colors duration-150 ${
-              notifOpen ? 'bg-slate-100 text-slate-700' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'
+              notifOpen ? 'bg-slate-100 dark:bg-zinc-800/50 text-slate-700 dark:text-zinc-300' : 'text-slate-500 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-800/50 hover:text-slate-700 dark:hover:text-zinc-300'
             } ${collapsed ? 'justify-center px-2' : 'px-3'}`}
           >
             <div className="relative">
-              <Bell size={18} className="text-slate-400" />
+              <Bell size={18} className="text-slate-400 dark:text-zinc-500" />
               {unreadCount > 0 && (
                 <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
                   {unreadCount > 9 ? '9+' : unreadCount}
@@ -309,23 +323,23 @@ export default function Sidebar() {
 
           {/* Notification popover */}
           {notifOpen && (
-            <div className="absolute bottom-0 left-full ml-2 w-[340px] bg-white rounded-lg shadow-xl border border-slate-200 z-50 overflow-hidden">
-              <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+            <div className="absolute bottom-0 left-full ml-2 w-[340px] bg-white dark:bg-zinc-900 rounded-lg shadow-xl border border-slate-200 dark:border-zinc-700 z-50 overflow-hidden">
+              <div className="px-4 py-3 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-slate-900">Notifications</p>
-                  <p className="text-[11px] text-slate-400 mt-0.5">{unreadCount} new lead{unreadCount !== 1 ? 's' : ''} today</p>
+                  <p className="text-sm font-semibold text-slate-900 dark:text-zinc-100">Notifications</p>
+                  <p className="text-[11px] text-slate-400 dark:text-zinc-500 mt-0.5">{unreadCount} new lead{unreadCount !== 1 ? 's' : ''} today</p>
                 </div>
                 {unreadCount > 0 && (
-                  <span className="px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-semibold rounded-full border border-blue-100">
+                  <span className="px-2 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[10px] font-semibold rounded-full border border-blue-100 dark:border-blue-800">
                     {unreadCount} new
                   </span>
                 )}
               </div>
-              <div className="max-h-[350px] overflow-y-auto divide-y divide-slate-50">
+              <div className="max-h-[350px] overflow-y-auto divide-y divide-slate-50 dark:divide-zinc-800/50">
                 {notifications.length === 0 ? (
                   <div className="py-10 text-center">
-                    <Bell size={20} className="text-slate-300 mx-auto mb-2" />
-                    <p className="text-sm text-slate-400">No new leads today</p>
+                    <Bell size={20} className="text-slate-300 dark:text-zinc-600 mx-auto mb-2" />
+                    <p className="text-sm text-slate-400 dark:text-zinc-500">No new leads today</p>
                   </div>
                 ) : (
                   <>
@@ -339,7 +353,7 @@ export default function Sidebar() {
                 <Link
                   to="/leads"
                   onClick={() => setNotifOpen(false)}
-                  className="flex items-center justify-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-700 hover:bg-slate-50 py-2.5 border-t border-slate-100 transition-colors"
+                  className="flex items-center justify-center gap-1.5 text-xs font-medium text-slate-500 dark:text-zinc-400 hover:text-slate-700 dark:hover:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-800/50 py-2.5 border-t border-slate-100 dark:border-zinc-800 transition-colors"
                 >
                   View all leads &rarr;
                 </Link>
@@ -350,56 +364,35 @@ export default function Sidebar() {
 
         {/* User section */}
         <div className="relative px-3 py-2" ref={userMenuRef}>
-          <button
-            onClick={() => setUserMenuOpen(!userMenuOpen)}
-            className={`w-full flex items-center gap-3 py-2 rounded-lg transition-colors duration-150 ${
-              userMenuOpen ? 'bg-slate-100' : 'hover:bg-slate-50'
-            } ${collapsed ? 'justify-center px-2' : 'px-3'}`}
-          >
-            <div className="w-7 h-7 bg-slate-800 rounded-full flex items-center justify-center text-[11px] font-semibold text-white flex-shrink-0">
+          <div className={`flex items-center gap-3 py-2 ${collapsed ? 'justify-center px-2' : 'px-3'}`}>
+            <div className="w-7 h-7 bg-slate-800 dark:bg-zinc-600 rounded-full flex items-center justify-center text-[11px] font-semibold text-white flex-shrink-0">
               {initials}
             </div>
             {!collapsed && (
-              <div className="flex-1 min-w-0 text-left">
-                <p className="text-[13px] font-medium text-slate-700 truncate">{user?.name}</p>
-                <p className="text-[10px] text-slate-400 capitalize">{user?.role?.replace('_', ' ')}</p>
-              </div>
-            )}
-          </button>
-
-          {/* User dropdown */}
-          {userMenuOpen && (
-            <div className={`absolute ${collapsed ? 'left-full ml-2 bottom-0' : 'bottom-full left-3 right-3 mb-1'} bg-white rounded-lg shadow-xl border border-slate-200 z-50 overflow-hidden`}>
-              <div className="py-1">
-                <Link
-                  to="/settings"
-                  onClick={() => setUserMenuOpen(false)}
-                  className="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
-                >
-                  <Settings size={15} className="text-slate-400" />
-                  Settings
-                </Link>
-              </div>
-              <div className="border-t border-slate-100 py-1">
+              <>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-medium text-slate-700 dark:text-zinc-300 truncate">{user?.name}</p>
+                  <p className="text-[10px] text-slate-400 dark:text-zinc-500 capitalize">{user?.role?.replace('_', ' ')}</p>
+                </div>
                 <button
-                  onClick={() => { setUserMenuOpen(false); logout(); }}
-                  className="flex items-center gap-2.5 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                  onClick={() => setShowLogoutConfirm(true)}
+                  title="Sign out"
+                  className="p-1.5 rounded-lg text-slate-300 dark:text-zinc-600 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
                 >
-                  <LogOut size={15} />
-                  Sign out
+                  <LogOut size={14} />
                 </button>
-              </div>
-            </div>
-          )}
+              </>
+            )}
+          </div>
         </div>
 
         {/* Collapse toggle — desktop only */}
-        <div className="hidden md:block px-3 pb-3">
+        <div className="hidden md:block px-3 pb-3 pt-1">
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="w-full flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg text-xs text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors"
+            className={`w-full flex items-center gap-3 py-2 rounded-lg text-[13px] font-medium text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-800/50 transition-colors ${collapsed ? 'justify-center px-2' : 'px-3'}`}
           >
-            {collapsed ? <PanelLeft size={16} /> : <PanelLeftClose size={16} />}
+            {collapsed ? <PanelLeft size={18} /> : <PanelLeftClose size={18} />}
             {!collapsed && <span>Collapse</span>}
           </button>
         </div>
@@ -410,14 +403,14 @@ export default function Sidebar() {
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className={`hidden md:flex flex-col h-screen bg-white border-r border-slate-200 flex-shrink-0 sticky top-0 transition-all duration-200 ${collapsed ? 'w-16' : 'w-60'}`}>
+      <aside className={`hidden md:flex flex-col h-screen bg-white dark:bg-zinc-900 border-r border-slate-200 dark:border-zinc-800 flex-shrink-0 sticky top-0 transition-all duration-200 ${collapsed ? 'w-16' : 'w-60'}`}>
         {sidebarContent}
       </aside>
 
       {/* Mobile top bar */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-slate-200 h-14 flex items-center px-4 gap-3">
-        <button onClick={() => setMobileOpen(true)} className="p-1.5 rounded-lg hover:bg-slate-50">
-          <Menu size={20} className="text-slate-600" />
+      <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-white dark:bg-zinc-900 border-b border-slate-200 dark:border-zinc-800 h-14 flex items-center px-4 gap-3">
+        <button onClick={() => setMobileOpen(true)} className="p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-zinc-800/50">
+          <Menu size={20} className="text-slate-600 dark:text-zinc-400" />
         </button>
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <div
@@ -426,12 +419,16 @@ export default function Sidebar() {
           >
             <span className="text-white text-xs font-bold">{brandName.charAt(0)}</span>
           </div>
-          <span className="text-sm font-semibold text-slate-900 truncate">{brandName}</span>
+          <span className="text-sm font-semibold text-slate-900 dark:text-zinc-100 truncate">{brandName}</span>
         </div>
+        {/* Mobile theme toggle */}
+        <button onClick={toggleTheme} className="p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-zinc-800/50">
+          {isDark ? <Sun size={18} className="text-amber-400" /> : <Moon size={18} className="text-slate-400 dark:text-zinc-500" />}
+        </button>
         {/* Mobile notification bell */}
         <div className="relative" ref={notifRef}>
-          <button onClick={() => setNotifOpen(!notifOpen)} className="p-1.5 rounded-lg hover:bg-slate-50 relative">
-            <Bell size={18} className="text-slate-400" />
+          <button onClick={() => setNotifOpen(!notifOpen)} className="p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-zinc-800/50 relative">
+            <Bell size={18} className="text-slate-400 dark:text-zinc-500" />
             {unreadCount > 0 && (
               <span className="absolute top-0.5 right-0.5 w-3.5 h-3.5 bg-red-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center">
                 {unreadCount > 9 ? '9+' : unreadCount}
@@ -445,16 +442,26 @@ export default function Sidebar() {
       {mobileOpen && (
         <div className="md:hidden fixed inset-0 z-50">
           <div className="absolute inset-0 bg-black/40" onClick={() => setMobileOpen(false)} />
-          <aside className="absolute left-0 top-0 bottom-0 w-64 bg-white flex flex-col shadow-xl">
+          <aside className="absolute left-0 top-0 bottom-0 w-64 bg-white dark:bg-zinc-900 flex flex-col shadow-xl">
             <div className="flex items-center justify-end px-3 pt-3">
-              <button onClick={() => setMobileOpen(false)} className="p-1.5 rounded-lg hover:bg-slate-50">
-                <X size={18} className="text-slate-400" />
+              <button onClick={() => setMobileOpen(false)} className="p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-zinc-800/50">
+                <X size={18} className="text-slate-400 dark:text-zinc-500" />
               </button>
             </div>
             {sidebarContent}
           </aside>
         </div>
       )}
+
+      <ConfirmModal
+        open={showLogoutConfirm}
+        onCancel={() => setShowLogoutConfirm(false)}
+        onConfirm={() => { setShowLogoutConfirm(false); logout(); }}
+        danger
+        title="Sign out?"
+        message="Are you sure you want to sign out of your account?"
+        confirmLabel="Sign out"
+      />
     </>
   );
 }

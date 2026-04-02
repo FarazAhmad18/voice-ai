@@ -13,6 +13,8 @@ export default function Login() {
   const [emailFocused, setEmailFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [signingIn, setSigningIn] = useState(false);
+  const [loginStep, setLoginStep] = useState('');
 
   useEffect(() => {
     setMounted(true);
@@ -30,12 +32,28 @@ export default function Login() {
     e.preventDefault();
     setError('');
     setLoading(true);
+    setSigningIn(true);
+    setLoginStep('Verifying credentials...');
+
+    // Timeout — if login takes more than 15 seconds, something is wrong
+    const timeout = setTimeout(() => {
+      setError('Connection is taking too long. Server may be sleeping or unavailable. Please try again.');
+      setSigningIn(false);
+      setLoginStep('');
+      setLoading(false);
+    }, 15000);
 
     try {
+      setLoginStep('Authenticating...');
       await login(email, password);
+      setLoginStep('Loading your workspace...');
+      // Auth state change will trigger fetchProfile in AuthContext
+      // The signingIn overlay stays visible until isAuthenticated becomes true
     } catch (err) {
+      clearTimeout(timeout);
       setError(err.message || 'Invalid email or password');
-    } finally {
+      setSigningIn(false);
+      setLoginStep('');
       setLoading(false);
     }
   }
@@ -46,6 +64,22 @@ export default function Login() {
     { icon: Shield, title: 'Multi-Tenant CRM', desc: 'White-label dashboards for every client' },
     { icon: Zap, title: 'Instant Deployment', desc: 'Go live with a new client in minutes' },
   ];
+
+  // Full-screen overlay while signing in — prevents the "is it crashed?" moment
+  if (signingIn && !error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#f8fafc] dark:bg-[#09090b]">
+        <div className="text-center">
+          <div className="relative mx-auto w-14 h-14 mb-5">
+            <div className="absolute inset-0 rounded-full border-4 border-slate-200 dark:border-zinc-800" />
+            <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-violet-500 animate-spin" />
+          </div>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Signing you in</h2>
+          <p className="text-sm text-slate-400 dark:text-zinc-500 animate-pulse">{loginStep}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex">
@@ -166,7 +200,7 @@ export default function Login() {
                   required
                   autoFocus
                   autoComplete="email"
-                  className="w-full px-4 py-3 text-sm bg-white border border-zinc-200 rounded-xl focus:outline-none focus:border-zinc-400 placeholder:text-zinc-300 transition-colors"
+                  className="w-full px-4 py-3 text-sm text-zinc-900 bg-white border border-zinc-200 rounded-xl focus:outline-none focus:border-zinc-400 placeholder:text-zinc-300 transition-colors"
                   placeholder="you@company.com"
                 />
               </div>
@@ -205,7 +239,7 @@ export default function Login() {
                   onBlur={() => setPasswordFocused(false)}
                   required
                   autoComplete="current-password"
-                  className="w-full px-4 py-3 pr-11 text-sm bg-white border border-zinc-200 rounded-xl focus:outline-none focus:border-zinc-400 placeholder:text-zinc-300 transition-colors"
+                  className="w-full px-4 py-3 pr-11 text-sm text-zinc-900 bg-white border border-zinc-200 rounded-xl focus:outline-none focus:border-zinc-400 placeholder:text-zinc-300 transition-colors"
                   placeholder="Enter your password"
                 />
                 <button

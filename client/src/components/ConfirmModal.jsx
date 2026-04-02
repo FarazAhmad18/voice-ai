@@ -50,25 +50,25 @@ export default function ConfirmModal({
       />
 
       {/* Modal */}
-      <div className="relative bg-white rounded-lg shadow-2xl w-full max-w-sm overflow-hidden">
+      <div className="relative bg-white dark:bg-zinc-900 rounded-lg shadow-2xl w-full max-w-sm overflow-hidden">
         {/* Header */}
         <div className="flex items-start justify-between px-6 pt-5 pb-4">
           <div className="flex items-start gap-3">
             <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
-              danger ? 'bg-red-50' : 'bg-amber-50'
+              danger ? 'bg-red-50 dark:bg-red-900/30' : 'bg-amber-50 dark:bg-amber-900/30'
             }`}>
               <AlertTriangle size={18} className={danger ? 'text-red-500' : 'text-amber-500'} />
             </div>
             <div>
-              <h3 className="text-[15px] font-semibold text-slate-900">{title}</h3>
+              <h3 className="text-[15px] font-semibold text-slate-900 dark:text-zinc-100">{title}</h3>
               {message && (
-                <p className="text-sm text-slate-500 mt-1 leading-relaxed">{message}</p>
+                <p className="text-sm text-slate-500 dark:text-zinc-500 mt-1 leading-relaxed">{message}</p>
               )}
             </div>
           </div>
           <button
             onClick={onCancel}
-            className="ml-2 shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+            className="ml-2 shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800/50 transition-colors"
           >
             <X size={15} />
           </button>
@@ -80,7 +80,7 @@ export default function ConfirmModal({
             ref={cancelRef}
             onClick={onCancel}
             disabled={loading}
-            className="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors disabled:opacity-50"
+            className="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-zinc-500 bg-slate-100 dark:bg-zinc-800/50 hover:bg-slate-200 dark:hover:bg-zinc-700 transition-colors disabled:opacity-50"
           >
             Cancel
           </button>
